@@ -1,3 +1,3 @@
-module github.com/library-squirrel/library-squirrel-plugin-sdk
+module github.com/lvfeng-z/library-squirrel-plugin-sdk
 
 go 1.26.1
