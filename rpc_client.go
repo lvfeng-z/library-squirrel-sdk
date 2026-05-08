@@ -123,7 +123,7 @@ func (c *RPCClient) Notify(method string, params any) error {
 		if err != nil {
 			return fmt.Errorf("marshal params: %w", err)
 		}
-		req["params"] = data
+		req["params"] = json.RawMessage(data)
 	}
 
 	reqData, err := json.Marshal(req)
