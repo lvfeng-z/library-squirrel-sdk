@@ -105,7 +105,7 @@ func (c *FrameCodec) ReadJSON() ([]byte, error) {
 // writeFrame 写入一帧（内部方法）
 func (c *FrameCodec) writeFrame(frameType byte, data []byte) error {
 	header := make([]byte, 5)
-	binary.BigEndian.PutUint32(header[0:4], uint32(4+len(data)))
+	binary.BigEndian.PutUint32(header[0:4], uint32(len(data)))
 	header[4] = frameType
 
 	var buf []byte
