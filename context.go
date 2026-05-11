@@ -39,4 +39,7 @@ type PluginContext interface {
 	Debugf(template string, args ...any)
 	Warnf(template string, args ...any)
 	Errorf(template string, args ...any)
+
+	// 获取可传递给子组件的 Logger
+	GetLogger() Logger
 }

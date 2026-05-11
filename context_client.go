@@ -12,6 +12,7 @@ type PluginContextClient struct {
 	client   *RPCClient
 	init     *PluginContextInit
 	streamID atomic.Int64
+	logger   Logger
 }
 
 // NewPluginContextClient 创建 PluginContext 客户端
@@ -20,6 +21,7 @@ func NewPluginContextClient(client *RPCClient, init *PluginContextInit) *PluginC
 	return &PluginContextClient{
 		client: client,
 		init:   init,
+		logger: NewPluginLogger(client, ""),
 	}
 }
 
@@ -158,30 +160,12 @@ func (c *PluginContextClient) GetPluginRoot(isRelative bool) string {
 	return r.Path
 }
 
-func (c *PluginContextClient) Infof(template string, args ...any) {
-	c.log("ctx/infof", template, args)
-}
+func (c *PluginContextClient) Infof(template string, args ...any)   { c.logger.Infof(template, args...) }
+func (c *PluginContextClient) Debugf(template string, args ...any)  { c.logger.Debugf(template, args...) }
+func (c *PluginContextClient) Warnf(template string, args ...any)   { c.logger.Warnf(template, args...) }
+func (c *PluginContextClient) Errorf(template string, args ...any)  { c.logger.Errorf(template, args...) }
 
-func (c *PluginContextClient) Debugf(template string, args ...any) {
-	c.log("ctx/debugf", template, args)
-}
-
-func (c *PluginContextClient) Warnf(template string, args ...any) {
-	c.log("ctx/warnf", template, args)
-}
-
-func (c *PluginContextClient) Errorf(template string, args ...any) {
-	c.log("ctx/errorf", template, args)
-}
-
-func (c *PluginContextClient) log(method, template string, args []any) {
-	type params struct {
-		Template string `json:"template"`
-		Args     []any  `json:"args"`
-	}
-	// 日志调用 fire-and-forget，不等待响应
-	c.client.Notify(method, params{Template: template, Args: args})
-}
+func (c *PluginContextClient) GetLogger() Logger { return c.logger }
 
 func (c *PluginContextClient) GetMainWindow() WindowHandle {
 	// 子进程模式不支持窗口管理
