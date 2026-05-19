@@ -87,7 +87,7 @@ type TaskSiteTagDTO struct {
 
 // TaskWorkSetDTO 任务处理器作品集DTO
 type TaskWorkSetDTO struct {
-	WorkSetID   int64  `json:"workSetId"`
+	SiteWorkSetID string `json:"siteWorkSetId"`
 	WorkSetName string `json:"workSetName"`
 }
 
