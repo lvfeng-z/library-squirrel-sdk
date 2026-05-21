@@ -1,174 +1,157 @@
 package pluginsdk
 
 import (
+	"context"
 	"fmt"
-	"sync/atomic"
-	"time"
+
+	"google.golang.org/grpc"
+
+	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
 )
 
-// PluginContextClient 插件侧的 PluginContext 实现，通过 RPC 与主进程通信
-// 实现 PluginContext 接口，每个方法映射为一次 JSON-RPC 调用
+// PluginContextClient 插件侧的 PluginContext 实现，通过 gRPC 调用主程序的 HostService
 type PluginContextClient struct {
-	client   *RPCClient
-	init     *PluginContextInit
-	streamID atomic.Int64
-	logger   Logger
+	hostClient gen.HostServiceClient
+	logger     Logger
 }
 
-// NewPluginContextClient 创建 PluginContext 客户端
-// init 包含插件的初始化参数
-func NewPluginContextClient(client *RPCClient, init *PluginContextInit) *PluginContextClient {
+// NewPluginContextClient 创建基于 gRPC 的 PluginContext 客户端
+func NewPluginContextClient(conn *grpc.ClientConn) *PluginContextClient {
 	return &PluginContextClient{
-		client: client,
-		init:   init,
-		logger: NewPluginLogger(client, ""),
+		hostClient: gen.NewHostServiceClient(conn),
+		logger:     NewGRPCLogger(gen.NewHostServiceClient(conn)),
 	}
 }
 
 func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, handler TaskHandler) error {
-	type params struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		Description string `json:"description"`
-	}
-	return c.client.Call("ctx/registerTaskHandler", params{ID: id, Name: name, Description: description}, nil)
+	_, err := c.hostClient.RegisterTaskHandler(context.Background(), &gen.RegisterExtensionRequest{
+		ContributionId: id,
+		Name:           name,
+		Description:    description,
+	})
+	return err
 }
 
 func (c *PluginContextClient) RegisterSiteBrowser(id, name, description string, browser SiteBrowser) error {
-	type params struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		Description string `json:"description"`
-	}
-	return c.client.Call("ctx/registerSiteBrowser", params{ID: id, Name: name, Description: description}, nil)
+	_, err := c.hostClient.RegisterSiteBrowser(context.Background(), &gen.RegisterExtensionRequest{
+		ContributionId: id,
+		Name:           name,
+		Description:    description,
+	})
+	return err
 }
 
 func (c *PluginContextClient) UnregisterSiteBrowser(id string) error {
-	type params struct {
-		ID string `json:"id"`
-	}
-	return c.client.Call("ctx/unregisterSiteBrowser", params{ID: id}, nil)
+	_, err := c.hostClient.UnregisterSiteBrowser(context.Background(), &gen.UnregisterRequest{
+		ContributionId: id,
+	})
+	return err
 }
 
 func (c *PluginContextClient) GetPluginData() (string, error) {
-	type result struct {
-		Data string `json:"data"`
-	}
-	var r result
-	if err := c.client.Call("ctx/getPluginData", nil, &r); err != nil {
+	resp, err := c.hostClient.GetPluginData(context.Background(), &gen.Empty{})
+	if err != nil {
 		return "", err
 	}
-	return r.Data, nil
+	return resp.Data, nil
 }
 
 func (c *PluginContextClient) SetPluginData(data string) error {
-	type params struct {
-		Data string `json:"data"`
-	}
-	return c.client.Call("ctx/setPluginData", params{Data: data}, nil)
+	_, err := c.hostClient.SetPluginData(context.Background(), &gen.PluginDataRequest{Data: data})
+	return err
 }
 
 func (c *PluginContextClient) StoreEncryptedValue(plainValue, description string) (string, error) {
-	type params struct {
-		PlainValue   string `json:"plainValue"`
-		Description string `json:"description"`
-	}
-	type result struct {
-		Key string `json:"key"`
-	}
-	var r result
-	if err := c.client.Call("ctx/storeEncryptedValue", params{PlainValue: plainValue, Description: description}, &r); err != nil {
+	resp, err := c.hostClient.StoreEncryptedValue(context.Background(), &gen.EncryptRequest{
+		PlainValue:  plainValue,
+		Description: description,
+	})
+	if err != nil {
 		return "", err
 	}
-	return r.Key, nil
+	return resp.Key, nil
 }
 
 func (c *PluginContextClient) GetDecryptedValue(storageKey string) (string, error) {
-	type params struct {
-		StorageKey string `json:"storageKey"`
-	}
-	type result struct {
-		Value string `json:"value"`
-	}
-	var r result
-	if err := c.client.Call("ctx/getDecryptedValue", params{StorageKey: storageKey}, &r); err != nil {
+	resp, err := c.hostClient.GetDecryptedValue(context.Background(), &gen.DecryptRequest{
+		StorageKey: storageKey,
+	})
+	if err != nil {
 		return "", err
 	}
-	return r.Value, nil
+	return resp.Value, nil
 }
 
 func (c *PluginContextClient) RemoveEncryptedValue(storageKey string) error {
-	type params struct {
-		StorageKey string `json:"storageKey"`
-	}
-	return c.client.Call("ctx/removeEncryptedValue", params{StorageKey: storageKey}, nil)
+	_, err := c.hostClient.RemoveEncryptedValue(context.Background(), &gen.DecryptRequest{
+		StorageKey: storageKey,
+	})
+	return err
 }
 
 func (c *PluginContextClient) GetWorkSetBySiteWorkSetId(siteWorkSetId, siteName string) (*WorkSet, error) {
-	type params struct {
-		SiteWorkSetID string `json:"siteWorkSetId"`
-		SiteName      string `json:"siteName"`
-	}
-	var result *WorkSet
-	if err := c.client.Call("ctx/getWorkSetBySiteWorkSetId", params{SiteWorkSetID: siteWorkSetId, SiteName: siteName}, &result); err != nil {
+	resp, err := c.hostClient.GetWorkSetBySiteWorkSetId(context.Background(), &gen.WorkSetQueryRequest{
+		SiteWorkSetId: siteWorkSetId,
+		SiteName:      siteName,
+	})
+	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	return protoToWorkSet(resp.WorkSet), nil
 }
 
 func (c *PluginContextClient) AddSite(sites []*Site) error {
-	type params struct {
-		Sites []*Site `json:"sites"`
+	pbSites := make([]*gen.Site, len(sites))
+	for i, s := range sites {
+		pbSites[i] = &gen.Site{
+			Id:              s.ID,
+			CreateTime:      s.CreateTime,
+			UpdateTime:      s.UpdateTime,
+			SiteName:        s.SiteName,
+			SiteDescription: s.SiteDescription,
+			Homepage:        s.Homepage,
+		}
 	}
-	return c.client.Call("ctx/addSite", params{Sites: sites}, nil)
+	_, err := c.hostClient.AddSite(context.Background(), &gen.AddSiteRequest{Sites: pbSites})
+	return err
 }
 
 func (c *PluginContextClient) RegisterUrlListener(contributionId string, patterns []string) error {
-	type params struct {
-		ContributionID string   `json:"contributionId"`
-		Patterns       []string `json:"patterns"`
-	}
-	return c.client.Call("ctx/registerUrlListener", params{ContributionID: contributionId, Patterns: patterns}, nil)
+	_, err := c.hostClient.RegisterUrlListener(context.Background(), &gen.UrlListenerRequest{
+		ContributionId: contributionId,
+		Patterns:       patterns,
+	})
+	return err
 }
 
 func (c *PluginContextClient) UnregisterUrlListener() error {
-	return c.client.Call("ctx/unregisterUrlListener", nil, nil)
+	_, err := c.hostClient.UnregisterUrlListener(context.Background(), &gen.Empty{})
+	return err
 }
 
 func (c *PluginContextClient) CreateTask(url string) (*TaskCreateResult, error) {
-	type params struct {
-		URL string `json:"url"`
-	}
-	var result *TaskCreateResult
-	if err := c.client.Call("ctx/createTask", params{URL: url}, &result); err != nil {
+	resp, err := c.hostClient.CreateTask(context.Background(), &gen.CreateTaskRequest{Url: url})
+	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	return &TaskCreateResult{
+		Succeed:       resp.Succeed,
+		AddedQuantity: int(resp.AddedQuantity),
+		Msg:           resp.Msg,
+	}, nil
 }
 
 func (c *PluginContextClient) GetPluginRoot(isRelative bool) string {
-	type params struct {
-		IsRelative bool `json:"isRelative"`
-	}
-	type result struct {
-		Path string `json:"path"`
-	}
-	var r result
-	if err := c.client.Call("ctx/getPluginRoot", params{IsRelative: isRelative}, &r); err != nil {
+	resp, err := c.hostClient.GetPluginRoot(context.Background(), &gen.GetPluginRootRequest{
+		IsRelative: isRelative,
+	})
+	if err != nil {
 		return ""
 	}
-	return r.Path
+	return resp.Path
 }
 
-func (c *PluginContextClient) Infof(template string, args ...any)   { c.logger.Infof(template, args...) }
-func (c *PluginContextClient) Debugf(template string, args ...any)  { c.logger.Debugf(template, args...) }
-func (c *PluginContextClient) Warnf(template string, args ...any)   { c.logger.Warnf(template, args...) }
-func (c *PluginContextClient) Errorf(template string, args ...any)  { c.logger.Errorf(template, args...) }
-
-func (c *PluginContextClient) GetLogger() Logger { return c.logger }
-
 func (c *PluginContextClient) GetMainWindow() WindowHandle {
-	// 子进程模式不支持窗口管理
 	return nil
 }
 
@@ -176,8 +159,29 @@ func (c *PluginContextClient) CreateWindow(options WindowOptions) (WindowHandle,
 	return nil, fmt.Errorf("window management not supported in subprocess mode")
 }
 
-// NextStreamID 生成下一个流 ID
-func (c *PluginContextClient) NextStreamID() string {
-	id := c.streamID.Add(1)
-	return fmt.Sprintf("stream-%d-%d", time.Now().UnixNano(), id)
+func (c *PluginContextClient) Infof(template string, args ...any)   { c.logger.Infof(template, args...) }
+func (c *PluginContextClient) Debugf(template string, args ...any)  { c.logger.Debugf(template, args...) }
+func (c *PluginContextClient) Warnf(template string, args ...any)   { c.logger.Warnf(template, args...) }
+func (c *PluginContextClient) Errorf(template string, args ...any)  { c.logger.Errorf(template, args...) }
+func (c *PluginContextClient) GetLogger() Logger { return c.logger }
+
+// protoToWorkSet 将 proto WorkSet 转换为 SDK WorkSet
+func protoToWorkSet(pb *gen.WorkSet) *WorkSet {
+	if pb == nil {
+		return nil
+	}
+	return &WorkSet{
+		ID:                     pb.Id,
+		CreateTime:             pb.CreateTime,
+		UpdateTime:             pb.UpdateTime,
+		SiteID:                 pb.SiteId,
+		SiteWorkSetID:          pb.SiteWorkSetId,
+		SiteWorkSetName:        pb.SiteWorkSetName,
+		SiteAuthorID:           pb.SiteAuthorId,
+		SiteWorkSetDescription: pb.SiteWorkSetDescription,
+		SiteUploadTime:         pb.SiteUploadTime,
+		SiteUpdateTime:         pb.SiteUpdateTime,
+		NickName:               pb.NickName,
+		LastView:               pb.LastView,
+	}
 }

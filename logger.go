@@ -1,7 +1,13 @@
 package pluginsdk
 
+import (
+	"context"
+	"fmt"
+
+	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
+)
+
 // Logger 插件日志接口，可传递给插件子组件使用
-// 通过 PluginContext.GetLogger() 获取，支持 Named 创建子模块 Logger
 type Logger interface {
 	Debugf(template string, args ...any)
 	Infof(template string, args ...any)
@@ -10,35 +16,39 @@ type Logger interface {
 	Named(name string) Logger
 }
 
-// PluginLogger 插件侧 Logger 实现，通过 RPC 通知发送日志到主进程
-type PluginLogger struct {
-	client *RPCClient
+// grpcLogger 通过 HostService gRPC 发送日志
+type grpcLogger struct {
+	client gen.HostServiceClient
 	name   string
 }
 
-// NewPluginLogger 创建插件侧 Logger
-func NewPluginLogger(client *RPCClient, name string) *PluginLogger {
-	return &PluginLogger{client: client, name: name}
+// NewGRPCLogger 创建基于 gRPC 的 Logger
+func NewGRPCLogger(client gen.HostServiceClient) *grpcLogger {
+	return &grpcLogger{client: client}
 }
 
-func (l *PluginLogger) Debugf(template string, args ...any) { l.log("ctx/debugf", template, args) }
-func (l *PluginLogger) Infof(template string, args ...any)  { l.log("ctx/infof", template, args) }
-func (l *PluginLogger) Warnf(template string, args ...any)  { l.log("ctx/warnf", template, args) }
-func (l *PluginLogger) Errorf(template string, args ...any) { l.log("ctx/errorf", template, args) }
+func (l *grpcLogger) Debugf(template string, args ...any) { l.log(0, template, args) }
+func (l *grpcLogger) Infof(template string, args ...any)  { l.log(1, template, args) }
+func (l *grpcLogger) Warnf(template string, args ...any)  { l.log(2, template, args) }
+func (l *grpcLogger) Errorf(template string, args ...any) { l.log(3, template, args) }
 
-func (l *PluginLogger) Named(name string) Logger {
+func (l *grpcLogger) Named(name string) Logger {
 	newName := name
 	if l.name != "" {
 		newName = l.name + "." + name
 	}
-	return NewPluginLogger(l.client, newName)
+	return &grpcLogger{client: l.client, name: newName}
 }
 
-func (l *PluginLogger) log(method, template string, args []any) {
-	type params struct {
-		Template    string `json:"template"`
-		Args        []any  `json:"args"`
-		LoggerName  string `json:"loggerName,omitempty"`
+func (l *grpcLogger) log(level int32, template string, args []any) {
+	strArgs := make([]string, len(args))
+	for i, a := range args {
+		strArgs[i] = fmt.Sprintf("%v", a)
 	}
-	_ = l.client.Notify(method, params{Template: template, Args: args, LoggerName: l.name})
+	_, _ = l.client.Log(context.Background(), &gen.LogRequest{
+		Level:      level,
+		Template:   template,
+		Args:       strArgs,
+		LoggerName: l.name,
+	})
 }

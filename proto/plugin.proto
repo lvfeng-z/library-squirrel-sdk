@@ -1,0 +1,349 @@
+syntax = "proto3";
+
+package plugins;
+
+option go_package = "github.com/lvfeng-z/library-squirrel-plugin-sdk/gen;gen";
+
+// ========== 共享消息类型 ==========
+
+message Empty {}
+
+message Task {
+  int64 id = 1;
+  int64 createTime = 2;
+  int64 updateTime = 3;
+  optional int64 isCollection = 4;
+  optional int64 pid = 5;
+  optional string taskName = 6;
+  optional int64 siteId = 7;
+  optional string siteWorkId = 8;
+  optional string url = 9;
+  int32 status = 10;
+  optional int64 pendingResourceId = 11;
+  optional int64 continuable = 12;
+  optional string pluginPublicId = 13;
+  optional string pluginContributionId = 14;
+  optional string pluginData = 15;
+  optional string errorMessage = 16;
+}
+
+message Work {
+  int64 id = 1;
+  int64 createTime = 2;
+  int64 updateTime = 3;
+  optional int64 siteId = 4;
+  optional string siteWorkId = 5;
+  optional string siteWorkName = 6;
+  optional string siteAuthorId = 7;
+  optional string siteWorkDescription = 8;
+  optional int64 siteUploadTime = 9;
+  optional int64 siteUpdateTime = 10;
+  optional string nickName = 11;
+  optional int64 localAuthorId = 12;
+  optional int64 lastView = 13;
+}
+
+message WorkSet {
+  int64 id = 1;
+  int64 createTime = 2;
+  int64 updateTime = 3;
+  optional int64 siteId = 4;
+  optional string siteWorkSetId = 5;
+  optional string siteWorkSetName = 6;
+  optional string siteAuthorId = 7;
+  optional string siteWorkSetDescription = 8;
+  optional int64 siteUploadTime = 9;
+  optional int64 siteUpdateTime = 10;
+  optional string nickName = 11;
+  optional int64 lastView = 12;
+}
+
+message Site {
+  int64 id = 1;
+  int64 createTime = 2;
+  int64 updateTime = 3;
+  optional string siteName = 4;
+  optional string siteDescription = 5;
+  optional string homepage = 6;
+}
+
+message SiteDTO {
+  int64 id = 1;
+  optional string siteName = 2;
+  optional string siteDescription = 3;
+  optional string homepage = 4;
+  int64 createTime = 5;
+  int64 updateTime = 6;
+}
+
+message LocalAuthorDTO {
+  int64 id = 1;
+  optional string authorName = 2;
+  optional string introduce = 3;
+  optional int64 lastUse = 4;
+  int64 createTime = 5;
+  int64 updateTime = 6;
+}
+
+message LocalTagDTO {
+  int64 id = 1;
+  optional string localTagName = 2;
+  optional int64 baseLocalTagId = 3;
+  optional string description = 4;
+  optional int64 lastUse = 5;
+  int64 createTime = 6;
+  int64 updateTime = 7;
+}
+
+message TaskSiteAuthorDTO {
+  string siteAuthorId = 1;
+  string authorName = 2;
+  string url = 3;
+}
+
+message TaskSiteTagDTO {
+  string siteTagId = 1;
+  string tagName = 2;
+  string description = 3;
+  string url = 4;
+}
+
+message TaskWorkSetDTO {
+  string siteWorkSetId = 1;
+  string workSetName = 2;
+}
+
+message TaskResourceDTO {
+  int64 resourceId = 1;
+  string url = 2;
+  string type = 3;
+  string format = 4;
+  string localPath = 5;
+  string remotePath = 6;
+  int64 size = 7;
+  int32 completeness = 8;
+}
+
+message TaskCreateChildResponse {
+  string taskName = 1;
+  string siteWorkId = 2;
+  string url = 3;
+  string pluginData = 4;
+  string siteName = 5;
+}
+
+message TaskCreateResponse {
+  string pluginTaskId = 1;
+  string taskName = 2;
+  string siteWorkId = 3;
+  string url = 4;
+  string pluginData = 5;
+  string siteName = 6;
+  repeated TaskCreateChildResponse children = 7;
+}
+
+message WorkResponse {
+  Work work = 1;
+  SiteDTO site = 2;
+  repeated LocalAuthorDTO localAuthors = 3;
+  repeated LocalTagDTO localTags = 4;
+  repeated TaskSiteAuthorDTO siteAuthors = 5;
+  repeated TaskSiteTagDTO siteTags = 6;
+  repeated TaskWorkSetDTO workSets = 7;
+  TaskResourceDTO resource = 8;
+}
+
+message TaskResParam {
+  Task task = 1;
+  int64 resourceId = 2;
+  string resourcePath = 3;
+}
+
+// ========== 1. 插件生命周期服务（主程序 → 插件）==========
+
+service PluginLifecycle {
+  rpc Activate(ActivateRequest) returns (ActivateResponse);
+  rpc Shutdown(Empty) returns (Empty);
+}
+
+message ActivateRequest {
+  string pluginPublicId = 1;
+  string pluginData = 2;
+  string rootPath = 3;
+  uint32 hostServiceId = 4;
+}
+
+message ActivateResponse {}
+
+// ========== 2. 任务处理器服务（主程序 → 插件）==========
+
+service TaskHandlerService {
+  rpc Create(CreateRequest) returns (CreateResponse);
+  rpc CreateWorkInfo(CreateWorkInfoRequest) returns (WorkResponse);
+  rpc Start(StartRequest) returns (stream StreamChunk);
+  rpc Retry(RetryRequest) returns (WorkResponse);
+  rpc Pause(TaskResParamMessage) returns (Empty);
+  rpc Stop(TaskResParamMessage) returns (Empty);
+  rpc Resume(TaskResParamMessage) returns (stream StreamChunk);
+}
+
+message CreateRequest {
+  string url = 1;
+  string contributionId = 2;
+}
+
+message CreateResponse {
+  repeated TaskCreateResponse responses = 1;
+}
+
+message CreateWorkInfoRequest {
+  Task task = 1;
+  string contributionId = 2;
+}
+
+message StartRequest {
+  Task task = 1;
+  string contributionId = 2;
+}
+
+message RetryRequest {
+  Task task = 1;
+  string contributionId = 2;
+}
+
+message TaskResParamMessage {
+  TaskResParam param = 1;
+  string contributionId = 2;
+}
+
+// 流式数据块
+message StreamChunk {
+  oneof payload {
+    WorkResponse workResponse = 1;
+    bytes data = 2;
+    bool eof = 3;
+    string error = 4;
+  }
+}
+
+// ========== 3. 站点浏览器服务（主程序 → 插件）==========
+
+service SiteBrowserService {
+  rpc Open(BrowserRequest) returns (Empty);
+  rpc Close(BrowserRequest) returns (Empty);
+}
+
+message BrowserRequest {
+  string contributionId = 1;
+}
+
+// ========== 4. 主程序宿主服务（插件 → 主程序，通过 GRPCBroker）==========
+
+service HostService {
+  // 扩展点注册
+  rpc RegisterTaskHandler(RegisterExtensionRequest) returns (Empty);
+  rpc RegisterSiteBrowser(RegisterExtensionRequest) returns (Empty);
+  rpc UnregisterSiteBrowser(UnregisterRequest) returns (Empty);
+
+  // 插件数据持久化
+  rpc GetPluginData(Empty) returns (PluginDataResponse);
+  rpc SetPluginData(PluginDataRequest) returns (Empty);
+
+  // 加密存储
+  rpc StoreEncryptedValue(EncryptRequest) returns (EncryptResponse);
+  rpc GetDecryptedValue(DecryptRequest) returns (DecryptResponse);
+  rpc RemoveEncryptedValue(DecryptRequest) returns (Empty);
+
+  // 业务查询
+  rpc GetWorkSetBySiteWorkSetId(WorkSetQueryRequest) returns (WorkSetQueryResponse);
+  rpc AddSite(AddSiteRequest) returns (Empty);
+
+  // 任务管理
+  rpc RegisterUrlListener(UrlListenerRequest) returns (Empty);
+  rpc UnregisterUrlListener(Empty) returns (Empty);
+  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+
+  // 路径
+  rpc GetPluginRoot(GetPluginRootRequest) returns (GetPluginRootResponse);
+
+  // 日志
+  rpc Log(LogRequest) returns (Empty);
+}
+
+message RegisterExtensionRequest {
+  string contributionId = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message UnregisterRequest {
+  string contributionId = 1;
+}
+
+message PluginDataResponse {
+  string data = 1;
+}
+
+message PluginDataRequest {
+  string data = 1;
+}
+
+message EncryptRequest {
+  string plainValue = 1;
+  string description = 2;
+}
+
+message EncryptResponse {
+  string key = 1;
+}
+
+message DecryptRequest {
+  string storageKey = 1;
+}
+
+message DecryptResponse {
+  string value = 1;
+}
+
+message WorkSetQueryRequest {
+  string siteWorkSetId = 1;
+  string siteName = 2;
+}
+
+message WorkSetQueryResponse {
+  WorkSet workSet = 1;
+}
+
+message AddSiteRequest {
+  repeated Site sites = 1;
+}
+
+message UrlListenerRequest {
+  string contributionId = 1;
+  repeated string patterns = 2;
+}
+
+message CreateTaskRequest {
+  string url = 1;
+}
+
+message CreateTaskResponse {
+  bool succeed = 1;
+  int32 addedQuantity = 2;
+  string msg = 3;
+}
+
+message GetPluginRootRequest {
+  bool isRelative = 1;
+}
+
+message GetPluginRootResponse {
+  string path = 1;
+}
+
+message LogRequest {
+  int32 level = 1;
+  string template = 2;
+  repeated string args = 3;
+  string loggerName = 4;
+}
