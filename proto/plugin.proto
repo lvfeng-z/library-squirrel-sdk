@@ -98,14 +98,15 @@ message LocalTagDTO {
 message TaskSiteAuthorDTO {
   string siteAuthorId = 1;
   string authorName = 2;
-  string url = 3;
+  string homepage = 3;
+  string fixedAuthorName = 4;
+  string introduce = 5;
 }
 
 message TaskSiteTagDTO {
   string siteTagId = 1;
   string tagName = 2;
   string description = 3;
-  string url = 4;
 }
 
 message TaskWorkSetDTO {
@@ -171,6 +172,7 @@ message ActivateRequest {
   string pluginData = 2;
   string rootPath = 3;
   uint32 hostServiceId = 4;
+  uint64 main_window_handle = 5;
 }
 
 message ActivateResponse {}

@@ -72,9 +72,11 @@ type LocalTagDTO struct {
 
 // TaskSiteAuthorDTO 任务处理器站点作者DTO
 type TaskSiteAuthorDTO struct {
-	SiteAuthorID string `json:"siteAuthorId"`
-	AuthorName   string `json:"authorName"`
-	URL          string `json:"url"`
+	SiteAuthorID    string `json:"siteAuthorId"`
+	AuthorName      string `json:"authorName"`
+	FixedAuthorName string `json:"fixedAuthorName"`
+	Introduce       string `json:"introduce"`
+	Homepage        string `json:"homepage"`
 }
 
 // TaskSiteTagDTO 任务处理器站点标签DTO
@@ -82,7 +84,6 @@ type TaskSiteTagDTO struct {
 	SiteTagID   string `json:"siteTagId"`
 	TagName     string `json:"tagName"`
 	Description string `json:"description"`
-	URL         string `json:"url"`
 }
 
 // TaskWorkSetDTO 任务处理器作品集DTO

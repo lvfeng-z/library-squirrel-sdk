@@ -2,7 +2,6 @@ package pluginsdk
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc"
 
@@ -11,8 +10,9 @@ import (
 
 // PluginContextClient 插件侧的 PluginContext 实现，通过 gRPC 调用主程序的 HostService
 type PluginContextClient struct {
-	hostClient gen.HostServiceClient
-	logger     Logger
+	hostClient     gen.HostServiceClient
+	logger         Logger
+	mainWindowHWND uintptr
 }
 
 // NewPluginContextClient 创建基于 gRPC 的 PluginContext 客户端
@@ -151,12 +151,8 @@ func (c *PluginContextClient) GetPluginRoot(isRelative bool) string {
 	return resp.Path
 }
 
-func (c *PluginContextClient) GetMainWindow() WindowHandle {
-	return nil
-}
-
-func (c *PluginContextClient) CreateWindow(options WindowOptions) (WindowHandle, error) {
-	return nil, fmt.Errorf("window management not supported in subprocess mode")
+func (c *PluginContextClient) GetMainWindowHandle() uintptr {
+	return c.mainWindowHWND
 }
 
 func (c *PluginContextClient) Infof(template string, args ...any)   { c.logger.Infof(template, args...) }

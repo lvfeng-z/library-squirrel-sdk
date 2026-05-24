@@ -129,6 +129,7 @@ func (s *lifecycleServer) Activate(ctx context.Context, req *gen.ActivateRequest
 			return nil, status.Errorf(codes.Internal, "dial host service: %v", err)
 		}
 		pluginCtx := NewPluginContextClient(conn)
+		pluginCtx.mainWindowHWND = uintptr(req.MainWindowHandle)
 		s.onActivate(pluginCtx)
 	}
 	return &gen.ActivateResponse{}, nil
@@ -315,9 +316,11 @@ func workResponseToProto(r *WorkResponse) *gen.WorkResponse {
 	}
 	for _, a := range r.SiteAuthors {
 		pb.SiteAuthors = append(pb.SiteAuthors, &gen.TaskSiteAuthorDTO{
-			SiteAuthorId: a.SiteAuthorID,
-			AuthorName:   a.AuthorName,
-			Url:          a.URL,
+			SiteAuthorId:    a.SiteAuthorID,
+			AuthorName:      a.AuthorName,
+			Homepage:        a.Homepage,
+			FixedAuthorName: a.FixedAuthorName,
+			Introduce:       a.Introduce,
 		})
 	}
 	for _, t := range r.SiteTags {
@@ -325,7 +328,6 @@ func workResponseToProto(r *WorkResponse) *gen.WorkResponse {
 			SiteTagId:   t.SiteTagID,
 			TagName:     t.TagName,
 			Description: t.Description,
-			Url:         t.URL,
 		})
 	}
 	for _, ws := range r.WorkSets {

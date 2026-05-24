@@ -30,9 +30,8 @@ type PluginContext interface {
 	// 路径
 	GetPluginRoot(isRelative bool) string
 
-	// 窗口管理
-	GetMainWindow() WindowHandle
-	CreateWindow(options WindowOptions) (WindowHandle, error)
+	// 窗口
+	GetMainWindowHandle() uintptr
 
 	// 日志
 	Infof(template string, args ...any)
