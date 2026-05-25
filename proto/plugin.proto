@@ -180,7 +180,7 @@ message ActivateResponse {}
 // ========== 2. 任务处理器服务（主程序 → 插件）==========
 
 service TaskHandlerService {
-  rpc Create(CreateRequest) returns (CreateResponse);
+  rpc Create(CreateRequest) returns (stream CreateChunk);
   rpc CreateWorkInfo(CreateWorkInfoRequest) returns (WorkResponse);
   rpc Start(StartRequest) returns (stream StreamChunk);
   rpc Retry(RetryRequest) returns (WorkResponse);
@@ -194,8 +194,17 @@ message CreateRequest {
   string contributionId = 2;
 }
 
-message CreateResponse {
-  repeated TaskCreateResponse responses = 1;
+// Create 流式响应块
+message CreateChunk {
+  oneof payload {
+    CreateMode mode = 1;              // 首条消息：模式标记
+    TaskCreateResponse task = 2;      // 后续消息：任务数据
+    string error = 3;                 // 错误
+  }
+}
+
+message CreateMode {
+  bool is_stream = 1;                 // true=流式, false=批量
 }
 
 message CreateWorkInfoRequest {
@@ -270,6 +279,11 @@ service HostService {
 
   // 日志
   rpc Log(LogRequest) returns (Empty);
+
+  // 前后端通信
+  rpc PublishToFrontend(PublishToFrontendRequest) returns (Empty);
+  rpc SubscribeFrontend(SubscribeFrontendRequest) returns (stream FrontendMessage);
+  rpc UnsubscribeFrontend(UnsubscribeFrontendRequest) returns (Empty);
 }
 
 message RegisterExtensionRequest {
@@ -348,4 +362,24 @@ message LogRequest {
   string template = 2;
   repeated string args = 3;
   string loggerName = 4;
+}
+
+// ========== 前后端通信消息类型 ==========
+
+message PublishToFrontendRequest {
+  string topic = 1;
+  bytes data = 2;
+}
+
+message SubscribeFrontendRequest {
+  string topic = 1;
+}
+
+message FrontendMessage {
+  string topic = 1;
+  bytes data = 2;
+}
+
+message UnsubscribeFrontendRequest {
+  string topic = 1;
 }

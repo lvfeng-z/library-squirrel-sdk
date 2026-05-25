@@ -19,6 +19,7 @@ type HostDeps struct {
 	SiteSaveProvider
 	TaskCreateProvider
 	UrlListenerRegistry
+	FrontendEventProvider
 	LogFunc func(level int32, template string, args []string, loggerName string)
 	// 注册回调：插件通过 HostService 注册扩展点时调用
 	OnRegisterTaskHandler  func(contributionId, name, description string) error
@@ -153,6 +154,39 @@ func (s *HostServiceServer) Log(ctx context.Context, req *gen.LogRequest) (*gen.
 	return &gen.Empty{}, nil
 }
 
+func (s *HostServiceServer) PublishToFrontend(ctx context.Context, req *gen.PublishToFrontendRequest) (*gen.Empty, error) {
+	if err := s.deps.PublishToFrontend(req.Topic, req.Data); err != nil {
+		return nil, err
+	}
+	return &gen.Empty{}, nil
+}
+
+func (s *HostServiceServer) SubscribeFrontend(req *gen.SubscribeFrontendRequest, stream grpc.ServerStreamingServer[gen.FrontendMessage]) error {
+	ch := make(chan []byte, 16)
+	cancel, err := s.deps.SubscribeFrontend(req.Topic, func(data []byte) {
+		ch <- data
+	})
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	for {
+		select {
+		case data := <-ch:
+			if err := stream.Send(&gen.FrontendMessage{Topic: req.Topic, Data: data}); err != nil {
+				return err
+			}
+		case <-stream.Context().Done():
+			return nil
+		}
+	}
+}
+
+func (s *HostServiceServer) UnsubscribeFrontend(ctx context.Context, req *gen.UnsubscribeFrontendRequest) (*gen.Empty, error) {
+	return &gen.Empty{}, s.deps.UnsubscribeFrontend(req.Topic)
+}
+
 // ========== Provider 接口 ==========
 
 // PluginDataProvider 插件数据持久化
@@ -181,13 +215,20 @@ type SiteSaveProvider interface {
 
 // TaskCreateProvider 任务创建
 type TaskCreateProvider interface {
-	CreateTask(ctx context.Context, url string) (*TaskCreateResult, error)
+	CreateTask(ctx context.Context, url string) (*CreateTaskResult, error)
 }
 
 // UrlListenerRegistry URL 监听器注册
 type UrlListenerRegistry interface {
 	RegisterUrlListener(ctx context.Context, contributionId string, patterns []string) error
 	UnregisterUrlListener(ctx context.Context) error
+}
+
+// FrontendEventProvider 前后端事件桥接
+type FrontendEventProvider interface {
+	PublishToFrontend(topic string, data []byte) error
+	SubscribeFrontend(topic string, pushCh func([]byte)) (cancel func(), err error)
+	UnsubscribeFrontend(topic string) error
 }
 
 // ========== Site/WorkSet 转换（HostService 专用）==========

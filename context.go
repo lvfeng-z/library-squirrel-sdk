@@ -25,7 +25,12 @@ type PluginContext interface {
 	// 任务
 	RegisterUrlListener(contributionId string, patterns []string) error
 	UnregisterUrlListener() error
-	CreateTask(url string) (*TaskCreateResult, error)
+	CreateTask(url string) (*CreateTaskResult, error)
+
+	// 前后端通信
+	PublishToFrontend(topic string, data []byte) error
+	SubscribeFrontend(topic string) (<-chan []byte, error)
+	UnsubscribeFrontend(topic string) error
 
 	// 路径
 	GetPluginRoot(isRelative bool) string

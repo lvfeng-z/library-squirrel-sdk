@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v5.29.5
-// source: proto/plugin.proto
+// source: plugin.proto
 
 package gen
 
@@ -155,7 +155,7 @@ var PluginLifecycle_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -172,7 +172,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TaskHandlerServiceClient interface {
-	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateChunk], error)
 	CreateWorkInfo(ctx context.Context, in *CreateWorkInfoRequest, opts ...grpc.CallOption) (*WorkResponse, error)
 	Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChunk], error)
 	Retry(ctx context.Context, in *RetryRequest, opts ...grpc.CallOption) (*WorkResponse, error)
@@ -189,15 +189,24 @@ func NewTaskHandlerServiceClient(cc grpc.ClientConnInterface) TaskHandlerService
 	return &taskHandlerServiceClient{cc}
 }
 
-func (c *taskHandlerServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
+func (c *taskHandlerServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateChunk], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateResponse)
-	err := c.cc.Invoke(ctx, TaskHandlerService_Create_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[0], TaskHandlerService_Create_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[CreateRequest, CreateChunk]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TaskHandlerService_CreateClient = grpc.ServerStreamingClient[CreateChunk]
 
 func (c *taskHandlerServiceClient) CreateWorkInfo(ctx context.Context, in *CreateWorkInfoRequest, opts ...grpc.CallOption) (*WorkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -211,7 +220,7 @@ func (c *taskHandlerServiceClient) CreateWorkInfo(ctx context.Context, in *Creat
 
 func (c *taskHandlerServiceClient) Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChunk], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[0], TaskHandlerService_Start_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[1], TaskHandlerService_Start_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +269,7 @@ func (c *taskHandlerServiceClient) Stop(ctx context.Context, in *TaskResParamMes
 
 func (c *taskHandlerServiceClient) Resume(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChunk], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[1], TaskHandlerService_Resume_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[2], TaskHandlerService_Resume_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +290,7 @@ type TaskHandlerService_ResumeClient = grpc.ServerStreamingClient[StreamChunk]
 // All implementations must embed UnimplementedTaskHandlerServiceServer
 // for forward compatibility.
 type TaskHandlerServiceServer interface {
-	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	Create(*CreateRequest, grpc.ServerStreamingServer[CreateChunk]) error
 	CreateWorkInfo(context.Context, *CreateWorkInfoRequest) (*WorkResponse, error)
 	Start(*StartRequest, grpc.ServerStreamingServer[StreamChunk]) error
 	Retry(context.Context, *RetryRequest) (*WorkResponse, error)
@@ -298,8 +307,8 @@ type TaskHandlerServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedTaskHandlerServiceServer struct{}
 
-func (UnimplementedTaskHandlerServiceServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method Create not implemented")
+func (UnimplementedTaskHandlerServiceServer) Create(*CreateRequest, grpc.ServerStreamingServer[CreateChunk]) error {
+	return status.Error(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedTaskHandlerServiceServer) CreateWorkInfo(context.Context, *CreateWorkInfoRequest) (*WorkResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateWorkInfo not implemented")
@@ -340,23 +349,16 @@ func RegisterTaskHandlerServiceServer(s grpc.ServiceRegistrar, srv TaskHandlerSe
 	s.RegisterService(&TaskHandlerService_ServiceDesc, srv)
 }
 
-func _TaskHandlerService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _TaskHandlerService_Create_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CreateRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(TaskHandlerServiceServer).Create(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TaskHandlerService_Create_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskHandlerServiceServer).Create(ctx, req.(*CreateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(TaskHandlerServiceServer).Create(m, &grpc.GenericServerStream[CreateRequest, CreateChunk]{ServerStream: stream})
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TaskHandlerService_CreateServer = grpc.ServerStreamingServer[CreateChunk]
 
 func _TaskHandlerService_CreateWorkInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateWorkInfoRequest)
@@ -460,10 +462,6 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TaskHandlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Create",
-			Handler:    _TaskHandlerService_Create_Handler,
-		},
-		{
 			MethodName: "CreateWorkInfo",
 			Handler:    _TaskHandlerService_CreateWorkInfo_Handler,
 		},
@@ -482,6 +480,11 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
+			StreamName:    "Create",
+			Handler:       _TaskHandlerService_Create_Handler,
+			ServerStreams: true,
+		},
+		{
 			StreamName:    "Start",
 			Handler:       _TaskHandlerService_Start_Handler,
 			ServerStreams: true,
@@ -492,7 +495,7 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -632,7 +635,7 @@ var SiteBrowserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -651,6 +654,9 @@ const (
 	HostService_CreateTask_FullMethodName                = "/plugins.HostService/CreateTask"
 	HostService_GetPluginRoot_FullMethodName             = "/plugins.HostService/GetPluginRoot"
 	HostService_Log_FullMethodName                       = "/plugins.HostService/Log"
+	HostService_PublishToFrontend_FullMethodName         = "/plugins.HostService/PublishToFrontend"
+	HostService_SubscribeFrontend_FullMethodName         = "/plugins.HostService/SubscribeFrontend"
+	HostService_UnsubscribeFrontend_FullMethodName       = "/plugins.HostService/UnsubscribeFrontend"
 )
 
 // HostServiceClient is the client API for HostService service.
@@ -679,6 +685,10 @@ type HostServiceClient interface {
 	GetPluginRoot(ctx context.Context, in *GetPluginRootRequest, opts ...grpc.CallOption) (*GetPluginRootResponse, error)
 	// 日志
 	Log(ctx context.Context, in *LogRequest, opts ...grpc.CallOption) (*Empty, error)
+	// 前后端通信
+	PublishToFrontend(ctx context.Context, in *PublishToFrontendRequest, opts ...grpc.CallOption) (*Empty, error)
+	SubscribeFrontend(ctx context.Context, in *SubscribeFrontendRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FrontendMessage], error)
+	UnsubscribeFrontend(ctx context.Context, in *UnsubscribeFrontendRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type hostServiceClient struct {
@@ -839,6 +849,45 @@ func (c *hostServiceClient) Log(ctx context.Context, in *LogRequest, opts ...grp
 	return out, nil
 }
 
+func (c *hostServiceClient) PublishToFrontend(ctx context.Context, in *PublishToFrontendRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, HostService_PublishToFrontend_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) SubscribeFrontend(ctx context.Context, in *SubscribeFrontendRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FrontendMessage], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[0], HostService_SubscribeFrontend_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[SubscribeFrontendRequest, FrontendMessage]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type HostService_SubscribeFrontendClient = grpc.ServerStreamingClient[FrontendMessage]
+
+func (c *hostServiceClient) UnsubscribeFrontend(ctx context.Context, in *UnsubscribeFrontendRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, HostService_UnsubscribeFrontend_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HostServiceServer is the server API for HostService service.
 // All implementations must embed UnimplementedHostServiceServer
 // for forward compatibility.
@@ -865,6 +914,10 @@ type HostServiceServer interface {
 	GetPluginRoot(context.Context, *GetPluginRootRequest) (*GetPluginRootResponse, error)
 	// 日志
 	Log(context.Context, *LogRequest) (*Empty, error)
+	// 前后端通信
+	PublishToFrontend(context.Context, *PublishToFrontendRequest) (*Empty, error)
+	SubscribeFrontend(*SubscribeFrontendRequest, grpc.ServerStreamingServer[FrontendMessage]) error
+	UnsubscribeFrontend(context.Context, *UnsubscribeFrontendRequest) (*Empty, error)
 	mustEmbedUnimplementedHostServiceServer()
 }
 
@@ -919,6 +972,15 @@ func (UnimplementedHostServiceServer) GetPluginRoot(context.Context, *GetPluginR
 }
 func (UnimplementedHostServiceServer) Log(context.Context, *LogRequest) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method Log not implemented")
+}
+func (UnimplementedHostServiceServer) PublishToFrontend(context.Context, *PublishToFrontendRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method PublishToFrontend not implemented")
+}
+func (UnimplementedHostServiceServer) SubscribeFrontend(*SubscribeFrontendRequest, grpc.ServerStreamingServer[FrontendMessage]) error {
+	return status.Error(codes.Unimplemented, "method SubscribeFrontend not implemented")
+}
+func (UnimplementedHostServiceServer) UnsubscribeFrontend(context.Context, *UnsubscribeFrontendRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method UnsubscribeFrontend not implemented")
 }
 func (UnimplementedHostServiceServer) mustEmbedUnimplementedHostServiceServer() {}
 func (UnimplementedHostServiceServer) testEmbeddedByValue()                     {}
@@ -1211,6 +1273,53 @@ func _HostService_Log_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_PublishToFrontend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PublishToFrontendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).PublishToFrontend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_PublishToFrontend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).PublishToFrontend(ctx, req.(*PublishToFrontendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_SubscribeFrontend_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SubscribeFrontendRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(HostServiceServer).SubscribeFrontend(m, &grpc.GenericServerStream[SubscribeFrontendRequest, FrontendMessage]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type HostService_SubscribeFrontendServer = grpc.ServerStreamingServer[FrontendMessage]
+
+func _HostService_UnsubscribeFrontend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnsubscribeFrontendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).UnsubscribeFrontend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_UnsubscribeFrontend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).UnsubscribeFrontend(ctx, req.(*UnsubscribeFrontendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HostService_ServiceDesc is the grpc.ServiceDesc for HostService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1278,7 +1387,21 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Log",
 			Handler:    _HostService_Log_Handler,
 		},
+		{
+			MethodName: "PublishToFrontend",
+			Handler:    _HostService_PublishToFrontend_Handler,
+		},
+		{
+			MethodName: "UnsubscribeFrontend",
+			Handler:    _HostService_UnsubscribeFrontend_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/plugin.proto",
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SubscribeFrontend",
+			Handler:       _HostService_SubscribeFrontend_Handler,
+			ServerStreams: true,
+		},
+	},
+	Metadata: "plugin.proto",
 }

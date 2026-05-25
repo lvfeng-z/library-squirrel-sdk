@@ -7,8 +7,8 @@ import "io"
 type TaskHandler interface {
 	// Create 创建任务
 	// url: 需解析的url
-	// 返回任务信息列表或错误
-	Create(url string) ([]*TaskCreateResponse, error)
+	// 返回 TaskCreateResult（批量或流式）或错误
+	Create(url string) (*TaskCreateResult, error)
 	// CreateWorkInfo 生成作品信息
 	// task: 需处理的任务
 	// 返回作品信息或错误

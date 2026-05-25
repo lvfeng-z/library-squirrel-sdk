@@ -146,17 +146,46 @@ type taskHandlerServer struct {
 	handler TaskHandler
 }
 
-func (s *taskHandlerServer) Create(ctx context.Context, req *gen.CreateRequest) (*gen.CreateResponse, error) {
-	responses, err := s.handler.Create(req.Url)
+func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
+	result, err := s.handler.Create(req.Url)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "create failed: %v", err)
+		return status.Errorf(codes.Internal, "create failed: %v", err)
 	}
 
-	pbResponses := make([]*gen.TaskCreateResponse, len(responses))
-	for i, r := range responses {
-		pbResponses[i] = taskCreateResponseToProto(r)
+	// 发送模式标记
+	if err := stream.Send(&gen.CreateChunk{
+		Payload: &gen.CreateChunk_Mode{
+			Mode: &gen.CreateMode{IsStream: result.IsStream()},
+		},
+	}); err != nil {
+		return err
 	}
-	return &gen.CreateResponse{Responses: pbResponses}, nil
+
+	if result.IsStream() {
+		// 流式模式：从 channel 逐条发送
+		for resp := range result.Stream() {
+			if err := stream.Send(&gen.CreateChunk{
+				Payload: &gen.CreateChunk_Task{
+					Task: taskCreateResponseToProto(resp),
+				},
+			}); err != nil {
+				return err
+			}
+		}
+	} else {
+		// 批量模式：遍历数组逐条发送
+		for _, resp := range result.Array() {
+			if err := stream.Send(&gen.CreateChunk{
+				Payload: &gen.CreateChunk_Task{
+					Task: taskCreateResponseToProto(resp),
+				},
+			}); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *taskHandlerServer) CreateWorkInfo(ctx context.Context, req *gen.CreateWorkInfoRequest) (*gen.WorkResponse, error) {

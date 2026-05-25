@@ -2,6 +2,7 @@ package pluginsdk
 
 import (
 	"context"
+	"io"
 
 	"google.golang.org/grpc"
 
@@ -13,13 +14,15 @@ type PluginContextClient struct {
 	hostClient     gen.HostServiceClient
 	logger         Logger
 	mainWindowHWND uintptr
+	subCancelFuncs map[string]context.CancelFunc // topic -> cancel
 }
 
 // NewPluginContextClient 创建基于 gRPC 的 PluginContext 客户端
 func NewPluginContextClient(conn *grpc.ClientConn) *PluginContextClient {
 	return &PluginContextClient{
-		hostClient: gen.NewHostServiceClient(conn),
-		logger:     NewGRPCLogger(gen.NewHostServiceClient(conn)),
+		hostClient:     gen.NewHostServiceClient(conn),
+		logger:         NewGRPCLogger(gen.NewHostServiceClient(conn)),
+		subCancelFuncs: make(map[string]context.CancelFunc),
 	}
 }
 
@@ -129,12 +132,12 @@ func (c *PluginContextClient) UnregisterUrlListener() error {
 	return err
 }
 
-func (c *PluginContextClient) CreateTask(url string) (*TaskCreateResult, error) {
+func (c *PluginContextClient) CreateTask(url string) (*CreateTaskResult, error) {
 	resp, err := c.hostClient.CreateTask(context.Background(), &gen.CreateTaskRequest{Url: url})
 	if err != nil {
 		return nil, err
 	}
-	return &TaskCreateResult{
+	return &CreateTaskResult{
 		Succeed:       resp.Succeed,
 		AddedQuantity: int(resp.AddedQuantity),
 		Msg:           resp.Msg,
@@ -160,6 +163,50 @@ func (c *PluginContextClient) Debugf(template string, args ...any)  { c.logger.D
 func (c *PluginContextClient) Warnf(template string, args ...any)   { c.logger.Warnf(template, args...) }
 func (c *PluginContextClient) Errorf(template string, args ...any)  { c.logger.Errorf(template, args...) }
 func (c *PluginContextClient) GetLogger() Logger { return c.logger }
+
+func (c *PluginContextClient) PublishToFrontend(topic string, data []byte) error {
+	_, err := c.hostClient.PublishToFrontend(context.Background(), &gen.PublishToFrontendRequest{
+		Topic: topic,
+		Data:  data,
+	})
+	return err
+}
+
+func (c *PluginContextClient) SubscribeFrontend(topic string) (<-chan []byte, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	stream, err := c.hostClient.SubscribeFrontend(ctx, &gen.SubscribeFrontendRequest{Topic: topic})
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+	c.subCancelFuncs[topic] = cancel
+
+	ch := make(chan []byte, 16)
+	go func() {
+		defer close(ch)
+		for {
+			msg, err := stream.Recv()
+			if err == io.EOF || err != nil {
+				return
+			}
+			select {
+			case ch <- msg.Data:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	return ch, nil
+}
+
+func (c *PluginContextClient) UnsubscribeFrontend(topic string) error {
+	if cancel, ok := c.subCancelFuncs[topic]; ok {
+		cancel()
+		delete(c.subCancelFuncs, topic)
+	}
+	_, err := c.hostClient.UnsubscribeFrontend(context.Background(), &gen.UnsubscribeFrontendRequest{Topic: topic})
+	return err
+}
 
 // protoToWorkSet 将 proto WorkSet 转换为 SDK WorkSet
 func protoToWorkSet(pb *gen.WorkSet) *WorkSet {
