@@ -5,7 +5,7 @@ type Task struct {
 	ID                    int64   `json:"id"`
 	CreateTime            int64   `json:"createTime"`
 	UpdateTime            int64   `json:"updateTime"`
-	IsCollection          *int64  `json:"isCollection"`
+	HasChild              *bool   `json:"hasChild"`
 	Pid                   *int64  `json:"pid"`
 	TaskName              *string `json:"taskName"`
 	SiteID                *int64  `json:"siteId"`
@@ -13,7 +13,7 @@ type Task struct {
 	URL                   *string `json:"url"`
 	Status                int     `json:"status"`
 	PendingResourceID     *int64  `json:"pendingResourceId"`
-	Continuable           *int64  `json:"continuable"`
+	Continuable           *bool   `json:"continuable"`
 	PluginPublicID        *string `json:"pluginPublicId"`
 	PluginContributionID  *string `json:"pluginContributionId"`
 	PluginData            *string `json:"pluginData"`

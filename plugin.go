@@ -454,7 +454,7 @@ func protoToTask(pb *gen.Task) *Task {
 		ID:                   pb.Id,
 		CreateTime:           pb.CreateTime,
 		UpdateTime:           pb.UpdateTime,
-		IsCollection:         pb.IsCollection,
+		HasChild:             pb.HasChild,
 		Pid:                  pb.Pid,
 		TaskName:             pb.TaskName,
 		SiteID:               pb.SiteId,

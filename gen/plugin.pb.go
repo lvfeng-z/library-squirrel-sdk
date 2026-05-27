@@ -62,7 +62,7 @@ type Task struct {
 	Id                   int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	CreateTime           int64                  `protobuf:"varint,2,opt,name=createTime,proto3" json:"createTime,omitempty"`
 	UpdateTime           int64                  `protobuf:"varint,3,opt,name=updateTime,proto3" json:"updateTime,omitempty"`
-	IsCollection         *int64                 `protobuf:"varint,4,opt,name=isCollection,proto3,oneof" json:"isCollection,omitempty"`
+	HasChild             *bool                  `protobuf:"varint,4,opt,name=hasChild,proto3,oneof" json:"hasChild,omitempty"`
 	Pid                  *int64                 `protobuf:"varint,5,opt,name=pid,proto3,oneof" json:"pid,omitempty"`
 	TaskName             *string                `protobuf:"bytes,6,opt,name=taskName,proto3,oneof" json:"taskName,omitempty"`
 	SiteId               *int64                 `protobuf:"varint,7,opt,name=siteId,proto3,oneof" json:"siteId,omitempty"`
@@ -70,7 +70,7 @@ type Task struct {
 	Url                  *string                `protobuf:"bytes,9,opt,name=url,proto3,oneof" json:"url,omitempty"`
 	Status               int32                  `protobuf:"varint,10,opt,name=status,proto3" json:"status,omitempty"`
 	PendingResourceId    *int64                 `protobuf:"varint,11,opt,name=pendingResourceId,proto3,oneof" json:"pendingResourceId,omitempty"`
-	Continuable          *int64                 `protobuf:"varint,12,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
+	Continuable          *bool                  `protobuf:"varint,12,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
 	PluginPublicId       *string                `protobuf:"bytes,13,opt,name=pluginPublicId,proto3,oneof" json:"pluginPublicId,omitempty"`
 	PluginContributionId *string                `protobuf:"bytes,14,opt,name=pluginContributionId,proto3,oneof" json:"pluginContributionId,omitempty"`
 	PluginData           *string                `protobuf:"bytes,15,opt,name=pluginData,proto3,oneof" json:"pluginData,omitempty"`
@@ -130,11 +130,11 @@ func (x *Task) GetUpdateTime() int64 {
 	return 0
 }
 
-func (x *Task) GetIsCollection() int64 {
-	if x != nil && x.IsCollection != nil {
-		return *x.IsCollection
+func (x *Task) GetHasChild() bool {
+	if x != nil && x.HasChild != nil {
+		return *x.HasChild
 	}
-	return 0
+	return false
 }
 
 func (x *Task) GetPid() int64 {
@@ -186,11 +186,11 @@ func (x *Task) GetPendingResourceId() int64 {
 	return 0
 }
 
-func (x *Task) GetContinuable() int64 {
+func (x *Task) GetContinuable() bool {
 	if x != nil && x.Continuable != nil {
 		return *x.Continuable
 	}
-	return 0
+	return false
 }
 
 func (x *Task) GetPluginPublicId() string {
@@ -3152,7 +3152,7 @@ var File_plugin_proto protoreflect.FileDescriptor
 const file_plugin_proto_rawDesc = "" +
 	"\n" +
 	"\fplugin.proto\x12\aplugins\"\a\n" +
-	"\x05Empty\"\xf0\x05\n" +
+	"\x05Empty\"\xe4\x05\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1e\n" +
 	"\n" +
@@ -3160,8 +3160,8 @@ const file_plugin_proto_rawDesc = "" +
 	"createTime\x12\x1e\n" +
 	"\n" +
 	"updateTime\x18\x03 \x01(\x03R\n" +
-	"updateTime\x12'\n" +
-	"\fisCollection\x18\x04 \x01(\x03H\x00R\fisCollection\x88\x01\x01\x12\x15\n" +
+	"updateTime\x12\x1f\n" +
+	"\bhasChild\x18\x04 \x01(\bH\x00R\bhasChild\x88\x01\x01\x12\x15\n" +
 	"\x03pid\x18\x05 \x01(\x03H\x01R\x03pid\x88\x01\x01\x12\x1f\n" +
 	"\btaskName\x18\x06 \x01(\tH\x02R\btaskName\x88\x01\x01\x12\x1b\n" +
 	"\x06siteId\x18\a \x01(\x03H\x03R\x06siteId\x88\x01\x01\x12#\n" +
@@ -3172,15 +3172,15 @@ const file_plugin_proto_rawDesc = "" +
 	"\x06status\x18\n" +
 	" \x01(\x05R\x06status\x121\n" +
 	"\x11pendingResourceId\x18\v \x01(\x03H\x06R\x11pendingResourceId\x88\x01\x01\x12%\n" +
-	"\vcontinuable\x18\f \x01(\x03H\aR\vcontinuable\x88\x01\x01\x12+\n" +
+	"\vcontinuable\x18\f \x01(\bH\aR\vcontinuable\x88\x01\x01\x12+\n" +
 	"\x0epluginPublicId\x18\r \x01(\tH\bR\x0epluginPublicId\x88\x01\x01\x127\n" +
 	"\x14pluginContributionId\x18\x0e \x01(\tH\tR\x14pluginContributionId\x88\x01\x01\x12#\n" +
 	"\n" +
 	"pluginData\x18\x0f \x01(\tH\n" +
 	"R\n" +
 	"pluginData\x88\x01\x01\x12'\n" +
-	"\ferrorMessage\x18\x10 \x01(\tH\vR\ferrorMessage\x88\x01\x01B\x0f\n" +
-	"\r_isCollectionB\x06\n" +
+	"\ferrorMessage\x18\x10 \x01(\tH\vR\ferrorMessage\x88\x01\x01B\v\n" +
+	"\t_hasChildB\x06\n" +
 	"\x04_pidB\v\n" +
 	"\t_taskNameB\t\n" +
 	"\a_siteIdB\r\n" +

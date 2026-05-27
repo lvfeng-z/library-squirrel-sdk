@@ -12,7 +12,7 @@ message Task {
   int64 id = 1;
   int64 createTime = 2;
   int64 updateTime = 3;
-  optional int64 isCollection = 4;
+  optional bool hasChild = 4;
   optional int64 pid = 5;
   optional string taskName = 6;
   optional int64 siteId = 7;
@@ -20,7 +20,7 @@ message Task {
   optional string url = 9;
   int32 status = 10;
   optional int64 pendingResourceId = 11;
-  optional int64 continuable = 12;
+  optional bool continuable = 12;
   optional string pluginPublicId = 13;
   optional string pluginContributionId = 14;
   optional string pluginData = 15;
