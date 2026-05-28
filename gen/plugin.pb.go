@@ -1035,6 +1035,7 @@ type TaskResourceDTO struct {
 	RemotePath    string                 `protobuf:"bytes,6,opt,name=remotePath,proto3" json:"remotePath,omitempty"`
 	Size          int64                  `protobuf:"varint,7,opt,name=size,proto3" json:"size,omitempty"`
 	Completeness  int32                  `protobuf:"varint,8,opt,name=completeness,proto3" json:"completeness,omitempty"`
+	SuggestName   string                 `protobuf:"bytes,9,opt,name=suggestName,proto3" json:"suggestName,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1123,6 +1124,13 @@ func (x *TaskResourceDTO) GetCompleteness() int32 {
 		return x.Completeness
 	}
 	return 0
+}
+
+func (x *TaskResourceDTO) GetSuggestName() string {
+	if x != nil {
+		return x.SuggestName
+	}
+	return ""
 }
 
 type TaskCreateChildResponse struct {
@@ -3327,7 +3335,7 @@ const file_plugin_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\"X\n" +
 	"\x0eTaskWorkSetDTO\x12$\n" +
 	"\rsiteWorkSetId\x18\x01 \x01(\tR\rsiteWorkSetId\x12 \n" +
-	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\"\xe5\x01\n" +
+	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\"\x87\x02\n" +
 	"\x0fTaskResourceDTO\x12\x1e\n" +
 	"\n" +
 	"resourceId\x18\x01 \x01(\x03R\n" +
@@ -3340,7 +3348,8 @@ const file_plugin_proto_rawDesc = "" +
 	"remotePath\x18\x06 \x01(\tR\n" +
 	"remotePath\x12\x12\n" +
 	"\x04size\x18\a \x01(\x03R\x04size\x12\"\n" +
-	"\fcompleteness\x18\b \x01(\x05R\fcompleteness\"\xa3\x01\n" +
+	"\fcompleteness\x18\b \x01(\x05R\fcompleteness\x12 \n" +
+	"\vsuggestName\x18\t \x01(\tR\vsuggestName\"\xa3\x01\n" +
 	"\x17TaskCreateChildResponse\x12\x1a\n" +
 	"\btaskName\x18\x01 \x01(\tR\btaskName\x12\x1e\n" +
 	"\n" +

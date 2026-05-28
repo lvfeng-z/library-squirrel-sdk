@@ -5,9 +5,9 @@ package window
 import (
 	"fmt"
 
-	pluginsdk "github.com/lvfeng-z/library-squirrel-plugin-sdk"
+	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
 )
 
-func openWindow(options pluginsdk.WindowOptions, ownerHWND uintptr) (pluginsdk.WindowHandle, error) {
+func openWindow(options dto.WindowOptions, ownerHWND uintptr) (dto.WindowHandle, error) {
 	return nil, fmt.Errorf("popup windows not supported on this platform")
 }

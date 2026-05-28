@@ -16,7 +16,7 @@ import (
 
 	"golang.org/x/sys/windows"
 
-	pluginsdk "github.com/lvfeng-z/library-squirrel-plugin-sdk"
+	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
 	"github.com/wailsapp/go-webview2/pkg/edge"
 )
 
@@ -86,7 +86,7 @@ var (
 // ========== popupWindow ==========
 
 type popupWindow struct {
-	options   pluginsdk.WindowOptions
+	options   dto.WindowOptions
 	ownerHWND uintptr
 	hwnd      uintptr
 	chromium  *edge.Chromium
@@ -337,7 +337,7 @@ func getChromiumWebview(c *edge.Chromium) *edge.ICoreWebView2 {
 
 // ========== 公共入口 ==========
 
-func openWindow(options pluginsdk.WindowOptions, ownerHWND uintptr) (pluginsdk.WindowHandle, error) {
+func openWindow(options dto.WindowOptions, ownerHWND uintptr) (dto.WindowHandle, error) {
 	pw := &popupWindow{
 		options:     options,
 		ownerHWND:   ownerHWND,

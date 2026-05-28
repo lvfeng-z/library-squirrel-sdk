@@ -123,6 +123,7 @@ message TaskResourceDTO {
   string remotePath = 6;
   int64 size = 7;
   int32 completeness = 8;
+  string suggestName = 9;
 }
 
 message TaskCreateChildResponse {

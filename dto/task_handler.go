@@ -1,4 +1,4 @@
-package pluginsdk
+package dto
 
 import "io"
 
@@ -12,16 +12,16 @@ type TaskHandler interface {
 	// CreateWorkInfo 生成作品信息
 	// task: 需处理的任务
 	// 返回作品信息或错误
-	CreateWorkInfo(task *Task) (*WorkResponse, error)
+	CreateWorkInfo(task *TaskDTO) (*WorkResponse, error)
 	// Start 开始任务
 	// task: 需开始的任务
 	// 返回资源读取器（io.ReadCloser）、WorkResponse 或错误
 	// 调用方负责关闭返回的 ReadCloser
-	Start(task *Task) (io.ReadCloser, *WorkResponse, error)
+	Start(task *TaskDTO) (io.ReadCloser, *WorkResponse, error)
 	// Retry 重试任务
 	// task: 需要重试的任务
 	// 返回作品信息或错误
-	Retry(task *Task) (*WorkResponse, error)
+	Retry(task *TaskDTO) (*WorkResponse, error)
 	// Pause 暂停任务
 	// param: 暂停任务所需的参数
 	Pause(param *TaskResParam) error

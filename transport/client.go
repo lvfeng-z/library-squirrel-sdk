@@ -1,4 +1,4 @@
-package pluginsdk
+package transport
 
 import (
 	"context"
@@ -6,15 +6,16 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
 )
 
 // PluginContextClient 插件侧的 PluginContext 实现，通过 gRPC 调用主程序的 HostService
 type PluginContextClient struct {
-	hostClient     gen.HostServiceClient
-	logger         Logger
-	mainWindowHWND uintptr
-	subCancelFuncs map[string]context.CancelFunc // topic -> cancel
+	hostClient      gen.HostServiceClient
+	logger          dto.Logger
+	mainWindowHWND  uintptr
+	subCancelFuncs  map[string]context.CancelFunc
 }
 
 // NewPluginContextClient 创建基于 gRPC 的 PluginContext 客户端
@@ -26,7 +27,12 @@ func NewPluginContextClient(conn *grpc.ClientConn) *PluginContextClient {
 	}
 }
 
-func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, handler TaskHandler) error {
+// SetMainWindowHandle 设置主窗口句柄
+func (c *PluginContextClient) SetMainWindowHandle(hwnd uintptr) {
+	c.mainWindowHWND = hwnd
+}
+
+func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, handler dto.TaskHandler) error {
 	_, err := c.hostClient.RegisterTaskHandler(context.Background(), &gen.RegisterExtensionRequest{
 		ContributionId: id,
 		Name:           name,
@@ -35,7 +41,7 @@ func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, 
 	return err
 }
 
-func (c *PluginContextClient) RegisterSiteBrowser(id, name, description string, browser SiteBrowser) error {
+func (c *PluginContextClient) RegisterSiteBrowser(id, name, description string, browser dto.SiteBrowser) error {
 	_, err := c.hostClient.RegisterSiteBrowser(context.Background(), &gen.RegisterExtensionRequest{
 		ContributionId: id,
 		Name:           name,
@@ -92,7 +98,7 @@ func (c *PluginContextClient) RemoveEncryptedValue(storageKey string) error {
 	return err
 }
 
-func (c *PluginContextClient) GetWorkSetBySiteWorkSetId(siteWorkSetId, siteName string) (*WorkSet, error) {
+func (c *PluginContextClient) GetWorkSetBySiteWorkSetId(siteWorkSetId, siteName string) (*dto.WorkSetDTO, error) {
 	resp, err := c.hostClient.GetWorkSetBySiteWorkSetId(context.Background(), &gen.WorkSetQueryRequest{
 		SiteWorkSetId: siteWorkSetId,
 		SiteName:      siteName,
@@ -103,7 +109,7 @@ func (c *PluginContextClient) GetWorkSetBySiteWorkSetId(siteWorkSetId, siteName 
 	return protoToWorkSet(resp.WorkSet), nil
 }
 
-func (c *PluginContextClient) AddSite(sites []*Site) error {
+func (c *PluginContextClient) AddSite(sites []*dto.SiteDTO) error {
 	pbSites := make([]*gen.Site, len(sites))
 	for i, s := range sites {
 		pbSites[i] = &gen.Site{
@@ -132,12 +138,12 @@ func (c *PluginContextClient) UnregisterUrlListener() error {
 	return err
 }
 
-func (c *PluginContextClient) CreateTask(url string) (*CreateTaskResult, error) {
+func (c *PluginContextClient) CreateTask(url string) (*dto.CreateTaskResult, error) {
 	resp, err := c.hostClient.CreateTask(context.Background(), &gen.CreateTaskRequest{Url: url})
 	if err != nil {
 		return nil, err
 	}
-	return &CreateTaskResult{
+	return &dto.CreateTaskResult{
 		Succeed:       resp.Succeed,
 		AddedQuantity: int(resp.AddedQuantity),
 		Msg:           resp.Msg,
@@ -162,7 +168,7 @@ func (c *PluginContextClient) Infof(template string, args ...any)   { c.logger.I
 func (c *PluginContextClient) Debugf(template string, args ...any)  { c.logger.Debugf(template, args...) }
 func (c *PluginContextClient) Warnf(template string, args ...any)   { c.logger.Warnf(template, args...) }
 func (c *PluginContextClient) Errorf(template string, args ...any)  { c.logger.Errorf(template, args...) }
-func (c *PluginContextClient) GetLogger() Logger { return c.logger }
+func (c *PluginContextClient) GetLogger() dto.Logger { return c.logger }
 
 func (c *PluginContextClient) PublishToFrontend(topic string, data []byte) error {
 	_, err := c.hostClient.PublishToFrontend(context.Background(), &gen.PublishToFrontendRequest{
@@ -208,12 +214,12 @@ func (c *PluginContextClient) UnsubscribeFrontend(topic string) error {
 	return err
 }
 
-// protoToWorkSet 将 proto WorkSet 转换为 SDK WorkSet
-func protoToWorkSet(pb *gen.WorkSet) *WorkSet {
+// protoToWorkSet 将 proto WorkSet 转换为 WorkSetDTO
+func protoToWorkSet(pb *gen.WorkSet) *dto.WorkSetDTO {
 	if pb == nil {
 		return nil
 	}
-	return &WorkSet{
+	return &dto.WorkSetDTO{
 		ID:                     pb.Id,
 		CreateTime:             pb.CreateTime,
 		UpdateTime:             pb.UpdateTime,

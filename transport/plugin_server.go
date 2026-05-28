@@ -1,8 +1,7 @@
-package pluginsdk
+package transport
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/hashicorp/go-plugin"
@@ -10,126 +9,26 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
 )
-
-// Handshake 握手配置，主程序和插件必须使用相同的值
-var Handshake = plugin.HandshakeConfig{
-	ProtocolVersion:  1,
-	MagicCookieKey:   "LIBRARY_SQUIRREL_PLUGIN",
-	MagicCookieValue: "d9a7f2b1e5c3846021de7baf0953c8e7",
-}
-
-// PluginMap 插件类型映射
-var PluginMap = map[string]plugin.Plugin{
-	"library_squirrel": &LSPlugin{},
-}
-
-// ServeOption 配置插件启动选项
-type ServeOption func(*serveConfig)
-
-type serveConfig struct {
-	browser    SiteBrowser
-	onActivate func(PluginContext)
-}
-
-// WithBrowser 注册 SiteBrowser 扩展点
-func WithBrowser(browser SiteBrowser) ServeOption {
-	return func(c *serveConfig) { c.browser = browser }
-}
-
-// WithActivate 设置 Activate 回调（在此回调中注册扩展点和 URL 监听器）
-func WithActivate(fn func(PluginContext)) ServeOption {
-	return func(c *serveConfig) { c.onActivate = fn }
-}
-
-// Serve 启动插件进程，由插件开发者调用
-func Serve(handler TaskHandler, opts ...ServeOption) {
-	cfg := &serveConfig{}
-	for _, o := range opts {
-		o(cfg)
-	}
-
-	lsPlugin := &LSPlugin{
-		handler:    handler,
-		browser:    cfg.browser,
-		onActivate: cfg.onActivate,
-	}
-
-	plugin.Serve(&plugin.ServeConfig{
-		HandshakeConfig: Handshake,
-		Plugins: map[string]plugin.Plugin{
-			"library_squirrel": lsPlugin,
-		},
-		GRPCServer: plugin.DefaultGRPCServer,
-	})
-}
-
-// LSPlugin 实现 hashicorp/go-plugin 的 GRPCPlugin 接口
-type LSPlugin struct {
-	plugin.NetRPCUnsupportedPlugin
-	handler    TaskHandler
-	browser    SiteBrowser
-	onActivate func(PluginContext)
-
-	// HostDeps 主程序侧注入的依赖，用于 GRPCClient 在主程序侧注册 HostService
-	HostDeps *HostDeps
-}
-
-func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
-	gen.RegisterPluginLifecycleServer(s, &lifecycleServer{
-		onActivate: p.onActivate,
-		broker:     broker,
-	})
-	gen.RegisterTaskHandlerServiceServer(s, &taskHandlerServer{
-		handler: p.handler,
-	})
-	if p.browser != nil {
-		gen.RegisterSiteBrowserServiceServer(s, &siteBrowserServer{
-			browser: p.browser,
-		})
-	}
-	return nil
-}
-
-func (p *LSPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
-	// 主程序侧：在 GRPCBroker 上注册 HostService，供插件回调
-	var hostServiceId uint32
-	if p.HostDeps != nil {
-		deps := *p.HostDeps
-		hostServiceId = broker.NextId()
-		go broker.AcceptAndServe(hostServiceId, func(opts []grpc.ServerOption) *grpc.Server {
-			s := grpc.NewServer(opts...)
-			RegisterHostService(s, deps)
-			return s
-		})
-	}
-
-	return &GRPCPluginClient{
-		Lifecycle:     gen.NewPluginLifecycleClient(c),
-		Task:          gen.NewTaskHandlerServiceClient(c),
-		Browser:       gen.NewSiteBrowserServiceClient(c),
-		HostServiceId: hostServiceId,
-	}, nil
-}
 
 // ========== PluginLifecycleServer ==========
 
 type lifecycleServer struct {
 	gen.UnimplementedPluginLifecycleServer
-	onActivate func(PluginContext)
+	onActivate func(pluginCtx dto.PluginContext)
 	broker     *plugin.GRPCBroker
 }
 
 func (s *lifecycleServer) Activate(ctx context.Context, req *gen.ActivateRequest) (*gen.ActivateResponse, error) {
-	// 通过 GRPCBroker 拨号回主程序的 HostService
 	if s.onActivate != nil && req.HostServiceId != 0 {
 		conn, err := s.broker.Dial(req.HostServiceId)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "dial host service: %v", err)
 		}
 		pluginCtx := NewPluginContextClient(conn)
-		pluginCtx.mainWindowHWND = uintptr(req.MainWindowHandle)
+		pluginCtx.SetMainWindowHandle(uintptr(req.MainWindowHandle))
 		s.onActivate(pluginCtx)
 	}
 	return &gen.ActivateResponse{}, nil
@@ -143,7 +42,7 @@ func (s *lifecycleServer) Shutdown(ctx context.Context, req *gen.Empty) (*gen.Em
 
 type taskHandlerServer struct {
 	gen.UnimplementedTaskHandlerServiceServer
-	handler TaskHandler
+	handler dto.TaskHandler
 }
 
 func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
@@ -152,7 +51,6 @@ func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStr
 		return status.Errorf(codes.Internal, "create failed: %v", err)
 	}
 
-	// 发送模式标记
 	if err := stream.Send(&gen.CreateChunk{
 		Payload: &gen.CreateChunk_Mode{
 			Mode: &gen.CreateMode{IsStream: result.IsStream()},
@@ -162,7 +60,6 @@ func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStr
 	}
 
 	if result.IsStream() {
-		// 流式模式：从 channel 逐条发送
 		for resp := range result.Stream() {
 			if err := stream.Send(&gen.CreateChunk{
 				Payload: &gen.CreateChunk_Task{
@@ -173,7 +70,6 @@ func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStr
 			}
 		}
 	} else {
-		// 批量模式：遍历数组逐条发送
 		for _, resp := range result.Array() {
 			if err := stream.Send(&gen.CreateChunk{
 				Payload: &gen.CreateChunk_Task{
@@ -286,7 +182,7 @@ func (s *taskHandlerServer) Resume(req *gen.TaskResParamMessage, stream gen.Task
 
 type siteBrowserServer struct {
 	gen.UnimplementedSiteBrowserServiceServer
-	browser SiteBrowser
+	browser dto.SiteBrowser
 }
 
 func (s *siteBrowserServer) Open(ctx context.Context, req *gen.BrowserRequest) (*gen.Empty, error) {
@@ -303,9 +199,9 @@ func (s *siteBrowserServer) Close(ctx context.Context, req *gen.BrowserRequest) 
 	return &gen.Empty{}, nil
 }
 
-// ========== 转换函数：SDK 类型 → Proto ==========
+// ========== 转换函数：DTO → Proto ==========
 
-func taskCreateResponseToProto(r *TaskCreateResponse) *gen.TaskCreateResponse {
+func taskCreateResponseToProto(r *dto.TaskCreateResponse) *gen.TaskCreateResponse {
 	pb := &gen.TaskCreateResponse{
 		PluginTaskId: r.PluginTaskID,
 		TaskName:     r.TaskName,
@@ -326,7 +222,7 @@ func taskCreateResponseToProto(r *TaskCreateResponse) *gen.TaskCreateResponse {
 	return pb
 }
 
-func workResponseToProto(r *WorkResponse) *gen.WorkResponse {
+func workResponseToProto(r *dto.WorkResponse) *gen.WorkResponse {
 	if r == nil {
 		return nil
 	}
@@ -375,12 +271,13 @@ func workResponseToProto(r *WorkResponse) *gen.WorkResponse {
 			RemotePath:   r.Resource.RemotePath,
 			Size:         r.Resource.Size,
 			Completeness: int32(r.Resource.Completeness),
+			SuggestName:  r.Resource.SuggestName,
 		}
 	}
 	return pb
 }
 
-func workToProto(w *Work) *gen.Work {
+func workToProto(w *dto.WorkDTO) *gen.Work {
 	if w == nil {
 		return nil
 	}
@@ -401,7 +298,7 @@ func workToProto(w *Work) *gen.Work {
 	}
 }
 
-func siteDTOToProto(s *SiteDTO) *gen.SiteDTO {
+func siteDTOToProto(s *dto.SiteDTO) *gen.SiteDTO {
 	if s == nil {
 		return nil
 	}
@@ -415,7 +312,7 @@ func siteDTOToProto(s *SiteDTO) *gen.SiteDTO {
 	}
 }
 
-func localAuthorDTOToProto(a *LocalAuthorDTO) *gen.LocalAuthorDTO {
+func localAuthorDTOToProto(a *dto.LocalAuthorDTO) *gen.LocalAuthorDTO {
 	if a == nil {
 		return nil
 	}
@@ -429,7 +326,7 @@ func localAuthorDTOToProto(a *LocalAuthorDTO) *gen.LocalAuthorDTO {
 	}
 }
 
-func localTagDTOToProto(t *LocalTagDTO) *gen.LocalTagDTO {
+func localTagDTOToProto(t *dto.LocalTagDTO) *gen.LocalTagDTO {
 	if t == nil {
 		return nil
 	}
@@ -444,13 +341,13 @@ func localTagDTOToProto(t *LocalTagDTO) *gen.LocalTagDTO {
 	}
 }
 
-// ========== 转换函数：Proto → SDK 类型 ==========
+// ========== 转换函数：Proto → DTO ==========
 
-func protoToTask(pb *gen.Task) *Task {
+func protoToTask(pb *gen.Task) *dto.TaskDTO {
 	if pb == nil {
 		return nil
 	}
-	return &Task{
+	return &dto.TaskDTO{
 		ID:                   pb.Id,
 		CreateTime:           pb.CreateTime,
 		UpdateTime:           pb.UpdateTime,
@@ -470,21 +367,13 @@ func protoToTask(pb *gen.Task) *Task {
 	}
 }
 
-func protoToTaskResParam(pb *gen.TaskResParam) *TaskResParam {
+func protoToTaskResParam(pb *gen.TaskResParam) *dto.TaskResParam {
 	if pb == nil {
 		return nil
 	}
-	return &TaskResParam{
+	return &dto.TaskResParam{
 		Task:         protoToTask(pb.Task),
 		ResourceID:   pb.ResourceId,
 		ResourcePath: pb.ResourcePath,
 	}
-}
-
-// FormatLogArgs 格式化日志参数（供 HostService 日志使用）
-func FormatLogArgs(template string, args ...any) string {
-	if len(args) == 0 {
-		return template
-	}
-	return fmt.Sprintf(template, args...)
 }

@@ -1,10 +1,10 @@
-package pluginsdk
+package dto
 
 // TaskResParam 任务和资源参数
 type TaskResParam struct {
-	Task         *Task   `json:"task"`
-	ResourceID   int64   `json:"resourceId"`
-	ResourcePath string  `json:"resourcePath"`
+	Task         *TaskDTO `json:"task"`
+	ResourceID   int64    `json:"resourceId"`
+	ResourcePath string   `json:"resourcePath"`
 }
 
 // TaskCreateResponse 任务创建响应
@@ -29,7 +29,7 @@ type TaskCreateChildResponse struct {
 
 // WorkResponse 作品响应
 type WorkResponse struct {
-	Work         *Work                `json:"work"`
+	Work         *WorkDTO             `json:"work"`
 	Site         *SiteDTO             `json:"site"`
 	LocalAuthors []*LocalAuthorDTO    `json:"localAuthors"`
 	LocalTags    []*LocalTagDTO       `json:"localTags"`
@@ -37,37 +37,6 @@ type WorkResponse struct {
 	SiteTags     []*TaskSiteTagDTO    `json:"siteTags"`
 	WorkSets     []*TaskWorkSetDTO    `json:"workSets"`
 	Resource     *TaskResourceDTO     `json:"resource"`
-}
-
-// SiteDTO 站点信息
-type SiteDTO struct {
-	ID              int64   `json:"id"`
-	SiteName        *string `json:"siteName"`
-	SiteDescription *string `json:"siteDescription"`
-	Homepage        *string `json:"homepage"`
-	CreateTime      int64   `json:"createTime"`
-	UpdateTime      int64   `json:"updateTime"`
-}
-
-// LocalAuthorDTO 本地作者
-type LocalAuthorDTO struct {
-	ID         int64   `json:"id"`
-	AuthorName *string `json:"authorName"`
-	Introduce  *string `json:"introduce"`
-	LastUse    *int64  `json:"lastUse"`
-	CreateTime int64   `json:"createTime"`
-	UpdateTime int64   `json:"updateTime"`
-}
-
-// LocalTagDTO 本地标签
-type LocalTagDTO struct {
-	ID             int64   `json:"id"`
-	LocalTagName   *string `json:"localTagName"`
-	BaseLocalTagID *int64  `json:"baseLocalTagId"`
-	Description    *string `json:"description"`
-	LastUse        *int64  `json:"lastUse"`
-	CreateTime     int64   `json:"createTime"`
-	UpdateTime     int64   `json:"updateTime"`
 }
 
 // TaskSiteAuthorDTO 任务处理器站点作者DTO
@@ -89,7 +58,7 @@ type TaskSiteTagDTO struct {
 // TaskWorkSetDTO 任务处理器作品集DTO
 type TaskWorkSetDTO struct {
 	SiteWorkSetID string `json:"siteWorkSetId"`
-	WorkSetName string `json:"workSetName"`
+	WorkSetName   string `json:"workSetName"`
 }
 
 // TaskResourceDTO 任务处理器资源DTO
@@ -102,4 +71,5 @@ type TaskResourceDTO struct {
 	RemotePath   string `json:"remotePath"`
 	Size         int64  `json:"size"`
 	Completeness int    `json:"completeness"`
+	SuggestName  string `json:"suggestName"`
 }

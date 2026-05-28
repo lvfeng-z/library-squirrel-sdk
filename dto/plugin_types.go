@@ -1,0 +1,153 @@
+package dto
+
+import "encoding/json"
+
+// InstallType 安装类型
+type InstallType int
+
+const (
+	InstallTypeManual InstallType = 0
+	InstallTypeAuto   InstallType = 1
+)
+
+// ActivationType 激活类型
+type ActivationType int
+
+const (
+	ActivationTypeManual  ActivationType = 0
+	ActivationTypeStartup ActivationType = 1
+)
+
+// PluginActivation 插件激活配置
+type PluginActivation struct {
+	Type ActivationType `json:"type"`
+}
+
+// PluginManifest 插件清单（从 plugin.json 解析）
+type PluginManifest struct {
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Version     string            `json:"version"`
+	Author      string            `json:"author"`
+	Description string            `json:"description,omitempty"`
+	Extensions  *PluginExtensions `json:"extensions"`
+	Activation  PluginActivation  `json:"activation"`
+	EntryFile   string            `json:"entryFile"`
+}
+
+// PluginInstallDTO 插件安装数据传输对象
+type PluginInstallDTO struct {
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Version     string            `json:"version"`
+	Author      string            `json:"author"`
+	Description string            `json:"description,omitempty"`
+	Extensions  *PluginExtensions `json:"extensions"`
+	Activation  PluginActivation  `json:"activation"`
+	EntryFile   string            `json:"entryFile"`
+	PackagePath string            `json:"packagePath,omitempty"`
+	PublicID    string            `json:"publicId,omitempty"`
+}
+
+// GetPublicID 获取插件公开ID（格式：作者/名称）
+func (p *PluginManifest) GetPublicID() string {
+	return p.Author + "/" + p.ID
+}
+
+// ToPluginInstallDTO 转换为安装DTO
+func (p *PluginManifest) ToPluginInstallDTO(packagePath string) *PluginInstallDTO {
+	return &PluginInstallDTO{
+		ID:          p.ID,
+		Name:        p.Name,
+		Version:     p.Version,
+		Author:      p.Author,
+		Description: p.Description,
+		Extensions:  p.Extensions,
+		Activation:  p.Activation,
+		EntryFile:   p.EntryFile,
+		PackagePath: packagePath,
+		PublicID:    p.GetPublicID(),
+	}
+}
+
+// NewPluginManifest 创建插件清单
+func NewPluginManifest() *PluginManifest {
+	return &PluginManifest{}
+}
+
+// PluginExtensions 插件扩展点集合
+type PluginExtensions struct {
+	TaskHandlers    []TaskHandlerDeclaration `json:"taskHandlers,omitempty"`
+	SiteBrowsers    []SiteBrowserDeclaration `json:"siteBrowsers,omitempty"`
+	Slots           []SlotDeclaration        `json:"slots,omitempty"`
+	StaticResources *StaticResourcesConfig   `json:"staticResources,omitempty"`
+}
+
+// TaskHandlerDeclaration 任务处理器声明
+type TaskHandlerDeclaration struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+// SiteBrowserDeclaration 站点浏览器声明
+type SiteBrowserDeclaration struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+// SlotDeclaration 插槽声明
+type SlotDeclaration struct {
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description,omitempty"`
+	SlotType    string          `json:"slotType"`
+	Order       int             `json:"order,omitempty"`
+	Content     json.RawMessage `json:"content"`
+}
+
+// EmbedSlotContent embed 类型插槽配置
+type EmbedSlotContent struct {
+	ContentType    string          `json:"contentType"`
+	Source         json.RawMessage `json:"source"`
+	Position       string          `json:"position"`
+	ContributionId string          `json:"contributionId,omitempty"`
+	Props          json.RawMessage `json:"props,omitempty"`
+}
+
+// PanelSlotContent panel 类型插槽配置
+type PanelSlotContent struct {
+	ContentType string          `json:"contentType"`
+	Source      json.RawMessage `json:"source"`
+	Position    string          `json:"position"`
+	Width       *int            `json:"width,omitempty"`
+	Height      *int            `json:"height,omitempty"`
+	Props       json.RawMessage `json:"props,omitempty"`
+}
+
+// ViewSlotContent view 类型插槽配置
+type ViewSlotContent struct {
+	ContentType string          `json:"contentType"`
+	Source      json.RawMessage `json:"source"`
+	Title       string          `json:"title,omitempty"`
+	Props       json.RawMessage `json:"props,omitempty"`
+}
+
+// MenuSlotContent menu 类型插槽配置
+type MenuSlotContent struct {
+	Icon     string           `json:"icon,omitempty"`
+	ViewId   string           `json:"viewId,omitempty"`
+	Children []SlotDeclaration `json:"children,omitempty"`
+}
+
+// SiteBrowserListSlotContent siteBrowserList 类型插槽配置
+type SiteBrowserListSlotContent struct {
+	Icon           string `json:"icon,omitempty"`
+	ContributionId string `json:"contributionId"`
+}
+
+// StaticResourcesConfig 静态资源配置
+type StaticResourcesConfig struct {
+	Directories []string `json:"directories"`
+}

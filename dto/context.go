@@ -1,4 +1,4 @@
-package pluginsdk
+package dto
 
 // PluginContext 插件上下文，主程序提供给插件的完整 API
 type PluginContext interface {
@@ -19,8 +19,8 @@ type PluginContext interface {
 	RemoveEncryptedValue(storageKey string) error
 
 	// 业务查询
-	GetWorkSetBySiteWorkSetId(siteWorkSetId string, siteName string) (*WorkSet, error)
-	AddSite(sites []*Site) error
+	GetWorkSetBySiteWorkSetId(siteWorkSetId string, siteName string) (*WorkSetDTO, error)
+	AddSite(sites []*SiteDTO) error
 
 	// 任务
 	RegisterUrlListener(contributionId string, patterns []string) error

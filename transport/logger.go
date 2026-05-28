@@ -1,20 +1,12 @@
-package pluginsdk
+package transport
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
 )
-
-// Logger 插件日志接口，可传递给插件子组件使用
-type Logger interface {
-	Debugf(template string, args ...any)
-	Infof(template string, args ...any)
-	Warnf(template string, args ...any)
-	Errorf(template string, args ...any)
-	Named(name string) Logger
-}
 
 // grpcLogger 通过 HostService gRPC 发送日志
 type grpcLogger struct {
@@ -32,7 +24,7 @@ func (l *grpcLogger) Infof(template string, args ...any)  { l.log(1, template, a
 func (l *grpcLogger) Warnf(template string, args ...any)  { l.log(2, template, args) }
 func (l *grpcLogger) Errorf(template string, args ...any) { l.log(3, template, args) }
 
-func (l *grpcLogger) Named(name string) Logger {
+func (l *grpcLogger) Named(name string) dto.Logger {
 	newName := name
 	if l.name != "" {
 		newName = l.name + "." + name

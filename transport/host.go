@@ -1,40 +1,29 @@
-package pluginsdk
+package transport
 
 import (
 	"context"
 	"fmt"
-	"os/exec"
 
 	"github.com/hashicorp/go-plugin"
 	"google.golang.org/grpc"
 
+	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
 )
 
 // HostDeps 主程序侧提供给 HostService 的依赖
 type HostDeps struct {
-	PluginDataProvider
-	SecureStorageProvider
-	WorkSetQueryProvider
-	SiteSaveProvider
-	TaskCreateProvider
-	UrlListenerRegistry
-	FrontendEventProvider
-	LogFunc func(level int32, template string, args []string, loggerName string)
-	// 注册回调：插件通过 HostService 注册扩展点时调用
-	OnRegisterTaskHandler  func(contributionId, name, description string) error
-	OnRegisterSiteBrowser  func(contributionId, name, description string) error
-	OnUnregisterSiteBrowser func(contributionId string) error
-}
-
-// NewClientConfig 创建 hashicorp/go-plugin 的 Client 配置
-func NewClientConfig(cmd *exec.Cmd) *plugin.ClientConfig {
-	return &plugin.ClientConfig{
-		HandshakeConfig:  Handshake,
-		Plugins:          PluginMap,
-		Cmd:              cmd,
-		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
-	}
+	dto.PluginDataProvider
+	dto.SecureStorageProvider
+	dto.WorkSetQueryProvider
+	dto.SiteSaveProvider
+	dto.TaskCreateProvider
+	dto.UrlListenerRegistry
+	dto.FrontendEventProvider
+	LogFunc                   func(level int32, template string, args []string, loggerName string)
+	OnRegisterTaskHandler     func(contributionId, name, description string) error
+	OnRegisterSiteBrowser     func(contributionId, name, description string) error
+	OnUnregisterSiteBrowser   func(contributionId string) error
 }
 
 // HostServiceServer HostService 的 gRPC 服务端实现
@@ -115,7 +104,7 @@ func (s *HostServiceServer) GetWorkSetBySiteWorkSetId(ctx context.Context, req *
 }
 
 func (s *HostServiceServer) AddSite(ctx context.Context, req *gen.AddSiteRequest) (*gen.Empty, error) {
-	sites := make([]*Site, len(req.Sites))
+	sites := make([]*dto.SiteDTO, len(req.Sites))
 	for i, ps := range req.Sites {
 		sites[i] = protoToSite(ps)
 	}
@@ -187,85 +176,9 @@ func (s *HostServiceServer) UnsubscribeFrontend(ctx context.Context, req *gen.Un
 	return &gen.Empty{}, s.deps.UnsubscribeFrontend(req.Topic)
 }
 
-// ========== Provider 接口 ==========
+// ========== Provider 接口（定义在 dto 包中，HostDeps 在此引用）==========
 
-// PluginDataProvider 插件数据持久化
-type PluginDataProvider interface {
-	GetPluginData(ctx context.Context) (string, error)
-	SetPluginData(ctx context.Context, data string) error
-	GetPluginRoot(ctx context.Context, isRelative bool) string
-}
-
-// SecureStorageProvider 加密存储
-type SecureStorageProvider interface {
-	StoreEncryptedValue(ctx context.Context, plainValue, description string) (string, error)
-	GetDecryptedValue(ctx context.Context, storageKey string) (string, error)
-	RemoveEncryptedValue(ctx context.Context, storageKey string) error
-}
-
-// WorkSetQueryProvider 作品集查询
-type WorkSetQueryProvider interface {
-	GetWorkSetBySiteWorkSetId(ctx context.Context, siteWorkSetId, siteName string) (*WorkSet, error)
-}
-
-// SiteSaveProvider 站点保存
-type SiteSaveProvider interface {
-	AddSite(ctx context.Context, sites []*Site) error
-}
-
-// TaskCreateProvider 任务创建
-type TaskCreateProvider interface {
-	CreateTask(ctx context.Context, url string) (*CreateTaskResult, error)
-}
-
-// UrlListenerRegistry URL 监听器注册
-type UrlListenerRegistry interface {
-	RegisterUrlListener(ctx context.Context, contributionId string, patterns []string) error
-	UnregisterUrlListener(ctx context.Context) error
-}
-
-// FrontendEventProvider 前后端事件桥接
-type FrontendEventProvider interface {
-	PublishToFrontend(topic string, data []byte) error
-	SubscribeFrontend(topic string, pushCh func([]byte)) (cancel func(), err error)
-	UnsubscribeFrontend(topic string) error
-}
-
-// ========== Site/WorkSet 转换（HostService 专用）==========
-
-func workSetToProto(ws *WorkSet) *gen.WorkSet {
-	if ws == nil {
-		return nil
-	}
-	return &gen.WorkSet{
-		Id:                     ws.ID,
-		CreateTime:             ws.CreateTime,
-		UpdateTime:             ws.UpdateTime,
-		SiteId:                 ws.SiteID,
-		SiteWorkSetId:          ws.SiteWorkSetID,
-		SiteWorkSetName:        ws.SiteWorkSetName,
-		SiteAuthorId:           ws.SiteAuthorID,
-		SiteWorkSetDescription: ws.SiteWorkSetDescription,
-		SiteUploadTime:         ws.SiteUploadTime,
-		SiteUpdateTime:         ws.SiteUpdateTime,
-		NickName:               ws.NickName,
-		LastView:               ws.LastView,
-	}
-}
-
-func protoToSite(pb *gen.Site) *Site {
-	if pb == nil {
-		return nil
-	}
-	return &Site{
-		ID:              pb.Id,
-		CreateTime:      pb.CreateTime,
-		UpdateTime:      pb.UpdateTime,
-		SiteName:        pb.SiteName,
-		SiteDescription: pb.SiteDescription,
-		Homepage:        pb.Homepage,
-	}
-}
+// ========== GRPCPluginClient ==========
 
 // GRPCPluginClient 封装插件侧的 gRPC 客户端接口
 type GRPCPluginClient struct {
@@ -295,4 +208,40 @@ func GetGRPCConn(pluginClient *plugin.Client) (*grpc.ClientConn, error) {
 		return nil, fmt.Errorf("failed to dispense plugin: %w", err)
 	}
 	return nil, fmt.Errorf("GetGRPCConn: use rpcClient.Conn() instead")
+}
+
+// ========== 转换函数（host 侧）==========
+
+func workSetToProto(ws *dto.WorkSetDTO) *gen.WorkSet {
+	if ws == nil {
+		return nil
+	}
+	return &gen.WorkSet{
+		Id:                     ws.ID,
+		CreateTime:             ws.CreateTime,
+		UpdateTime:             ws.UpdateTime,
+		SiteId:                 ws.SiteID,
+		SiteWorkSetId:          ws.SiteWorkSetID,
+		SiteWorkSetName:        ws.SiteWorkSetName,
+		SiteAuthorId:           ws.SiteAuthorID,
+		SiteWorkSetDescription: ws.SiteWorkSetDescription,
+		SiteUploadTime:         ws.SiteUploadTime,
+		SiteUpdateTime:         ws.SiteUpdateTime,
+		NickName:               ws.NickName,
+		LastView:               ws.LastView,
+	}
+}
+
+func protoToSite(pb *gen.Site) *dto.SiteDTO {
+	if pb == nil {
+		return nil
+	}
+	return &dto.SiteDTO{
+		ID:              pb.Id,
+		CreateTime:      pb.CreateTime,
+		UpdateTime:      pb.UpdateTime,
+		SiteName:        pb.SiteName,
+		SiteDescription: pb.SiteDescription,
+		Homepage:        pb.Homepage,
+	}
 }
