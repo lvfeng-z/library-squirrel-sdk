@@ -124,6 +124,7 @@ message TaskResourceDTO {
   int64 size = 7;
   int32 completeness = 8;
   string suggestName = 9;
+  optional bool continuable = 10;
 }
 
 message TaskCreateChildResponse {
@@ -159,6 +160,7 @@ message TaskResParam {
   Task task = 1;
   int64 resourceId = 2;
   string resourcePath = 3;
+  int64 downloadedBytes = 4;
 }
 
 // ========== 1. 插件生命周期服务（主程序 → 插件）==========

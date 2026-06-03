@@ -5,7 +5,7 @@ type ResourceDTO struct {
 	ID                int64   `json:"id"`
 	WorkID            int64   `json:"workId"`
 	TaskID            int64   `json:"taskId"`
-	State             int     `json:"state"`
+	Enabled           bool    `json:"enabled"`
 	FilePath          *string `json:"filePath"`
 	FileName          *string `json:"fileName"`
 	FilenameExtension *string `json:"filenameExtension"`

@@ -160,9 +160,12 @@ func (s *taskHandlerServer) Stop(ctx context.Context, req *gen.TaskResParamMessa
 
 func (s *taskHandlerServer) Resume(req *gen.TaskResParamMessage, stream gen.TaskHandlerService_ResumeServer) error {
 	param := protoToTaskResParam(req.Param)
-	workResp, err := s.handler.Resume(param)
+	reader, workResp, err := s.handler.Resume(param)
 	if err != nil {
 		return status.Errorf(codes.Internal, "resume failed: %v", err)
+	}
+	if reader != nil {
+		defer reader.Close()
 	}
 
 	if workResp != nil {
@@ -172,6 +175,29 @@ func (s *taskHandlerServer) Resume(req *gen.TaskResParamMessage, stream gen.Task
 			},
 		}); err != nil {
 			return err
+		}
+	}
+
+	if reader != nil {
+		buf := make([]byte, 32*1024)
+		for {
+			n, readErr := reader.Read(buf)
+			if n > 0 {
+				if err := stream.Send(&gen.StreamChunk{
+					Payload: &gen.StreamChunk_Data{Data: buf[:n]},
+				}); err != nil {
+					return err
+				}
+			}
+			if readErr == io.EOF {
+				break
+			}
+			if readErr != nil {
+				_ = stream.Send(&gen.StreamChunk{
+					Payload: &gen.StreamChunk_Error{Error: readErr.Error()},
+				})
+				return status.Errorf(codes.Internal, "resume read error: %v", readErr)
+			}
 		}
 	}
 
@@ -272,6 +298,7 @@ func workResponseToProto(r *dto.WorkResponse) *gen.WorkResponse {
 			Size:         r.Resource.Size,
 			Completeness: int32(r.Resource.Completeness),
 			SuggestName:  r.Resource.SuggestName,
+			Continuable:  r.Resource.Continuable,
 		}
 	}
 	return pb
@@ -372,8 +399,9 @@ func protoToTaskResParam(pb *gen.TaskResParam) *dto.TaskResParam {
 		return nil
 	}
 	return &dto.TaskResParam{
-		Task:         protoToTask(pb.Task),
-		ResourceID:   pb.ResourceId,
-		ResourcePath: pb.ResourcePath,
+		Task:            protoToTask(pb.Task),
+		ResourceID:      pb.ResourceId,
+		ResourcePath:    pb.ResourcePath,
+		DownloadedBytes: pb.DownloadedBytes,
 	}
 }

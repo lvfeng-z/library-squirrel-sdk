@@ -1036,6 +1036,7 @@ type TaskResourceDTO struct {
 	Size          int64                  `protobuf:"varint,7,opt,name=size,proto3" json:"size,omitempty"`
 	Completeness  int32                  `protobuf:"varint,8,opt,name=completeness,proto3" json:"completeness,omitempty"`
 	SuggestName   string                 `protobuf:"bytes,9,opt,name=suggestName,proto3" json:"suggestName,omitempty"`
+	Continuable   *bool                  `protobuf:"varint,10,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1131,6 +1132,13 @@ func (x *TaskResourceDTO) GetSuggestName() string {
 		return x.SuggestName
 	}
 	return ""
+}
+
+func (x *TaskResourceDTO) GetContinuable() bool {
+	if x != nil && x.Continuable != nil {
+		return *x.Continuable
+	}
+	return false
 }
 
 type TaskCreateChildResponse struct {
@@ -1402,12 +1410,13 @@ func (x *WorkResponse) GetResource() *TaskResourceDTO {
 }
 
 type TaskResParam struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Task          *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
-	ResourceId    int64                  `protobuf:"varint,2,opt,name=resourceId,proto3" json:"resourceId,omitempty"`
-	ResourcePath  string                 `protobuf:"bytes,3,opt,name=resourcePath,proto3" json:"resourcePath,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Task            *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	ResourceId      int64                  `protobuf:"varint,2,opt,name=resourceId,proto3" json:"resourceId,omitempty"`
+	ResourcePath    string                 `protobuf:"bytes,3,opt,name=resourcePath,proto3" json:"resourcePath,omitempty"`
+	DownloadedBytes int64                  `protobuf:"varint,4,opt,name=downloadedBytes,proto3" json:"downloadedBytes,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *TaskResParam) Reset() {
@@ -1459,6 +1468,13 @@ func (x *TaskResParam) GetResourcePath() string {
 		return x.ResourcePath
 	}
 	return ""
+}
+
+func (x *TaskResParam) GetDownloadedBytes() int64 {
+	if x != nil {
+		return x.DownloadedBytes
+	}
+	return 0
 }
 
 type ActivateRequest struct {
@@ -3335,7 +3351,7 @@ const file_plugin_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\"X\n" +
 	"\x0eTaskWorkSetDTO\x12$\n" +
 	"\rsiteWorkSetId\x18\x01 \x01(\tR\rsiteWorkSetId\x12 \n" +
-	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\"\x87\x02\n" +
+	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\"\xbe\x02\n" +
 	"\x0fTaskResourceDTO\x12\x1e\n" +
 	"\n" +
 	"resourceId\x18\x01 \x01(\x03R\n" +
@@ -3349,7 +3365,10 @@ const file_plugin_proto_rawDesc = "" +
 	"remotePath\x12\x12\n" +
 	"\x04size\x18\a \x01(\x03R\x04size\x12\"\n" +
 	"\fcompleteness\x18\b \x01(\x05R\fcompleteness\x12 \n" +
-	"\vsuggestName\x18\t \x01(\tR\vsuggestName\"\xa3\x01\n" +
+	"\vsuggestName\x18\t \x01(\tR\vsuggestName\x12%\n" +
+	"\vcontinuable\x18\n" +
+	" \x01(\bH\x00R\vcontinuable\x88\x01\x01B\x0e\n" +
+	"\f_continuable\"\xa3\x01\n" +
 	"\x17TaskCreateChildResponse\x12\x1a\n" +
 	"\btaskName\x18\x01 \x01(\tR\btaskName\x12\x1e\n" +
 	"\n" +
@@ -3380,13 +3399,14 @@ const file_plugin_proto_rawDesc = "" +
 	"\vsiteAuthors\x18\x05 \x03(\v2\x1a.plugins.TaskSiteAuthorDTOR\vsiteAuthors\x123\n" +
 	"\bsiteTags\x18\x06 \x03(\v2\x17.plugins.TaskSiteTagDTOR\bsiteTags\x123\n" +
 	"\bworkSets\x18\a \x03(\v2\x17.plugins.TaskWorkSetDTOR\bworkSets\x124\n" +
-	"\bresource\x18\b \x01(\v2\x18.plugins.TaskResourceDTOR\bresource\"u\n" +
+	"\bresource\x18\b \x01(\v2\x18.plugins.TaskResourceDTOR\bresource\"\x9f\x01\n" +
 	"\fTaskResParam\x12!\n" +
 	"\x04task\x18\x01 \x01(\v2\r.plugins.TaskR\x04task\x12\x1e\n" +
 	"\n" +
 	"resourceId\x18\x02 \x01(\x03R\n" +
 	"resourceId\x12\"\n" +
-	"\fresourcePath\x18\x03 \x01(\tR\fresourcePath\"\xc9\x01\n" +
+	"\fresourcePath\x18\x03 \x01(\tR\fresourcePath\x12(\n" +
+	"\x0fdownloadedBytes\x18\x04 \x01(\x03R\x0fdownloadedBytes\"\xc9\x01\n" +
 	"\x0fActivateRequest\x12&\n" +
 	"\x0epluginPublicId\x18\x01 \x01(\tR\x0epluginPublicId\x12\x1e\n" +
 	"\n" +
@@ -3685,6 +3705,7 @@ func file_plugin_proto_init() {
 	file_plugin_proto_msgTypes[5].OneofWrappers = []any{}
 	file_plugin_proto_msgTypes[6].OneofWrappers = []any{}
 	file_plugin_proto_msgTypes[7].OneofWrappers = []any{}
+	file_plugin_proto_msgTypes[11].OneofWrappers = []any{}
 	file_plugin_proto_msgTypes[19].OneofWrappers = []any{
 		(*CreateChunk_Mode)(nil),
 		(*CreateChunk_Task)(nil),

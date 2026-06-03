@@ -31,5 +31,5 @@ type TaskHandler interface {
 	// Resume 恢复任务
 	// param: 恢复任务所需的参数
 	// 返回作品信息或错误
-	Resume(param *TaskResParam) (*WorkResponse, error)
+	Resume(param *TaskResParam) (io.ReadCloser, *WorkResponse, error)
 }

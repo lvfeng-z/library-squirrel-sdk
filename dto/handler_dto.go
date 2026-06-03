@@ -2,9 +2,10 @@ package dto
 
 // TaskResParam 任务和资源参数
 type TaskResParam struct {
-	Task         *TaskDTO `json:"task"`
-	ResourceID   int64    `json:"resourceId"`
-	ResourcePath string   `json:"resourcePath"`
+	Task            *TaskDTO `json:"task"`
+	ResourceID      int64    `json:"resourceId"`
+	ResourcePath    string   `json:"resourcePath"`
+	DownloadedBytes int64    `json:"downloadedBytes"`
 }
 
 // TaskCreateResponse 任务创建响应
@@ -72,4 +73,5 @@ type TaskResourceDTO struct {
 	Size         int64  `json:"size"`
 	Completeness int    `json:"completeness"`
 	SuggestName  string `json:"suggestName"`
+	Continuable  *bool  `json:"continuable"` // 插件声明当前资源是否支持在已有文件上续传
 }
