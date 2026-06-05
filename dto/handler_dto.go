@@ -62,16 +62,11 @@ type TaskWorkSetDTO struct {
 	WorkSetName   string `json:"workSetName"`
 }
 
-// TaskResourceDTO 任务处理器资源DTO
+// TaskResourceDTO 任务处理器资源 DTO（精简后）
 type TaskResourceDTO struct {
-	ResourceID   int64  `json:"resourceId"`
-	URL          string `json:"url"`
-	Type         string `json:"type"`
-	Format       string `json:"format"`
-	LocalPath    string `json:"localPath"`
-	RemotePath   string `json:"remotePath"`
-	Size         int64  `json:"size"`
-	Completeness int    `json:"completeness"`
-	SuggestName  string `json:"suggestName"`
-	Continuable  *bool  `json:"continuable"` // 插件声明当前资源是否支持在已有文件上续传
+	Size        int64  `json:"size"`        // 远程文件大小
+	Type        string `json:"type"`        // 资源类型
+	Format      string `json:"format"`      // 文件格式/扩展名（如 "jpg"、"mp4"）
+	SuggestName string `json:"suggestName"` // 插件建议文件名
+	Continuable *bool  `json:"continuable"` // 是否支持续传
 }

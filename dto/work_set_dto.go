@@ -24,7 +24,7 @@ type WorkSetWithWorksResultDTO struct {
 
 // WorkSetWithCoverDTO 作品集及其封面作品信息
 type WorkSetWithCoverDTO struct {
-	WorkSet       *WorkSetDTO  `json:"workSet"`
-	CoverWork     *WorkDTO     `json:"coverWork,omitempty"`
-	CoverResource *ResourceDTO `json:"coverResource,omitempty"`
+	WorkSet       *WorkSetDTO       `json:"workSet"`
+	CoverWork     *WorkDTO          `json:"coverWork,omitempty"`
+	CoverResource *ResourceFullDTO  `json:"coverResource,omitempty"`
 }

@@ -6,7 +6,7 @@ type PersistentStoreDTO struct {
 	FilePath          *string `json:"filePath"`
 	FileName          *string `json:"fileName"`
 	FilenameExtension *string `json:"filenameExtension"`
-	FileSize          *int64  `json:"fileSize"`
+	Status            int     `json:"status"` // 0=未完成，1=完成
 	CreateTime        int64   `json:"createTime"`
 	UpdateTime        int64   `json:"updateTime"`
 }

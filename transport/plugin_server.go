@@ -289,16 +289,11 @@ func workResponseToProto(r *dto.WorkResponse) *gen.WorkResponse {
 	}
 	if r.Resource != nil {
 		pb.Resource = &gen.TaskResourceDTO{
-			ResourceId:   r.Resource.ResourceID,
-			Url:          r.Resource.URL,
-			Type:         r.Resource.Type,
-			Format:       r.Resource.Format,
-			LocalPath:    r.Resource.LocalPath,
-			RemotePath:   r.Resource.RemotePath,
-			Size:         r.Resource.Size,
-			Completeness: int32(r.Resource.Completeness),
-			SuggestName:  r.Resource.SuggestName,
-			Continuable:  r.Resource.Continuable,
+			Type:        r.Resource.Type,
+			Format:      r.Resource.Format,
+			Size:        r.Resource.Size,
+			SuggestName: r.Resource.SuggestName,
+			Continuable: r.Resource.Continuable,
 		}
 	}
 	return pb

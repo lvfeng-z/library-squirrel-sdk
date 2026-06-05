@@ -19,11 +19,11 @@ type WorkDTO struct {
 
 // WorkFullDTO 作品完整信息DTO
 type WorkFullDTO struct {
-	Work         *WorkDTO            `json:"work,omitempty"`
-	LocalAuthors []*LocalAuthorDTO   `json:"localAuthors,omitempty"`
+	Work         *WorkDTO             `json:"work,omitempty"`
+	LocalAuthors []*LocalAuthorDTO    `json:"localAuthors,omitempty"`
 	SiteAuthors  []*SiteAuthorFullDTO `json:"siteAuthors,omitempty"`
-	Site         *SiteDTO            `json:"site,omitempty"`
-	LocalTags    []*LocalTagDTO      `json:"localTags,omitempty"`
-	SiteTags     []*SiteTagFullDTO   `json:"siteTags,omitempty"`
-	Resources    []*ResourceDTO      `json:"resources,omitempty"`
+	Site         *SiteDTO             `json:"site,omitempty"`
+	LocalTags    []*LocalTagDTO       `json:"localTags,omitempty"`
+	SiteTags     []*SiteTagFullDTO    `json:"siteTags,omitempty"`
+	Resource     *ResourceFullDTO     `json:"resource,omitempty"` // 单个活跃资源（含 PersistentStore 信息）
 }
