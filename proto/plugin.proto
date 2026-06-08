@@ -115,16 +115,10 @@ message TaskWorkSetDTO {
 }
 
 message TaskResourceDTO {
-  int64 resourceId = 1;
-  string url = 2;
-  string type = 3;
-  string format = 4;
-  string localPath = 5;
-  string remotePath = 6;
-  int64 size = 7;
-  int32 completeness = 8;
-  string suggestName = 9;
-  optional bool continuable = 10;
+  string format = 1;
+  int64 size = 2;
+  string suggestName = 3;
+  optional bool continuable = 4;
 }
 
 message TaskCreateChildResponse {
@@ -190,6 +184,7 @@ service TaskHandlerService {
   rpc Pause(TaskResParamMessage) returns (Empty);
   rpc Stop(TaskResParamMessage) returns (Empty);
   rpc Resume(TaskResParamMessage) returns (stream StreamChunk);
+  rpc GetThumbnail(GetThumbnailRequest) returns (GetThumbnailResponse);
 }
 
 message CreateRequest {
@@ -238,6 +233,17 @@ message StreamChunk {
     bool eof = 3;
     string error = 4;
   }
+}
+
+// 缩略图请求
+message GetThumbnailRequest {
+  string taskData = 1;
+}
+
+// 缩略图响应
+message GetThumbnailResponse {
+  bytes data = 1;
+  string format = 2;
 }
 
 // ========== 3. 站点浏览器服务（主程序 → 插件）==========

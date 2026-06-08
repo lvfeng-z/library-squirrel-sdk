@@ -32,4 +32,8 @@ type TaskHandler interface {
 	// param: 恢复任务所需的参数
 	// 返回作品信息或错误
 	Resume(param *TaskResParam) (io.ReadCloser, *WorkResponse, error)
+	// GetThumbnail 获取缩略图
+	// taskData: 插件在 Create 阶段存储的任务数据（JSON）
+	// 返回缩略图数据或 nil（插件决定不提供缩略图时返回 nil）
+	GetThumbnail(taskData string) (*ThumbnailResponse, error)
 }

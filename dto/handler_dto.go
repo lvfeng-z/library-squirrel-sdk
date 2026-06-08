@@ -64,9 +64,14 @@ type TaskWorkSetDTO struct {
 
 // TaskResourceDTO 任务处理器资源 DTO（精简后）
 type TaskResourceDTO struct {
-	Size        int64  `json:"size"`        // 远程文件大小
-	Type        string `json:"type"`        // 资源类型
 	Format      string `json:"format"`      // 文件格式/扩展名（如 "jpg"、"mp4"）
+	Size        int64  `json:"size"`        // 远程文件大小
 	SuggestName string `json:"suggestName"` // 插件建议文件名
 	Continuable *bool  `json:"continuable"` // 是否支持续传
+}
+
+// ThumbnailResponse 缩略图响应
+type ThumbnailResponse struct {
+	Data   []byte `json:"data"`   // 缩略图原始字节
+	Format string `json:"format"` // 格式扩展名
 }

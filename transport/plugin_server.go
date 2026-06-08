@@ -204,6 +204,23 @@ func (s *taskHandlerServer) Resume(req *gen.TaskResParamMessage, stream gen.Task
 	return stream.Send(&gen.StreamChunk{Payload: &gen.StreamChunk_Eof{Eof: true}})
 }
 
+func (s *taskHandlerServer) GetThumbnail(ctx context.Context, req *gen.GetThumbnailRequest) (*gen.GetThumbnailResponse, error) {
+	if s.handler == nil {
+		return nil, status.Error(codes.Unimplemented, "handler not registered")
+	}
+	resp, err := s.handler.GetThumbnail(req.TaskData)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "getThumbnail failed: %v", err)
+	}
+	if resp == nil {
+		return &gen.GetThumbnailResponse{}, nil
+	}
+	return &gen.GetThumbnailResponse{
+		Data:   resp.Data,
+		Format: resp.Format,
+	}, nil
+}
+
 // ========== SiteBrowserServiceServer ==========
 
 type siteBrowserServer struct {
@@ -289,7 +306,6 @@ func workResponseToProto(r *dto.WorkResponse) *gen.WorkResponse {
 	}
 	if r.Resource != nil {
 		pb.Resource = &gen.TaskResourceDTO{
-			Type:        r.Resource.Type,
 			Format:      r.Resource.Format,
 			Size:        r.Resource.Size,
 			SuggestName: r.Resource.SuggestName,

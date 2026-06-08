@@ -166,6 +166,7 @@ const (
 	TaskHandlerService_Pause_FullMethodName          = "/plugins.TaskHandlerService/Pause"
 	TaskHandlerService_Stop_FullMethodName           = "/plugins.TaskHandlerService/Stop"
 	TaskHandlerService_Resume_FullMethodName         = "/plugins.TaskHandlerService/Resume"
+	TaskHandlerService_GetThumbnail_FullMethodName   = "/plugins.TaskHandlerService/GetThumbnail"
 )
 
 // TaskHandlerServiceClient is the client API for TaskHandlerService service.
@@ -179,6 +180,7 @@ type TaskHandlerServiceClient interface {
 	Pause(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error)
 	Stop(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error)
 	Resume(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChunk], error)
+	GetThumbnail(ctx context.Context, in *GetThumbnailRequest, opts ...grpc.CallOption) (*GetThumbnailResponse, error)
 }
 
 type taskHandlerServiceClient struct {
@@ -286,6 +288,16 @@ func (c *taskHandlerServiceClient) Resume(ctx context.Context, in *TaskResParamM
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TaskHandlerService_ResumeClient = grpc.ServerStreamingClient[StreamChunk]
 
+func (c *taskHandlerServiceClient) GetThumbnail(ctx context.Context, in *GetThumbnailRequest, opts ...grpc.CallOption) (*GetThumbnailResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetThumbnailResponse)
+	err := c.cc.Invoke(ctx, TaskHandlerService_GetThumbnail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TaskHandlerServiceServer is the server API for TaskHandlerService service.
 // All implementations must embed UnimplementedTaskHandlerServiceServer
 // for forward compatibility.
@@ -297,6 +309,7 @@ type TaskHandlerServiceServer interface {
 	Pause(context.Context, *TaskResParamMessage) (*Empty, error)
 	Stop(context.Context, *TaskResParamMessage) (*Empty, error)
 	Resume(*TaskResParamMessage, grpc.ServerStreamingServer[StreamChunk]) error
+	GetThumbnail(context.Context, *GetThumbnailRequest) (*GetThumbnailResponse, error)
 	mustEmbedUnimplementedTaskHandlerServiceServer()
 }
 
@@ -327,6 +340,9 @@ func (UnimplementedTaskHandlerServiceServer) Stop(context.Context, *TaskResParam
 }
 func (UnimplementedTaskHandlerServiceServer) Resume(*TaskResParamMessage, grpc.ServerStreamingServer[StreamChunk]) error {
 	return status.Error(codes.Unimplemented, "method Resume not implemented")
+}
+func (UnimplementedTaskHandlerServiceServer) GetThumbnail(context.Context, *GetThumbnailRequest) (*GetThumbnailResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetThumbnail not implemented")
 }
 func (UnimplementedTaskHandlerServiceServer) mustEmbedUnimplementedTaskHandlerServiceServer() {}
 func (UnimplementedTaskHandlerServiceServer) testEmbeddedByValue()                            {}
@@ -454,6 +470,24 @@ func _TaskHandlerService_Resume_Handler(srv interface{}, stream grpc.ServerStrea
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TaskHandlerService_ResumeServer = grpc.ServerStreamingServer[StreamChunk]
 
+func _TaskHandlerService_GetThumbnail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetThumbnailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskHandlerServiceServer).GetThumbnail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskHandlerService_GetThumbnail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskHandlerServiceServer).GetThumbnail(ctx, req.(*GetThumbnailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TaskHandlerService_ServiceDesc is the grpc.ServiceDesc for TaskHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -476,6 +510,10 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Stop",
 			Handler:    _TaskHandlerService_Stop_Handler,
+		},
+		{
+			MethodName: "GetThumbnail",
+			Handler:    _TaskHandlerService_GetThumbnail_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
