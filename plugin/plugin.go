@@ -3,8 +3,8 @@ package plugin
 import (
 	goPlugin "github.com/hashicorp/go-plugin"
 
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/transport"
+	"github.com/lvfeng-z/library-squirrel-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/transport"
 )
 
 // ServeOption 配置插件启动选项

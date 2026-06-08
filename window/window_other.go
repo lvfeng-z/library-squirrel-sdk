@@ -5,7 +5,7 @@ package window
 import (
 	"fmt"
 
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 )
 
 func openWindow(options dto.WindowOptions, ownerHWND uintptr) (dto.WindowHandle, error) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
+	"github.com/lvfeng-z/library-squirrel-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/gen"
 )
 
 // grpcLogger 通过 HostService gRPC 发送日志

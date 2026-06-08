@@ -16,7 +16,7 @@ import (
 
 	"golang.org/x/sys/windows"
 
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/wailsapp/go-webview2/pkg/edge"
 )
 
@@ -284,36 +284,36 @@ var execScriptVtbl = iCoreWebView2ExecuteScriptCompletedHandlerVtbl{
 // ========== ICoreWebView2 vtable 访问 ==========
 
 type iCoreWebView2VtblPartial struct {
-	QueryInterface                          edge.ComProc
-	AddRef                                  edge.ComProc
-	Release                                 edge.ComProc
-	GetSettings                             edge.ComProc
-	GetSource                               edge.ComProc
-	Navigate                                edge.ComProc
-	NavigateToString                        edge.ComProc
-	AddNavigationStarting                   edge.ComProc
-	RemoveNavigationStarting                edge.ComProc
-	AddContentLoading                       edge.ComProc
-	RemoveContentLoading                    edge.ComProc
-	AddSourceChanged                        edge.ComProc
-	RemoveSourceChanged                     edge.ComProc
-	AddHistoryChanged                       edge.ComProc
-	RemoveHistoryChanged                    edge.ComProc
-	AddNavigationCompleted                  edge.ComProc
-	RemoveNavigationCompleted               edge.ComProc
-	AddFrameNavigationStarting              edge.ComProc
-	RemoveFrameNavigationStarting           edge.ComProc
-	AddFrameNavigationCompleted             edge.ComProc
-	RemoveFrameNavigationCompleted          edge.ComProc
-	AddScriptDialogOpening                  edge.ComProc
-	RemoveScriptDialogOpening               edge.ComProc
-	AddPermissionRequested                  edge.ComProc
-	RemovePermissionRequested               edge.ComProc
-	AddProcessFailed                        edge.ComProc
-	RemoveProcessFailed                     edge.ComProc
-	AddScriptToExecuteOnDocumentCreated     edge.ComProc
-	RemoveScriptToExecuteOnDocumentCreated  edge.ComProc
-	ExecuteScript                           edge.ComProc
+	QueryInterface                         edge.ComProc
+	AddRef                                 edge.ComProc
+	Release                                edge.ComProc
+	GetSettings                            edge.ComProc
+	GetSource                              edge.ComProc
+	Navigate                               edge.ComProc
+	NavigateToString                       edge.ComProc
+	AddNavigationStarting                  edge.ComProc
+	RemoveNavigationStarting               edge.ComProc
+	AddContentLoading                      edge.ComProc
+	RemoveContentLoading                   edge.ComProc
+	AddSourceChanged                       edge.ComProc
+	RemoveSourceChanged                    edge.ComProc
+	AddHistoryChanged                      edge.ComProc
+	RemoveHistoryChanged                   edge.ComProc
+	AddNavigationCompleted                 edge.ComProc
+	RemoveNavigationCompleted              edge.ComProc
+	AddFrameNavigationStarting             edge.ComProc
+	RemoveFrameNavigationStarting          edge.ComProc
+	AddFrameNavigationCompleted            edge.ComProc
+	RemoveFrameNavigationCompleted         edge.ComProc
+	AddScriptDialogOpening                 edge.ComProc
+	RemoveScriptDialogOpening              edge.ComProc
+	AddPermissionRequested                 edge.ComProc
+	RemovePermissionRequested              edge.ComProc
+	AddProcessFailed                       edge.ComProc
+	RemoveProcessFailed                    edge.ComProc
+	AddScriptToExecuteOnDocumentCreated    edge.ComProc
+	RemoveScriptToExecuteOnDocumentCreated edge.ComProc
+	ExecuteScript                          edge.ComProc
 }
 
 type eventRegistrationToken struct {

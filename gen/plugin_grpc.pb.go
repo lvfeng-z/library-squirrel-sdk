@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v5.29.5
-// source: plugin.proto
+// source: proto/plugin.proto
 
 package gen
 
@@ -155,7 +155,7 @@ var PluginLifecycle_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "plugin.proto",
+	Metadata: "proto/plugin.proto",
 }
 
 const (
@@ -533,7 +533,7 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "plugin.proto",
+	Metadata: "proto/plugin.proto",
 }
 
 const (
@@ -673,7 +673,7 @@ var SiteBrowserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "plugin.proto",
+	Metadata: "proto/plugin.proto",
 }
 
 const (
@@ -1441,5 +1441,5 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "plugin.proto",
+	Metadata: "proto/plugin.proto",
 }

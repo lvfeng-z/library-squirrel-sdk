@@ -5,12 +5,11 @@ import (
 	"io"
 
 	"github.com/hashicorp/go-plugin"
+	"github.com/lvfeng-z/library-squirrel-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
 )
 
 // ========== PluginLifecycleServer ==========

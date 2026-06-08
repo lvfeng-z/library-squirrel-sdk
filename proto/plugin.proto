@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package plugins;
 
-option go_package = "github.com/lvfeng-z/library-squirrel-plugin-sdk/gen;gen";
+option go_package = "github.com/lvfeng-z/library-squirrel-sdk/gen;gen";
 
 // ========== 共享消息类型 ==========
 

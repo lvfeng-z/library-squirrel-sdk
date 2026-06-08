@@ -4,18 +4,17 @@ import (
 	"context"
 	"io"
 
+	"github.com/lvfeng-z/library-squirrel-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/gen"
 	"google.golang.org/grpc"
-
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
 )
 
 // PluginContextClient 插件侧的 PluginContext 实现，通过 gRPC 调用主程序的 HostService
 type PluginContextClient struct {
-	hostClient      gen.HostServiceClient
-	logger          dto.Logger
-	mainWindowHWND  uintptr
-	subCancelFuncs  map[string]context.CancelFunc
+	hostClient     gen.HostServiceClient
+	logger         dto.Logger
+	mainWindowHWND uintptr
+	subCancelFuncs map[string]context.CancelFunc
 }
 
 // NewPluginContextClient 创建基于 gRPC 的 PluginContext 客户端
@@ -164,10 +163,14 @@ func (c *PluginContextClient) GetMainWindowHandle() uintptr {
 	return c.mainWindowHWND
 }
 
-func (c *PluginContextClient) Infof(template string, args ...any)   { c.logger.Infof(template, args...) }
-func (c *PluginContextClient) Debugf(template string, args ...any)  { c.logger.Debugf(template, args...) }
-func (c *PluginContextClient) Warnf(template string, args ...any)   { c.logger.Warnf(template, args...) }
-func (c *PluginContextClient) Errorf(template string, args ...any)  { c.logger.Errorf(template, args...) }
+func (c *PluginContextClient) Infof(template string, args ...any) { c.logger.Infof(template, args...) }
+func (c *PluginContextClient) Debugf(template string, args ...any) {
+	c.logger.Debugf(template, args...)
+}
+func (c *PluginContextClient) Warnf(template string, args ...any) { c.logger.Warnf(template, args...) }
+func (c *PluginContextClient) Errorf(template string, args ...any) {
+	c.logger.Errorf(template, args...)
+}
 func (c *PluginContextClient) GetLogger() dto.Logger { return c.logger }
 
 func (c *PluginContextClient) PublishToFrontend(topic string, data []byte) error {

@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/go-plugin"
 	"google.golang.org/grpc"
 
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/gen"
+	"github.com/lvfeng-z/library-squirrel-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/gen"
 )
 
 // HostDeps 主程序侧提供给 HostService 的依赖
@@ -20,10 +20,10 @@ type HostDeps struct {
 	dto.TaskCreateProvider
 	dto.UrlListenerRegistry
 	dto.FrontendEventProvider
-	LogFunc                   func(level int32, template string, args []string, loggerName string)
-	OnRegisterTaskHandler     func(contributionId, name, description string) error
-	OnRegisterSiteBrowser     func(contributionId, name, description string) error
-	OnUnregisterSiteBrowser   func(contributionId string) error
+	LogFunc                 func(level int32, template string, args []string, loggerName string)
+	OnRegisterTaskHandler   func(contributionId, name, description string) error
+	OnRegisterSiteBrowser   func(contributionId, name, description string) error
+	OnUnregisterSiteBrowser func(contributionId string) error
 }
 
 // HostServiceServer HostService 的 gRPC 服务端实现

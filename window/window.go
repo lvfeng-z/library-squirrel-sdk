@@ -1,7 +1,7 @@
 package window
 
 import (
-	"github.com/lvfeng-z/library-squirrel-plugin-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 )
 
 // OpenWindow 创建一个 WebView2 弹窗。
