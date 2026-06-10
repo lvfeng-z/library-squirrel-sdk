@@ -4,35 +4,38 @@ package dto
 type SearchType int
 
 const (
-	SearchTypeLocalTag        SearchType = 1
-	SearchTypeSiteTag         SearchType = 2
-	SearchTypeLocalAuthor     SearchType = 3
-	SearchTypeSiteAuthor      SearchType = 4
-	SearchTypeWorksSiteName   SearchType = 5
-	SearchTypeWorksNickname   SearchType = 6
-	SearchTypeWorksUploadTime SearchType = 7
-	SearchTypeWorksLastView   SearchType = 8
-	SearchTypeMediaType       SearchType = 9
-	SearchTypeSite            SearchType = 10
-	SearchTypeWorkSet         SearchType = 11
+	LocalTag        SearchType = 1
+	SiteTag         SearchType = 2
+	LocalAuthor     SearchType = 3
+	SiteAuthor      SearchType = 4
+	WorksSiteName   SearchType = 5
+	WorksNickname   SearchType = 6
+	WorksUploadTime SearchType = 7
+	WorksLastView   SearchType = 8
+	Media           SearchType = 9
+	Site            SearchType = 10
+	WorkSet         SearchType = 11
 )
 
 // SearchCondition 搜索条件
 type SearchCondition struct {
-	Type     SearchType  `json:"type"`
-	Value    interface{} `json:"value"`
-	Operator string      `json:"operator,omitempty"`
+	Type     SearchType         `json:"type"`
+	Value    interface{}        `json:"value"`
+	Operator WorkSearchOperator `json:"operator,omitempty"`
 }
+
+// WorkSearchOperator 作品搜索操作符
+type WorkSearchOperator string
 
 // 操作符常量
 const (
-	OperatorEqual          = "="
-	OperatorNotEqual       = "!="
-	OperatorGreaterThan    = ">"
-	OperatorLessThan       = "<"
-	OperatorGreaterOrEqual = ">="
-	OperatorLessOrEqual    = "<="
-	OperatorLike           = "LIKE"
+	Equal          WorkSearchOperator = "="
+	NotEqual       WorkSearchOperator = "!="
+	GreaterThan    WorkSearchOperator = ">"
+	LessThan       WorkSearchOperator = "<"
+	GreaterOrEqual WorkSearchOperator = ">="
+	LessOrEqual    WorkSearchOperator = "<="
+	Like           WorkSearchOperator = "LIKE"
 )
 
 // MediaType 媒体类型
