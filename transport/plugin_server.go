@@ -17,6 +17,7 @@ import (
 type lifecycleServer struct {
 	gen.UnimplementedPluginLifecycleServer
 	onActivate func(pluginCtx dto.PluginContext)
+	onShutdown func()
 	broker     *plugin.GRPCBroker
 }
 
@@ -34,6 +35,9 @@ func (s *lifecycleServer) Activate(ctx context.Context, req *gen.ActivateRequest
 }
 
 func (s *lifecycleServer) Shutdown(ctx context.Context, req *gen.Empty) (*gen.Empty, error) {
+	if s.onShutdown != nil {
+		s.onShutdown()
+	}
 	return &gen.Empty{}, nil
 }
 

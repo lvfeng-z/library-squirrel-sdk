@@ -16,12 +16,14 @@ type LSPlugin struct {
 	Handler    dto.TaskHandler
 	Browser    dto.SiteBrowser
 	OnActivate func(dto.PluginContext)
+	OnShutdown func()
 	HostDeps   *HostDeps
 }
 
 func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
 	gen.RegisterPluginLifecycleServer(s, &lifecycleServer{
 		onActivate: p.OnActivate,
+		onShutdown: p.OnShutdown,
 		broker:     broker,
 	})
 	gen.RegisterTaskHandlerServiceServer(s, &taskHandlerServer{
