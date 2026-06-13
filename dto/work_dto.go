@@ -20,8 +20,8 @@ type WorkDTO struct {
 // WorkFullDTO 作品完整信息DTO
 type WorkFullDTO struct {
 	Work         *WorkDTO             `json:"work,omitempty"`
-	LocalAuthors []*LocalAuthorDTO    `json:"localAuthors,omitempty"`
-	SiteAuthors  []*SiteAuthorFullDTO `json:"siteAuthors,omitempty"`
+	LocalAuthors []*RankedLocalAuthor `json:"localAuthors,omitempty"`
+	SiteAuthors  []*RankedSiteAuthor  `json:"siteAuthors,omitempty"`
 	Site         *SiteDTO             `json:"site,omitempty"`
 	LocalTags    []*LocalTagDTO       `json:"localTags,omitempty"`
 	SiteTags     []*SiteTagFullDTO    `json:"siteTags,omitempty"`
