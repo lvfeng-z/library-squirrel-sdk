@@ -13,7 +13,6 @@ type PluginDTO struct {
 	RootPath       *string `json:"rootPath"`
 	BackupID       *int64  `json:"backupId"`
 	SortNum        *int64  `json:"sortNum"`
-	PluginData     *string `json:"pluginData"`
 	Uninstalled    *bool   `json:"uninstalled"`
 	ActivationType *string `json:"activationType"`
 	CreateTime     int64   `json:"createTime"`

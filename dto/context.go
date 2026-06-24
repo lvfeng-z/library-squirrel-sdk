@@ -9,14 +9,12 @@ type PluginContext interface {
 	// 扩展点注销
 	UnregisterSiteBrowser(id string) error
 
-	// 插件数据持久化
-	GetPluginData() (string, error)
-	SetPluginData(data string) error
-
-	// 加密存储
-	StoreEncryptedValue(plainValue string, description string) (string, error)
-	GetDecryptedValue(storageKey string) (string, error)
-	RemoveEncryptedValue(storageKey string) error
+	// 插件自存信息（统一 KV 存储，取代临时 plugin_data 与加密存储）
+	GetValue(key string) (string, error)
+	SetValue(key string, value string) error
+	SetValueEncrypted(key string, value string) error
+	DeleteValue(key string) error
+	GetAllValues() (map[string]string, error)
 
 	// 业务查询
 	GetWorkSetBySiteWorkSetId(siteWorkSetId string, siteName string) (*WorkSetDTO, error)

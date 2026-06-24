@@ -13,8 +13,8 @@ import (
 
 // HostDeps 主程序侧提供给 HostService 的依赖
 type HostDeps struct {
-	dto.PluginDataProvider
-	dto.SecureStorageProvider
+	dto.StorageProvider
+	dto.PluginRootProvider
 	dto.WorkSetQueryProvider
 	dto.SiteSaveProvider
 	dto.TaskCreateProvider
@@ -63,36 +63,32 @@ func (s *HostServiceServer) UnregisterSiteBrowser(ctx context.Context, req *gen.
 	return &gen.Empty{}, nil
 }
 
-func (s *HostServiceServer) GetPluginData(ctx context.Context, req *gen.Empty) (*gen.PluginDataResponse, error) {
-	data, err := s.deps.GetPluginData(ctx)
+func (s *HostServiceServer) GetValue(ctx context.Context, req *gen.StorageKeyRequest) (*gen.StorageValueResponse, error) {
+	value, err := s.deps.GetValue(ctx, req.Key)
 	if err != nil {
 		return nil, err
 	}
-	return &gen.PluginDataResponse{Data: data}, nil
+	return &gen.StorageValueResponse{Value: value}, nil
 }
 
-func (s *HostServiceServer) SetPluginData(ctx context.Context, req *gen.PluginDataRequest) (*gen.Empty, error) {
-	return &gen.Empty{}, s.deps.SetPluginData(ctx, req.Data)
+func (s *HostServiceServer) SetValue(ctx context.Context, req *gen.StorageEntryRequest) (*gen.Empty, error) {
+	return &gen.Empty{}, s.deps.SetValue(ctx, req.Key, req.Value)
 }
 
-func (s *HostServiceServer) StoreEncryptedValue(ctx context.Context, req *gen.EncryptRequest) (*gen.EncryptResponse, error) {
-	key, err := s.deps.StoreEncryptedValue(ctx, req.PlainValue, req.Description)
+func (s *HostServiceServer) SetValueEncrypted(ctx context.Context, req *gen.StorageEntryRequest) (*gen.Empty, error) {
+	return &gen.Empty{}, s.deps.SetValueEncrypted(ctx, req.Key, req.Value)
+}
+
+func (s *HostServiceServer) DeleteValue(ctx context.Context, req *gen.StorageKeyRequest) (*gen.Empty, error) {
+	return &gen.Empty{}, s.deps.DeleteValue(ctx, req.Key)
+}
+
+func (s *HostServiceServer) GetAllValues(ctx context.Context, req *gen.Empty) (*gen.AllStorageValuesResponse, error) {
+	values, err := s.deps.GetAllValues(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &gen.EncryptResponse{Key: key}, nil
-}
-
-func (s *HostServiceServer) GetDecryptedValue(ctx context.Context, req *gen.DecryptRequest) (*gen.DecryptResponse, error) {
-	value, err := s.deps.GetDecryptedValue(ctx, req.StorageKey)
-	if err != nil {
-		return nil, err
-	}
-	return &gen.DecryptResponse{Value: value}, nil
-}
-
-func (s *HostServiceServer) RemoveEncryptedValue(ctx context.Context, req *gen.DecryptRequest) (*gen.Empty, error) {
-	return &gen.Empty{}, s.deps.RemoveEncryptedValue(ctx, req.StorageKey)
+	return &gen.AllStorageValuesResponse{Values: values}, nil
 }
 
 func (s *HostServiceServer) GetWorkSetBySiteWorkSetId(ctx context.Context, req *gen.WorkSetQueryRequest) (*gen.WorkSetQueryResponse, error) {

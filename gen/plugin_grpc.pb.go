@@ -680,11 +680,11 @@ const (
 	HostService_RegisterTaskHandler_FullMethodName       = "/plugins.HostService/RegisterTaskHandler"
 	HostService_RegisterSiteBrowser_FullMethodName       = "/plugins.HostService/RegisterSiteBrowser"
 	HostService_UnregisterSiteBrowser_FullMethodName     = "/plugins.HostService/UnregisterSiteBrowser"
-	HostService_GetPluginData_FullMethodName             = "/plugins.HostService/GetPluginData"
-	HostService_SetPluginData_FullMethodName             = "/plugins.HostService/SetPluginData"
-	HostService_StoreEncryptedValue_FullMethodName       = "/plugins.HostService/StoreEncryptedValue"
-	HostService_GetDecryptedValue_FullMethodName         = "/plugins.HostService/GetDecryptedValue"
-	HostService_RemoveEncryptedValue_FullMethodName      = "/plugins.HostService/RemoveEncryptedValue"
+	HostService_GetValue_FullMethodName                  = "/plugins.HostService/GetValue"
+	HostService_SetValue_FullMethodName                  = "/plugins.HostService/SetValue"
+	HostService_SetValueEncrypted_FullMethodName         = "/plugins.HostService/SetValueEncrypted"
+	HostService_DeleteValue_FullMethodName               = "/plugins.HostService/DeleteValue"
+	HostService_GetAllValues_FullMethodName              = "/plugins.HostService/GetAllValues"
 	HostService_GetWorkSetBySiteWorkSetId_FullMethodName = "/plugins.HostService/GetWorkSetBySiteWorkSetId"
 	HostService_AddSite_FullMethodName                   = "/plugins.HostService/AddSite"
 	HostService_RegisterUrlListener_FullMethodName       = "/plugins.HostService/RegisterUrlListener"
@@ -705,13 +705,12 @@ type HostServiceClient interface {
 	RegisterTaskHandler(ctx context.Context, in *RegisterExtensionRequest, opts ...grpc.CallOption) (*Empty, error)
 	RegisterSiteBrowser(ctx context.Context, in *RegisterExtensionRequest, opts ...grpc.CallOption) (*Empty, error)
 	UnregisterSiteBrowser(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error)
-	// 插件数据持久化
-	GetPluginData(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*PluginDataResponse, error)
-	SetPluginData(ctx context.Context, in *PluginDataRequest, opts ...grpc.CallOption) (*Empty, error)
-	// 加密存储
-	StoreEncryptedValue(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
-	GetDecryptedValue(ctx context.Context, in *DecryptRequest, opts ...grpc.CallOption) (*DecryptResponse, error)
-	RemoveEncryptedValue(ctx context.Context, in *DecryptRequest, opts ...grpc.CallOption) (*Empty, error)
+	// 插件自存信息（统一 KV 存储，取代临时 plugin_data 与 secure_storage）
+	GetValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*StorageValueResponse, error)
+	SetValue(ctx context.Context, in *StorageEntryRequest, opts ...grpc.CallOption) (*Empty, error)
+	SetValueEncrypted(ctx context.Context, in *StorageEntryRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*Empty, error)
+	GetAllValues(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AllStorageValuesResponse, error)
 	// 业务查询
 	GetWorkSetBySiteWorkSetId(ctx context.Context, in *WorkSetQueryRequest, opts ...grpc.CallOption) (*WorkSetQueryResponse, error)
 	AddSite(ctx context.Context, in *AddSiteRequest, opts ...grpc.CallOption) (*Empty, error)
@@ -767,50 +766,50 @@ func (c *hostServiceClient) UnregisterSiteBrowser(ctx context.Context, in *Unreg
 	return out, nil
 }
 
-func (c *hostServiceClient) GetPluginData(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*PluginDataResponse, error) {
+func (c *hostServiceClient) GetValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*StorageValueResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PluginDataResponse)
-	err := c.cc.Invoke(ctx, HostService_GetPluginData_FullMethodName, in, out, cOpts...)
+	out := new(StorageValueResponse)
+	err := c.cc.Invoke(ctx, HostService_GetValue_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hostServiceClient) SetPluginData(ctx context.Context, in *PluginDataRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *hostServiceClient) SetValue(ctx context.Context, in *StorageEntryRequest, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, HostService_SetPluginData_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, HostService_SetValue_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hostServiceClient) StoreEncryptedValue(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(EncryptResponse)
-	err := c.cc.Invoke(ctx, HostService_StoreEncryptedValue_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) GetDecryptedValue(ctx context.Context, in *DecryptRequest, opts ...grpc.CallOption) (*DecryptResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DecryptResponse)
-	err := c.cc.Invoke(ctx, HostService_GetDecryptedValue_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) RemoveEncryptedValue(ctx context.Context, in *DecryptRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *hostServiceClient) SetValueEncrypted(ctx context.Context, in *StorageEntryRequest, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, HostService_RemoveEncryptedValue_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, HostService_SetValueEncrypted_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) DeleteValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, HostService_DeleteValue_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) GetAllValues(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AllStorageValuesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AllStorageValuesResponse)
+	err := c.cc.Invoke(ctx, HostService_GetAllValues_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -934,13 +933,12 @@ type HostServiceServer interface {
 	RegisterTaskHandler(context.Context, *RegisterExtensionRequest) (*Empty, error)
 	RegisterSiteBrowser(context.Context, *RegisterExtensionRequest) (*Empty, error)
 	UnregisterSiteBrowser(context.Context, *UnregisterRequest) (*Empty, error)
-	// 插件数据持久化
-	GetPluginData(context.Context, *Empty) (*PluginDataResponse, error)
-	SetPluginData(context.Context, *PluginDataRequest) (*Empty, error)
-	// 加密存储
-	StoreEncryptedValue(context.Context, *EncryptRequest) (*EncryptResponse, error)
-	GetDecryptedValue(context.Context, *DecryptRequest) (*DecryptResponse, error)
-	RemoveEncryptedValue(context.Context, *DecryptRequest) (*Empty, error)
+	// 插件自存信息（统一 KV 存储，取代临时 plugin_data 与 secure_storage）
+	GetValue(context.Context, *StorageKeyRequest) (*StorageValueResponse, error)
+	SetValue(context.Context, *StorageEntryRequest) (*Empty, error)
+	SetValueEncrypted(context.Context, *StorageEntryRequest) (*Empty, error)
+	DeleteValue(context.Context, *StorageKeyRequest) (*Empty, error)
+	GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error)
 	// 业务查询
 	GetWorkSetBySiteWorkSetId(context.Context, *WorkSetQueryRequest) (*WorkSetQueryResponse, error)
 	AddSite(context.Context, *AddSiteRequest) (*Empty, error)
@@ -975,20 +973,20 @@ func (UnimplementedHostServiceServer) RegisterSiteBrowser(context.Context, *Regi
 func (UnimplementedHostServiceServer) UnregisterSiteBrowser(context.Context, *UnregisterRequest) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method UnregisterSiteBrowser not implemented")
 }
-func (UnimplementedHostServiceServer) GetPluginData(context.Context, *Empty) (*PluginDataResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetPluginData not implemented")
+func (UnimplementedHostServiceServer) GetValue(context.Context, *StorageKeyRequest) (*StorageValueResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetValue not implemented")
 }
-func (UnimplementedHostServiceServer) SetPluginData(context.Context, *PluginDataRequest) (*Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method SetPluginData not implemented")
+func (UnimplementedHostServiceServer) SetValue(context.Context, *StorageEntryRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetValue not implemented")
 }
-func (UnimplementedHostServiceServer) StoreEncryptedValue(context.Context, *EncryptRequest) (*EncryptResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method StoreEncryptedValue not implemented")
+func (UnimplementedHostServiceServer) SetValueEncrypted(context.Context, *StorageEntryRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetValueEncrypted not implemented")
 }
-func (UnimplementedHostServiceServer) GetDecryptedValue(context.Context, *DecryptRequest) (*DecryptResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetDecryptedValue not implemented")
+func (UnimplementedHostServiceServer) DeleteValue(context.Context, *StorageKeyRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteValue not implemented")
 }
-func (UnimplementedHostServiceServer) RemoveEncryptedValue(context.Context, *DecryptRequest) (*Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method RemoveEncryptedValue not implemented")
+func (UnimplementedHostServiceServer) GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAllValues not implemented")
 }
 func (UnimplementedHostServiceServer) GetWorkSetBySiteWorkSetId(context.Context, *WorkSetQueryRequest) (*WorkSetQueryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetWorkSetBySiteWorkSetId not implemented")
@@ -1095,92 +1093,92 @@ func _HostService_UnregisterSiteBrowser_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_GetPluginData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _HostService_GetValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StorageKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).GetValue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_GetValue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).GetValue(ctx, req.(*StorageKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_SetValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StorageEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).SetValue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_SetValue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).SetValue(ctx, req.(*StorageEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_SetValueEncrypted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StorageEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).SetValueEncrypted(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_SetValueEncrypted_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).SetValueEncrypted(ctx, req.(*StorageEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_DeleteValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StorageKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).DeleteValue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_DeleteValue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).DeleteValue(ctx, req.(*StorageKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_GetAllValues_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HostServiceServer).GetPluginData(ctx, in)
+		return srv.(HostServiceServer).GetAllValues(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: HostService_GetPluginData_FullMethodName,
+		FullMethod: HostService_GetAllValues_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).GetPluginData(ctx, req.(*Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_SetPluginData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PluginDataRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).SetPluginData(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_SetPluginData_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).SetPluginData(ctx, req.(*PluginDataRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_StoreEncryptedValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EncryptRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).StoreEncryptedValue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_StoreEncryptedValue_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).StoreEncryptedValue(ctx, req.(*EncryptRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_GetDecryptedValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DecryptRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).GetDecryptedValue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_GetDecryptedValue_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).GetDecryptedValue(ctx, req.(*DecryptRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_RemoveEncryptedValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DecryptRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).RemoveEncryptedValue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_RemoveEncryptedValue_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).RemoveEncryptedValue(ctx, req.(*DecryptRequest))
+		return srv.(HostServiceServer).GetAllValues(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1378,24 +1376,24 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_UnregisterSiteBrowser_Handler,
 		},
 		{
-			MethodName: "GetPluginData",
-			Handler:    _HostService_GetPluginData_Handler,
+			MethodName: "GetValue",
+			Handler:    _HostService_GetValue_Handler,
 		},
 		{
-			MethodName: "SetPluginData",
-			Handler:    _HostService_SetPluginData_Handler,
+			MethodName: "SetValue",
+			Handler:    _HostService_SetValue_Handler,
 		},
 		{
-			MethodName: "StoreEncryptedValue",
-			Handler:    _HostService_StoreEncryptedValue_Handler,
+			MethodName: "SetValueEncrypted",
+			Handler:    _HostService_SetValueEncrypted_Handler,
 		},
 		{
-			MethodName: "GetDecryptedValue",
-			Handler:    _HostService_GetDecryptedValue_Handler,
+			MethodName: "DeleteValue",
+			Handler:    _HostService_DeleteValue_Handler,
 		},
 		{
-			MethodName: "RemoveEncryptedValue",
-			Handler:    _HostService_RemoveEncryptedValue_Handler,
+			MethodName: "GetAllValues",
+			Handler:    _HostService_GetAllValues_Handler,
 		},
 		{
 			MethodName: "GetWorkSetBySiteWorkSetId",

@@ -2,18 +2,18 @@ package dto
 
 import "context"
 
-// PluginDataProvider 插件数据持久化
-type PluginDataProvider interface {
-	GetPluginData(ctx context.Context) (string, error)
-	SetPluginData(ctx context.Context, data string) error
-	GetPluginRoot(ctx context.Context, isRelative bool) string
+// StorageProvider 插件自存信息（统一 KV 存储，取代临时 plugin_data 与加密存储）
+type StorageProvider interface {
+	GetValue(ctx context.Context, key string) (string, error)
+	SetValue(ctx context.Context, key, value string) error
+	SetValueEncrypted(ctx context.Context, key, value string) error
+	DeleteValue(ctx context.Context, key string) error
+	GetAllValues(ctx context.Context) (map[string]string, error)
 }
 
-// SecureStorageProvider 加密存储
-type SecureStorageProvider interface {
-	StoreEncryptedValue(ctx context.Context, plainValue, description string) (string, error)
-	GetDecryptedValue(ctx context.Context, storageKey string) (string, error)
-	RemoveEncryptedValue(ctx context.Context, storageKey string) error
+// PluginRootProvider 插件根路径
+type PluginRootProvider interface {
+	GetPluginRoot(ctx context.Context, isRelative bool) string
 }
 
 // WorkSetQueryProvider 作品集查询

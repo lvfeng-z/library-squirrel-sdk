@@ -265,14 +265,12 @@ service HostService {
   rpc RegisterSiteBrowser(RegisterExtensionRequest) returns (Empty);
   rpc UnregisterSiteBrowser(UnregisterRequest) returns (Empty);
 
-  // 插件数据持久化
-  rpc GetPluginData(Empty) returns (PluginDataResponse);
-  rpc SetPluginData(PluginDataRequest) returns (Empty);
-
-  // 加密存储
-  rpc StoreEncryptedValue(EncryptRequest) returns (EncryptResponse);
-  rpc GetDecryptedValue(DecryptRequest) returns (DecryptResponse);
-  rpc RemoveEncryptedValue(DecryptRequest) returns (Empty);
+  // 插件自存信息（统一 KV 存储，取代临时 plugin_data 与 secure_storage）
+  rpc GetValue(StorageKeyRequest) returns (StorageValueResponse);
+  rpc SetValue(StorageEntryRequest) returns (Empty);
+  rpc SetValueEncrypted(StorageEntryRequest) returns (Empty);
+  rpc DeleteValue(StorageKeyRequest) returns (Empty);
+  rpc GetAllValues(Empty) returns (AllStorageValuesResponse);
 
   // 业务查询
   rpc GetWorkSetBySiteWorkSetId(WorkSetQueryRequest) returns (WorkSetQueryResponse);
@@ -305,29 +303,21 @@ message UnregisterRequest {
   string contributionId = 1;
 }
 
-message PluginDataResponse {
-  string data = 1;
-}
-
-message PluginDataRequest {
-  string data = 1;
-}
-
-message EncryptRequest {
-  string plainValue = 1;
-  string description = 2;
-}
-
-message EncryptResponse {
+message StorageKeyRequest {
   string key = 1;
 }
 
-message DecryptRequest {
-  string storageKey = 1;
+message StorageValueResponse {
+  string value = 1;
 }
 
-message DecryptResponse {
-  string value = 1;
+message StorageEntryRequest {
+  string key = 1;
+  string value = 2;
+}
+
+message AllStorageValuesResponse {
+  map<string, string> values = 1;
 }
 
 message WorkSetQueryRequest {

@@ -56,45 +56,41 @@ func (c *PluginContextClient) UnregisterSiteBrowser(id string) error {
 	return err
 }
 
-func (c *PluginContextClient) GetPluginData() (string, error) {
-	resp, err := c.hostClient.GetPluginData(context.Background(), &gen.Empty{})
-	if err != nil {
-		return "", err
-	}
-	return resp.Data, nil
-}
-
-func (c *PluginContextClient) SetPluginData(data string) error {
-	_, err := c.hostClient.SetPluginData(context.Background(), &gen.PluginDataRequest{Data: data})
-	return err
-}
-
-func (c *PluginContextClient) StoreEncryptedValue(plainValue, description string) (string, error) {
-	resp, err := c.hostClient.StoreEncryptedValue(context.Background(), &gen.EncryptRequest{
-		PlainValue:  plainValue,
-		Description: description,
-	})
-	if err != nil {
-		return "", err
-	}
-	return resp.Key, nil
-}
-
-func (c *PluginContextClient) GetDecryptedValue(storageKey string) (string, error) {
-	resp, err := c.hostClient.GetDecryptedValue(context.Background(), &gen.DecryptRequest{
-		StorageKey: storageKey,
-	})
+func (c *PluginContextClient) GetValue(key string) (string, error) {
+	resp, err := c.hostClient.GetValue(context.Background(), &gen.StorageKeyRequest{Key: key})
 	if err != nil {
 		return "", err
 	}
 	return resp.Value, nil
 }
 
-func (c *PluginContextClient) RemoveEncryptedValue(storageKey string) error {
-	_, err := c.hostClient.RemoveEncryptedValue(context.Background(), &gen.DecryptRequest{
-		StorageKey: storageKey,
+func (c *PluginContextClient) SetValue(key string, value string) error {
+	_, err := c.hostClient.SetValue(context.Background(), &gen.StorageEntryRequest{
+		Key:   key,
+		Value: value,
 	})
 	return err
+}
+
+func (c *PluginContextClient) SetValueEncrypted(key string, value string) error {
+	_, err := c.hostClient.SetValueEncrypted(context.Background(), &gen.StorageEntryRequest{
+		Key:   key,
+		Value: value,
+	})
+	return err
+}
+
+func (c *PluginContextClient) DeleteValue(key string) error {
+	_, err := c.hostClient.DeleteValue(context.Background(), &gen.StorageKeyRequest{Key: key})
+	return err
+}
+
+func (c *PluginContextClient) GetAllValues() (map[string]string, error) {
+	resp, err := c.hostClient.GetAllValues(context.Background(), &gen.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Values, nil
 }
 
 func (c *PluginContextClient) GetWorkSetBySiteWorkSetId(siteWorkSetId, siteName string) (*dto.WorkSetDTO, error) {
