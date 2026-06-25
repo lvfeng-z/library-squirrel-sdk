@@ -716,7 +716,7 @@ type HostServiceClient interface {
 	AddSite(ctx context.Context, in *AddSiteRequest, opts ...grpc.CallOption) (*Empty, error)
 	// 任务管理
 	RegisterUrlListener(ctx context.Context, in *UrlListenerRequest, opts ...grpc.CallOption) (*Empty, error)
-	UnregisterUrlListener(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	UnregisterUrlListener(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error)
 	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error)
 	// 路径
 	GetPluginRoot(ctx context.Context, in *GetPluginRootRequest, opts ...grpc.CallOption) (*GetPluginRootResponse, error)
@@ -846,7 +846,7 @@ func (c *hostServiceClient) RegisterUrlListener(ctx context.Context, in *UrlList
 	return out, nil
 }
 
-func (c *hostServiceClient) UnregisterUrlListener(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+func (c *hostServiceClient) UnregisterUrlListener(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, HostService_UnregisterUrlListener_FullMethodName, in, out, cOpts...)
@@ -944,7 +944,7 @@ type HostServiceServer interface {
 	AddSite(context.Context, *AddSiteRequest) (*Empty, error)
 	// 任务管理
 	RegisterUrlListener(context.Context, *UrlListenerRequest) (*Empty, error)
-	UnregisterUrlListener(context.Context, *Empty) (*Empty, error)
+	UnregisterUrlListener(context.Context, *UnregisterRequest) (*Empty, error)
 	CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error)
 	// 路径
 	GetPluginRoot(context.Context, *GetPluginRootRequest) (*GetPluginRootResponse, error)
@@ -997,7 +997,7 @@ func (UnimplementedHostServiceServer) AddSite(context.Context, *AddSiteRequest) 
 func (UnimplementedHostServiceServer) RegisterUrlListener(context.Context, *UrlListenerRequest) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterUrlListener not implemented")
 }
-func (UnimplementedHostServiceServer) UnregisterUrlListener(context.Context, *Empty) (*Empty, error) {
+func (UnimplementedHostServiceServer) UnregisterUrlListener(context.Context, *UnregisterRequest) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method UnregisterUrlListener not implemented")
 }
 func (UnimplementedHostServiceServer) CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error) {
@@ -1238,7 +1238,7 @@ func _HostService_RegisterUrlListener_Handler(srv interface{}, ctx context.Conte
 }
 
 func _HostService_UnregisterUrlListener_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(UnregisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1250,7 +1250,7 @@ func _HostService_UnregisterUrlListener_Handler(srv interface{}, ctx context.Con
 		FullMethod: HostService_UnregisterUrlListener_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).UnregisterUrlListener(ctx, req.(*Empty))
+		return srv.(HostServiceServer).UnregisterUrlListener(ctx, req.(*UnregisterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

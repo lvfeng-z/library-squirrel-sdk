@@ -34,7 +34,7 @@ type TaskCreateProvider interface {
 // UrlListenerRegistry URL 监听器注册
 type UrlListenerRegistry interface {
 	RegisterUrlListener(ctx context.Context, contributionId string, patterns []string) error
-	UnregisterUrlListener(ctx context.Context) error
+	UnregisterUrlListener(ctx context.Context, contributionId string) error
 }
 
 // FrontendEventProvider 前后端事件桥接

@@ -22,7 +22,7 @@ type PluginContext interface {
 
 	// 任务
 	RegisterUrlListener(contributionId string, patterns []string) error
-	UnregisterUrlListener() error
+	UnregisterUrlListener(contributionId string) error
 	CreateTask(url string) (*CreateTaskResult, error)
 
 	// 前后端通信

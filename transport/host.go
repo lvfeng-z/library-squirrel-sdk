@@ -111,8 +111,8 @@ func (s *HostServiceServer) RegisterUrlListener(ctx context.Context, req *gen.Ur
 	return &gen.Empty{}, s.deps.RegisterUrlListener(ctx, req.ContributionId, req.Patterns)
 }
 
-func (s *HostServiceServer) UnregisterUrlListener(ctx context.Context, req *gen.Empty) (*gen.Empty, error) {
-	return &gen.Empty{}, s.deps.UnregisterUrlListener(ctx)
+func (s *HostServiceServer) UnregisterUrlListener(ctx context.Context, req *gen.UnregisterRequest) (*gen.Empty, error) {
+	return &gen.Empty{}, s.deps.UnregisterUrlListener(ctx, req.ContributionId)
 }
 
 func (s *HostServiceServer) CreateTask(ctx context.Context, req *gen.CreateTaskRequest) (*gen.CreateTaskResponse, error) {

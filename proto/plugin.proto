@@ -278,7 +278,7 @@ service HostService {
 
   // 任务管理
   rpc RegisterUrlListener(UrlListenerRequest) returns (Empty);
-  rpc UnregisterUrlListener(Empty) returns (Empty);
+  rpc UnregisterUrlListener(UnregisterRequest) returns (Empty);
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
 
   // 路径

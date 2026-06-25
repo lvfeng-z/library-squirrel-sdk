@@ -128,8 +128,10 @@ func (c *PluginContextClient) RegisterUrlListener(contributionId string, pattern
 	return err
 }
 
-func (c *PluginContextClient) UnregisterUrlListener() error {
-	_, err := c.hostClient.UnregisterUrlListener(context.Background(), &gen.Empty{})
+func (c *PluginContextClient) UnregisterUrlListener(contributionId string) error {
+	_, err := c.hostClient.UnregisterUrlListener(context.Background(), &gen.UnregisterRequest{
+		ContributionId: contributionId,
+	})
 	return err
 }
 

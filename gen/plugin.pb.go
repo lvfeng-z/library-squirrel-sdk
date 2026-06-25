@@ -3475,7 +3475,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\fGetThumbnail\x12\x1c.plugins.GetThumbnailRequest\x1a\x1d.plugins.GetThumbnailResponse2w\n" +
 	"\x12SiteBrowserService\x12/\n" +
 	"\x04Open\x12\x17.plugins.BrowserRequest\x1a\x0e.plugins.Empty\x120\n" +
-	"\x05Close\x12\x17.plugins.BrowserRequest\x1a\x0e.plugins.Empty2\xde\t\n" +
+	"\x05Close\x12\x17.plugins.BrowserRequest\x1a\x0e.plugins.Empty2\xea\t\n" +
 	"\vHostService\x12H\n" +
 	"\x13RegisterTaskHandler\x12!.plugins.RegisterExtensionRequest\x1a\x0e.plugins.Empty\x12H\n" +
 	"\x13RegisterSiteBrowser\x12!.plugins.RegisterExtensionRequest\x1a\x0e.plugins.Empty\x12C\n" +
@@ -3487,8 +3487,8 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\fGetAllValues\x12\x0e.plugins.Empty\x1a!.plugins.AllStorageValuesResponse\x12X\n" +
 	"\x19GetWorkSetBySiteWorkSetId\x12\x1c.plugins.WorkSetQueryRequest\x1a\x1d.plugins.WorkSetQueryResponse\x122\n" +
 	"\aAddSite\x12\x17.plugins.AddSiteRequest\x1a\x0e.plugins.Empty\x12B\n" +
-	"\x13RegisterUrlListener\x12\x1b.plugins.UrlListenerRequest\x1a\x0e.plugins.Empty\x127\n" +
-	"\x15UnregisterUrlListener\x12\x0e.plugins.Empty\x1a\x0e.plugins.Empty\x12E\n" +
+	"\x13RegisterUrlListener\x12\x1b.plugins.UrlListenerRequest\x1a\x0e.plugins.Empty\x12C\n" +
+	"\x15UnregisterUrlListener\x12\x1a.plugins.UnregisterRequest\x1a\x0e.plugins.Empty\x12E\n" +
 	"\n" +
 	"CreateTask\x12\x1a.plugins.CreateTaskRequest\x1a\x1b.plugins.CreateTaskResponse\x12N\n" +
 	"\rGetPluginRoot\x12\x1d.plugins.GetPluginRootRequest\x1a\x1e.plugins.GetPluginRootResponse\x12*\n" +
@@ -3605,7 +3605,7 @@ var file_proto_plugin_proto_depIdxs = []int32{
 	35, // 40: plugins.HostService.GetWorkSetBySiteWorkSetId:input_type -> plugins.WorkSetQueryRequest
 	37, // 41: plugins.HostService.AddSite:input_type -> plugins.AddSiteRequest
 	38, // 42: plugins.HostService.RegisterUrlListener:input_type -> plugins.UrlListenerRequest
-	0,  // 43: plugins.HostService.UnregisterUrlListener:input_type -> plugins.Empty
+	30, // 43: plugins.HostService.UnregisterUrlListener:input_type -> plugins.UnregisterRequest
 	39, // 44: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
 	41, // 45: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
 	43, // 46: plugins.HostService.Log:input_type -> plugins.LogRequest
