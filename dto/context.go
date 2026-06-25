@@ -21,8 +21,8 @@ type PluginContext interface {
 	AddSite(sites []*SiteDTO) error
 
 	// 任务
-	RegisterUrlListener(contributionId string, patterns []string) error
-	UnregisterUrlListener(contributionId string) error
+	RegisterUrlListener(extensionId string, patterns []string) error
+	UnregisterUrlListener(extensionId string) error
 	CreateTask(url string) (*CreateTaskResult, error)
 
 	// 前后端通信

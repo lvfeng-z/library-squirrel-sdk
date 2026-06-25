@@ -13,7 +13,7 @@ type TaskDTO struct {
 	PendingResourceID    *int64  `json:"pendingResourceId"`
 	Continuable          *bool   `json:"continuable"`
 	PluginPublicID       *string `json:"pluginPublicId"`
-	PluginContributionID *string `json:"pluginContributionId"`
+	PluginExtensionID *string `json:"pluginExtensionId"`
 	PluginData           *string `json:"pluginData"`
 	ErrorMessage         *string `json:"errorMessage"`
 	CreateTime           int64   `json:"createTime"`
@@ -46,7 +46,7 @@ type CreateTaskRequest struct {
 	URL                  string `json:"url"`
 	HasChild             bool   `json:"hasChild"`
 	PluginPublicID       string `json:"pluginPublicId"`
-	PluginContributionID string `json:"pluginContributionId"`
+	PluginExtensionID string `json:"pluginExtensionId"`
 	PluginData           string `json:"pluginData"`
 }
 

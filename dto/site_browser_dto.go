@@ -2,7 +2,7 @@ package dto
 
 // SiteBrowserDTO 站点浏览器信息
 type SiteBrowserDTO struct {
-	ContributionID string `json:"contributionId"`
+	ExtensionID string `json:"extensionId"`
 	PluginPublicID string `json:"pluginPublicId"`
 	Name           string `json:"name"`
 	PluginID       int64  `json:"pluginId"`
@@ -10,5 +10,5 @@ type SiteBrowserDTO struct {
 
 // GetID 获取完整ID
 func (d *SiteBrowserDTO) GetID() string {
-	return d.PluginPublicID + "-" + d.ContributionID
+	return d.PluginPublicID + "-" + d.ExtensionID
 }

@@ -58,25 +58,25 @@ func (*Empty) Descriptor() ([]byte, []int) {
 }
 
 type Task struct {
-	state                protoimpl.MessageState `protogen:"open.v1"`
-	Id                   int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreateTime           int64                  `protobuf:"varint,2,opt,name=createTime,proto3" json:"createTime,omitempty"`
-	UpdateTime           int64                  `protobuf:"varint,3,opt,name=updateTime,proto3" json:"updateTime,omitempty"`
-	HasChild             *bool                  `protobuf:"varint,4,opt,name=hasChild,proto3,oneof" json:"hasChild,omitempty"`
-	Pid                  *int64                 `protobuf:"varint,5,opt,name=pid,proto3,oneof" json:"pid,omitempty"`
-	TaskName             *string                `protobuf:"bytes,6,opt,name=taskName,proto3,oneof" json:"taskName,omitempty"`
-	SiteId               *int64                 `protobuf:"varint,7,opt,name=siteId,proto3,oneof" json:"siteId,omitempty"`
-	SiteWorkId           *string                `protobuf:"bytes,8,opt,name=siteWorkId,proto3,oneof" json:"siteWorkId,omitempty"`
-	Url                  *string                `protobuf:"bytes,9,opt,name=url,proto3,oneof" json:"url,omitempty"`
-	Status               int32                  `protobuf:"varint,10,opt,name=status,proto3" json:"status,omitempty"`
-	PendingResourceId    *int64                 `protobuf:"varint,11,opt,name=pendingResourceId,proto3,oneof" json:"pendingResourceId,omitempty"`
-	Continuable          *bool                  `protobuf:"varint,12,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
-	PluginPublicId       *string                `protobuf:"bytes,13,opt,name=pluginPublicId,proto3,oneof" json:"pluginPublicId,omitempty"`
-	PluginContributionId *string                `protobuf:"bytes,14,opt,name=pluginContributionId,proto3,oneof" json:"pluginContributionId,omitempty"`
-	PluginData           *string                `protobuf:"bytes,15,opt,name=pluginData,proto3,oneof" json:"pluginData,omitempty"`
-	ErrorMessage         *string                `protobuf:"bytes,16,opt,name=errorMessage,proto3,oneof" json:"errorMessage,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Id                int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreateTime        int64                  `protobuf:"varint,2,opt,name=createTime,proto3" json:"createTime,omitempty"`
+	UpdateTime        int64                  `protobuf:"varint,3,opt,name=updateTime,proto3" json:"updateTime,omitempty"`
+	HasChild          *bool                  `protobuf:"varint,4,opt,name=hasChild,proto3,oneof" json:"hasChild,omitempty"`
+	Pid               *int64                 `protobuf:"varint,5,opt,name=pid,proto3,oneof" json:"pid,omitempty"`
+	TaskName          *string                `protobuf:"bytes,6,opt,name=taskName,proto3,oneof" json:"taskName,omitempty"`
+	SiteId            *int64                 `protobuf:"varint,7,opt,name=siteId,proto3,oneof" json:"siteId,omitempty"`
+	SiteWorkId        *string                `protobuf:"bytes,8,opt,name=siteWorkId,proto3,oneof" json:"siteWorkId,omitempty"`
+	Url               *string                `protobuf:"bytes,9,opt,name=url,proto3,oneof" json:"url,omitempty"`
+	Status            int32                  `protobuf:"varint,10,opt,name=status,proto3" json:"status,omitempty"`
+	PendingResourceId *int64                 `protobuf:"varint,11,opt,name=pendingResourceId,proto3,oneof" json:"pendingResourceId,omitempty"`
+	Continuable       *bool                  `protobuf:"varint,12,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
+	PluginPublicId    *string                `protobuf:"bytes,13,opt,name=pluginPublicId,proto3,oneof" json:"pluginPublicId,omitempty"`
+	PluginExtensionId *string                `protobuf:"bytes,14,opt,name=pluginExtensionId,proto3,oneof" json:"pluginExtensionId,omitempty"`
+	PluginData        *string                `protobuf:"bytes,15,opt,name=pluginData,proto3,oneof" json:"pluginData,omitempty"`
+	ErrorMessage      *string                `protobuf:"bytes,16,opt,name=errorMessage,proto3,oneof" json:"errorMessage,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *Task) Reset() {
@@ -200,9 +200,9 @@ func (x *Task) GetPluginPublicId() string {
 	return ""
 }
 
-func (x *Task) GetPluginContributionId() string {
-	if x != nil && x.PluginContributionId != nil {
-		return *x.PluginContributionId
+func (x *Task) GetPluginExtensionId() string {
+	if x != nil && x.PluginExtensionId != nil {
+		return *x.PluginExtensionId
 	}
 	return ""
 }
@@ -1542,11 +1542,11 @@ func (*ActivateResponse) Descriptor() ([]byte, []int) {
 }
 
 type CreateRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Url            string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
-	ContributionId string                 `protobuf:"bytes,2,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	ExtensionId   string                 `protobuf:"bytes,2,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateRequest) Reset() {
@@ -1586,9 +1586,9 @@ func (x *CreateRequest) GetUrl() string {
 	return ""
 }
 
-func (x *CreateRequest) GetContributionId() string {
+func (x *CreateRequest) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
@@ -1737,11 +1737,11 @@ func (x *CreateMode) GetIsStream() bool {
 }
 
 type CreateWorkInfoRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Task           *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
-	ContributionId string                 `protobuf:"bytes,2,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Task          *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	ExtensionId   string                 `protobuf:"bytes,2,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateWorkInfoRequest) Reset() {
@@ -1781,19 +1781,19 @@ func (x *CreateWorkInfoRequest) GetTask() *Task {
 	return nil
 }
 
-func (x *CreateWorkInfoRequest) GetContributionId() string {
+func (x *CreateWorkInfoRequest) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
 
 type StartRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Task           *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
-	ContributionId string                 `protobuf:"bytes,2,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Task          *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	ExtensionId   string                 `protobuf:"bytes,2,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *StartRequest) Reset() {
@@ -1833,19 +1833,19 @@ func (x *StartRequest) GetTask() *Task {
 	return nil
 }
 
-func (x *StartRequest) GetContributionId() string {
+func (x *StartRequest) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
 
 type RetryRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Task           *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
-	ContributionId string                 `protobuf:"bytes,2,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Task          *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	ExtensionId   string                 `protobuf:"bytes,2,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RetryRequest) Reset() {
@@ -1885,19 +1885,19 @@ func (x *RetryRequest) GetTask() *Task {
 	return nil
 }
 
-func (x *RetryRequest) GetContributionId() string {
+func (x *RetryRequest) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
 
 type TaskResParamMessage struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Param          *TaskResParam          `protobuf:"bytes,1,opt,name=param,proto3" json:"param,omitempty"`
-	ContributionId string                 `protobuf:"bytes,2,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Param         *TaskResParam          `protobuf:"bytes,1,opt,name=param,proto3" json:"param,omitempty"`
+	ExtensionId   string                 `protobuf:"bytes,2,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TaskResParamMessage) Reset() {
@@ -1937,9 +1937,9 @@ func (x *TaskResParamMessage) GetParam() *TaskResParam {
 	return nil
 }
 
-func (x *TaskResParamMessage) GetContributionId() string {
+func (x *TaskResParamMessage) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
@@ -2158,10 +2158,10 @@ func (x *GetThumbnailResponse) GetFormat() string {
 }
 
 type BrowserRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	ContributionId string                 `protobuf:"bytes,1,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ExtensionId   string                 `protobuf:"bytes,1,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *BrowserRequest) Reset() {
@@ -2194,20 +2194,20 @@ func (*BrowserRequest) Descriptor() ([]byte, []int) {
 	return file_proto_plugin_proto_rawDescGZIP(), []int{28}
 }
 
-func (x *BrowserRequest) GetContributionId() string {
+func (x *BrowserRequest) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
 
 type RegisterExtensionRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	ContributionId string                 `protobuf:"bytes,1,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description    string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ExtensionId   string                 `protobuf:"bytes,1,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RegisterExtensionRequest) Reset() {
@@ -2240,9 +2240,9 @@ func (*RegisterExtensionRequest) Descriptor() ([]byte, []int) {
 	return file_proto_plugin_proto_rawDescGZIP(), []int{29}
 }
 
-func (x *RegisterExtensionRequest) GetContributionId() string {
+func (x *RegisterExtensionRequest) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
@@ -2262,10 +2262,10 @@ func (x *RegisterExtensionRequest) GetDescription() string {
 }
 
 type UnregisterRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	ContributionId string                 `protobuf:"bytes,1,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ExtensionId   string                 `protobuf:"bytes,1,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UnregisterRequest) Reset() {
@@ -2298,9 +2298,9 @@ func (*UnregisterRequest) Descriptor() ([]byte, []int) {
 	return file_proto_plugin_proto_rawDescGZIP(), []int{30}
 }
 
-func (x *UnregisterRequest) GetContributionId() string {
+func (x *UnregisterRequest) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
@@ -2630,11 +2630,11 @@ func (x *AddSiteRequest) GetSites() []*Site {
 }
 
 type UrlListenerRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	ContributionId string                 `protobuf:"bytes,1,opt,name=contributionId,proto3" json:"contributionId,omitempty"`
-	Patterns       []string               `protobuf:"bytes,2,rep,name=patterns,proto3" json:"patterns,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ExtensionId   string                 `protobuf:"bytes,1,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
+	Patterns      []string               `protobuf:"bytes,2,rep,name=patterns,proto3" json:"patterns,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UrlListenerRequest) Reset() {
@@ -2667,9 +2667,9 @@ func (*UrlListenerRequest) Descriptor() ([]byte, []int) {
 	return file_proto_plugin_proto_rawDescGZIP(), []int{38}
 }
 
-func (x *UrlListenerRequest) GetContributionId() string {
+func (x *UrlListenerRequest) GetExtensionId() string {
 	if x != nil {
-		return x.ContributionId
+		return x.ExtensionId
 	}
 	return ""
 }
@@ -3138,7 +3138,7 @@ var File_proto_plugin_proto protoreflect.FileDescriptor
 const file_proto_plugin_proto_rawDesc = "" +
 	"\n" +
 	"\x12proto/plugin.proto\x12\aplugins\"\a\n" +
-	"\x05Empty\"\xe4\x05\n" +
+	"\x05Empty\"\xdb\x05\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1e\n" +
 	"\n" +
@@ -3159,8 +3159,8 @@ const file_proto_plugin_proto_rawDesc = "" +
 	" \x01(\x05R\x06status\x121\n" +
 	"\x11pendingResourceId\x18\v \x01(\x03H\x06R\x11pendingResourceId\x88\x01\x01\x12%\n" +
 	"\vcontinuable\x18\f \x01(\bH\aR\vcontinuable\x88\x01\x01\x12+\n" +
-	"\x0epluginPublicId\x18\r \x01(\tH\bR\x0epluginPublicId\x88\x01\x01\x127\n" +
-	"\x14pluginContributionId\x18\x0e \x01(\tH\tR\x14pluginContributionId\x88\x01\x01\x12#\n" +
+	"\x0epluginPublicId\x18\r \x01(\tH\bR\x0epluginPublicId\x88\x01\x01\x121\n" +
+	"\x11pluginExtensionId\x18\x0e \x01(\tH\tR\x11pluginExtensionId\x88\x01\x01\x12#\n" +
 	"\n" +
 	"pluginData\x18\x0f \x01(\tH\n" +
 	"R\n" +
@@ -3174,8 +3174,8 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x04_urlB\x14\n" +
 	"\x12_pendingResourceIdB\x0e\n" +
 	"\f_continuableB\x11\n" +
-	"\x0f_pluginPublicIdB\x17\n" +
-	"\x15_pluginContributionIdB\r\n" +
+	"\x0f_pluginPublicIdB\x14\n" +
+	"\x12_pluginExtensionIdB\r\n" +
 	"\v_pluginDataB\x0f\n" +
 	"\r_errorMessage\"\x8e\x05\n" +
 	"\x04Work\x12\x0e\n" +
@@ -3366,10 +3366,10 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\brootPath\x18\x03 \x01(\tR\brootPath\x12$\n" +
 	"\rhostServiceId\x18\x04 \x01(\rR\rhostServiceId\x12,\n" +
 	"\x12main_window_handle\x18\x05 \x01(\x04R\x10mainWindowHandle\"\x12\n" +
-	"\x10ActivateResponse\"I\n" +
+	"\x10ActivateResponse\"C\n" +
 	"\rCreateRequest\x12\x10\n" +
-	"\x03url\x18\x01 \x01(\tR\x03url\x12&\n" +
-	"\x0econtributionId\x18\x02 \x01(\tR\x0econtributionId\"\x8e\x01\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\x12 \n" +
+	"\vextensionId\x18\x02 \x01(\tR\vextensionId\"\x8e\x01\n" +
 	"\vCreateChunk\x12)\n" +
 	"\x04mode\x18\x01 \x01(\v2\x13.plugins.CreateModeH\x00R\x04mode\x121\n" +
 	"\x04task\x18\x02 \x01(\v2\x1b.plugins.TaskCreateResponseH\x00R\x04task\x12\x16\n" +
@@ -3377,19 +3377,19 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\apayload\")\n" +
 	"\n" +
 	"CreateMode\x12\x1b\n" +
-	"\tis_stream\x18\x01 \x01(\bR\bisStream\"b\n" +
+	"\tis_stream\x18\x01 \x01(\bR\bisStream\"\\\n" +
 	"\x15CreateWorkInfoRequest\x12!\n" +
-	"\x04task\x18\x01 \x01(\v2\r.plugins.TaskR\x04task\x12&\n" +
-	"\x0econtributionId\x18\x02 \x01(\tR\x0econtributionId\"Y\n" +
+	"\x04task\x18\x01 \x01(\v2\r.plugins.TaskR\x04task\x12 \n" +
+	"\vextensionId\x18\x02 \x01(\tR\vextensionId\"S\n" +
 	"\fStartRequest\x12!\n" +
-	"\x04task\x18\x01 \x01(\v2\r.plugins.TaskR\x04task\x12&\n" +
-	"\x0econtributionId\x18\x02 \x01(\tR\x0econtributionId\"Y\n" +
+	"\x04task\x18\x01 \x01(\v2\r.plugins.TaskR\x04task\x12 \n" +
+	"\vextensionId\x18\x02 \x01(\tR\vextensionId\"S\n" +
 	"\fRetryRequest\x12!\n" +
-	"\x04task\x18\x01 \x01(\v2\r.plugins.TaskR\x04task\x12&\n" +
-	"\x0econtributionId\x18\x02 \x01(\tR\x0econtributionId\"j\n" +
+	"\x04task\x18\x01 \x01(\v2\r.plugins.TaskR\x04task\x12 \n" +
+	"\vextensionId\x18\x02 \x01(\tR\vextensionId\"d\n" +
 	"\x13TaskResParamMessage\x12+\n" +
-	"\x05param\x18\x01 \x01(\v2\x15.plugins.TaskResParamR\x05param\x12&\n" +
-	"\x0econtributionId\x18\x02 \x01(\tR\x0econtributionId\"\x97\x01\n" +
+	"\x05param\x18\x01 \x01(\v2\x15.plugins.TaskResParamR\x05param\x12 \n" +
+	"\vextensionId\x18\x02 \x01(\tR\vextensionId\"\x97\x01\n" +
 	"\vStreamChunk\x12;\n" +
 	"\fworkResponse\x18\x01 \x01(\v2\x15.plugins.WorkResponseH\x00R\fworkResponse\x12\x14\n" +
 	"\x04data\x18\x02 \x01(\fH\x00R\x04data\x12\x12\n" +
@@ -3400,15 +3400,15 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\btaskData\x18\x01 \x01(\tR\btaskData\"B\n" +
 	"\x14GetThumbnailResponse\x12\x12\n" +
 	"\x04data\x18\x01 \x01(\fR\x04data\x12\x16\n" +
-	"\x06format\x18\x02 \x01(\tR\x06format\"8\n" +
-	"\x0eBrowserRequest\x12&\n" +
-	"\x0econtributionId\x18\x01 \x01(\tR\x0econtributionId\"x\n" +
-	"\x18RegisterExtensionRequest\x12&\n" +
-	"\x0econtributionId\x18\x01 \x01(\tR\x0econtributionId\x12\x12\n" +
+	"\x06format\x18\x02 \x01(\tR\x06format\"2\n" +
+	"\x0eBrowserRequest\x12 \n" +
+	"\vextensionId\x18\x01 \x01(\tR\vextensionId\"r\n" +
+	"\x18RegisterExtensionRequest\x12 \n" +
+	"\vextensionId\x18\x01 \x01(\tR\vextensionId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\";\n" +
-	"\x11UnregisterRequest\x12&\n" +
-	"\x0econtributionId\x18\x01 \x01(\tR\x0econtributionId\"%\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"5\n" +
+	"\x11UnregisterRequest\x12 \n" +
+	"\vextensionId\x18\x01 \x01(\tR\vextensionId\"%\n" +
 	"\x11StorageKeyRequest\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\",\n" +
 	"\x14StorageValueResponse\x12\x14\n" +
@@ -3427,9 +3427,9 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x14WorkSetQueryResponse\x12*\n" +
 	"\aworkSet\x18\x01 \x01(\v2\x10.plugins.WorkSetR\aworkSet\"5\n" +
 	"\x0eAddSiteRequest\x12#\n" +
-	"\x05sites\x18\x01 \x03(\v2\r.plugins.SiteR\x05sites\"X\n" +
-	"\x12UrlListenerRequest\x12&\n" +
-	"\x0econtributionId\x18\x01 \x01(\tR\x0econtributionId\x12\x1a\n" +
+	"\x05sites\x18\x01 \x03(\v2\r.plugins.SiteR\x05sites\"R\n" +
+	"\x12UrlListenerRequest\x12 \n" +
+	"\vextensionId\x18\x01 \x01(\tR\vextensionId\x12\x1a\n" +
 	"\bpatterns\x18\x02 \x03(\tR\bpatterns\"%\n" +
 	"\x11CreateTaskRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\"f\n" +

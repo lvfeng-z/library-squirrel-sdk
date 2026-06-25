@@ -21,9 +21,9 @@ type HostDeps struct {
 	dto.UrlListenerRegistry
 	dto.FrontendEventProvider
 	LogFunc                 func(level int32, template string, args []string, loggerName string)
-	OnRegisterTaskHandler   func(contributionId, name, description string) error
-	OnRegisterSiteBrowser   func(contributionId, name, description string) error
-	OnUnregisterSiteBrowser func(contributionId string) error
+	OnRegisterTaskHandler   func(extensionId, name, description string) error
+	OnRegisterSiteBrowser   func(extensionId, name, description string) error
+	OnUnregisterSiteBrowser func(extensionId string) error
 }
 
 // HostServiceServer HostService 的 gRPC 服务端实现
@@ -44,21 +44,21 @@ func RegisterHostService(s *grpc.Server, deps HostDeps) {
 
 func (s *HostServiceServer) RegisterTaskHandler(ctx context.Context, req *gen.RegisterExtensionRequest) (*gen.Empty, error) {
 	if s.deps.OnRegisterTaskHandler != nil {
-		return &gen.Empty{}, s.deps.OnRegisterTaskHandler(req.ContributionId, req.Name, req.Description)
+		return &gen.Empty{}, s.deps.OnRegisterTaskHandler(req.ExtensionId, req.Name, req.Description)
 	}
 	return &gen.Empty{}, nil
 }
 
 func (s *HostServiceServer) RegisterSiteBrowser(ctx context.Context, req *gen.RegisterExtensionRequest) (*gen.Empty, error) {
 	if s.deps.OnRegisterSiteBrowser != nil {
-		return &gen.Empty{}, s.deps.OnRegisterSiteBrowser(req.ContributionId, req.Name, req.Description)
+		return &gen.Empty{}, s.deps.OnRegisterSiteBrowser(req.ExtensionId, req.Name, req.Description)
 	}
 	return &gen.Empty{}, nil
 }
 
 func (s *HostServiceServer) UnregisterSiteBrowser(ctx context.Context, req *gen.UnregisterRequest) (*gen.Empty, error) {
 	if s.deps.OnUnregisterSiteBrowser != nil {
-		return &gen.Empty{}, s.deps.OnUnregisterSiteBrowser(req.ContributionId)
+		return &gen.Empty{}, s.deps.OnUnregisterSiteBrowser(req.ExtensionId)
 	}
 	return &gen.Empty{}, nil
 }
@@ -108,11 +108,11 @@ func (s *HostServiceServer) AddSite(ctx context.Context, req *gen.AddSiteRequest
 }
 
 func (s *HostServiceServer) RegisterUrlListener(ctx context.Context, req *gen.UrlListenerRequest) (*gen.Empty, error) {
-	return &gen.Empty{}, s.deps.RegisterUrlListener(ctx, req.ContributionId, req.Patterns)
+	return &gen.Empty{}, s.deps.RegisterUrlListener(ctx, req.ExtensionId, req.Patterns)
 }
 
 func (s *HostServiceServer) UnregisterUrlListener(ctx context.Context, req *gen.UnregisterRequest) (*gen.Empty, error) {
-	return &gen.Empty{}, s.deps.UnregisterUrlListener(ctx, req.ContributionId)
+	return &gen.Empty{}, s.deps.UnregisterUrlListener(ctx, req.ExtensionId)
 }
 
 func (s *HostServiceServer) CreateTask(ctx context.Context, req *gen.CreateTaskRequest) (*gen.CreateTaskResponse, error) {

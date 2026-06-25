@@ -33,7 +33,7 @@ func (c *PluginContextClient) SetMainWindowHandle(hwnd uintptr) {
 
 func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, handler dto.TaskHandler) error {
 	_, err := c.hostClient.RegisterTaskHandler(context.Background(), &gen.RegisterExtensionRequest{
-		ContributionId: id,
+		ExtensionId: id,
 		Name:           name,
 		Description:    description,
 	})
@@ -42,7 +42,7 @@ func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, 
 
 func (c *PluginContextClient) RegisterSiteBrowser(id, name, description string, browser dto.SiteBrowser) error {
 	_, err := c.hostClient.RegisterSiteBrowser(context.Background(), &gen.RegisterExtensionRequest{
-		ContributionId: id,
+		ExtensionId: id,
 		Name:           name,
 		Description:    description,
 	})
@@ -51,7 +51,7 @@ func (c *PluginContextClient) RegisterSiteBrowser(id, name, description string, 
 
 func (c *PluginContextClient) UnregisterSiteBrowser(id string) error {
 	_, err := c.hostClient.UnregisterSiteBrowser(context.Background(), &gen.UnregisterRequest{
-		ContributionId: id,
+		ExtensionId: id,
 	})
 	return err
 }
@@ -120,17 +120,17 @@ func (c *PluginContextClient) AddSite(sites []*dto.SiteDTO) error {
 	return err
 }
 
-func (c *PluginContextClient) RegisterUrlListener(contributionId string, patterns []string) error {
+func (c *PluginContextClient) RegisterUrlListener(extensionId string, patterns []string) error {
 	_, err := c.hostClient.RegisterUrlListener(context.Background(), &gen.UrlListenerRequest{
-		ContributionId: contributionId,
+		ExtensionId: extensionId,
 		Patterns:       patterns,
 	})
 	return err
 }
 
-func (c *PluginContextClient) UnregisterUrlListener(contributionId string) error {
+func (c *PluginContextClient) UnregisterUrlListener(extensionId string) error {
 	_, err := c.hostClient.UnregisterUrlListener(context.Background(), &gen.UnregisterRequest{
-		ContributionId: contributionId,
+		ExtensionId: extensionId,
 	})
 	return err
 }

@@ -402,7 +402,7 @@ func protoToTask(pb *gen.Task) *dto.TaskDTO {
 		PendingResourceID:    pb.PendingResourceId,
 		Continuable:          pb.Continuable,
 		PluginPublicID:       pb.PluginPublicId,
-		PluginContributionID: pb.PluginContributionId,
+		PluginExtensionID: pb.PluginExtensionId,
 		PluginData:           pb.PluginData,
 		ErrorMessage:         pb.ErrorMessage,
 	}

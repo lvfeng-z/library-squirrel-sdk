@@ -22,7 +22,7 @@ message Task {
   optional int64 pendingResourceId = 11;
   optional bool continuable = 12;
   optional string pluginPublicId = 13;
-  optional string pluginContributionId = 14;
+  optional string pluginExtensionId = 14;
   optional string pluginData = 15;
   optional string errorMessage = 16;
 }
@@ -189,7 +189,7 @@ service TaskHandlerService {
 
 message CreateRequest {
   string url = 1;
-  string contributionId = 2;
+  string extensionId = 2;
 }
 
 // Create 流式响应块
@@ -207,22 +207,22 @@ message CreateMode {
 
 message CreateWorkInfoRequest {
   Task task = 1;
-  string contributionId = 2;
+  string extensionId = 2;
 }
 
 message StartRequest {
   Task task = 1;
-  string contributionId = 2;
+  string extensionId = 2;
 }
 
 message RetryRequest {
   Task task = 1;
-  string contributionId = 2;
+  string extensionId = 2;
 }
 
 message TaskResParamMessage {
   TaskResParam param = 1;
-  string contributionId = 2;
+  string extensionId = 2;
 }
 
 // 流式数据块
@@ -254,7 +254,7 @@ service SiteBrowserService {
 }
 
 message BrowserRequest {
-  string contributionId = 1;
+  string extensionId = 1;
 }
 
 // ========== 4. 主程序宿主服务（插件 → 主程序，通过 GRPCBroker）==========
@@ -294,13 +294,13 @@ service HostService {
 }
 
 message RegisterExtensionRequest {
-  string contributionId = 1;
+  string extensionId = 1;
   string name = 2;
   string description = 3;
 }
 
 message UnregisterRequest {
-  string contributionId = 1;
+  string extensionId = 1;
 }
 
 message StorageKeyRequest {
@@ -334,7 +334,7 @@ message AddSiteRequest {
 }
 
 message UrlListenerRequest {
-  string contributionId = 1;
+  string extensionId = 1;
   repeated string patterns = 2;
 }
 
