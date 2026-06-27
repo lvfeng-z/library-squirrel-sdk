@@ -114,13 +114,6 @@ message TaskWorkSetDTO {
   string workSetName = 2;
 }
 
-message TaskResourceDTO {
-  string format = 1;
-  int64 size = 2;
-  string suggestName = 3;
-  optional bool continuable = 4;
-}
-
 message TaskCreateChildResponse {
   string taskName = 1;
   string siteWorkId = 2;
@@ -147,7 +140,6 @@ message WorkResponse {
   repeated TaskSiteAuthorDTO siteAuthors = 5;
   repeated TaskSiteTagDTO siteTags = 6;
   repeated TaskWorkSetDTO workSets = 7;
-  TaskResourceDTO resource = 8;
 }
 
 message TaskResParam {
@@ -183,8 +175,7 @@ service TaskHandlerService {
   rpc Retry(RetryRequest) returns (WorkResponse);
   rpc Pause(TaskResParamMessage) returns (Empty);
   rpc Stop(TaskResParamMessage) returns (Empty);
-  rpc Resume(TaskResParamMessage) returns (stream StreamChunk);
-  rpc GetThumbnail(GetThumbnailRequest) returns (GetThumbnailResponse);
+  rpc Resume(TaskResumeParamMessage) returns (stream StreamChunk);
 }
 
 message CreateRequest {
@@ -213,6 +204,7 @@ message CreateWorkInfoRequest {
 message StartRequest {
   Task task = 1;
   string extensionId = 2;
+  repeated string storeRoles = 3; // 本次执行所选 store_type 子集(空=全量);插件据此选择性产出
 }
 
 message RetryRequest {
@@ -225,25 +217,44 @@ message TaskResParamMessage {
   string extensionId = 2;
 }
 
+// 续传参数(每条 downloaded 轨独立偏移)
+message TaskResumeParam {
+  Task task = 1;
+  map<string, int64> streamOffsets = 2; // role → 已写入字节数(仅未完成 downloaded 轨);Resume 产出由其 key 集合决定
+  reserved 3; // 已移除 storeRoles(Resume 由 streamOffsets 控制)
+}
+
+message TaskResumeParamMessage {
+  TaskResumeParam param = 1;
+  string extensionId = 2;
+}
+
 // 流式数据块
 message StreamChunk {
+  // data/eof/error 块的所属轨道(store_type);WorkResponse/Specs 块不设
+  string role = 5;
   oneof payload {
     WorkResponse workResponse = 1;
+    StoreSpecs specs = 6;
     bytes data = 2;
     bool eof = 3;
     string error = 4;
   }
 }
 
-// 缩略图请求
-message GetThumbnailRequest {
-  string taskData = 1;
+// StoreSpec 可序列化元数据(不含 reader,reader 数据走 data 块)
+message StoreSpecMeta {
+  string role = 1;
+  string generation = 2;
+  string format = 3;
+  int64 size = 4;
+  string suggestName = 5;
+  optional bool continuable = 6;
 }
 
-// 缩略图响应
-message GetThumbnailResponse {
-  bytes data = 1;
-  string format = 2;
+// 产出声明集合(Start/Resume 首批,声明全部轨道元数据)
+message StoreSpecs {
+  repeated StoreSpecMeta items = 1;
 }
 
 // ========== 3. 站点浏览器服务（主程序 → 插件）==========
