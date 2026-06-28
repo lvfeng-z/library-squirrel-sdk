@@ -446,6 +446,9 @@ func storeSpecsToProto(specs []*dto.StoreSpec) *gen.StoreSpecs {
 		if sp.Continuable != nil {
 			meta.Continuable = sp.Continuable
 		}
+		if sp.ResumeWriteOffset != nil {
+			meta.ResumeWriteOffset = sp.ResumeWriteOffset
+		}
 		pb.Items = append(pb.Items, meta)
 	}
 	return pb

@@ -2123,15 +2123,16 @@ func (*StreamChunk_Error) isStreamChunk_Payload() {}
 
 // StoreSpec 可序列化元数据(不含 reader,reader 数据走 data 块)
 type StoreSpecMeta struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
-	Generation    string                 `protobuf:"bytes,2,opt,name=generation,proto3" json:"generation,omitempty"`
-	Format        string                 `protobuf:"bytes,3,opt,name=format,proto3" json:"format,omitempty"`
-	Size          int64                  `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
-	SuggestName   string                 `protobuf:"bytes,5,opt,name=suggestName,proto3" json:"suggestName,omitempty"`
-	Continuable   *bool                  `protobuf:"varint,6,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Role              string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	Generation        string                 `protobuf:"bytes,2,opt,name=generation,proto3" json:"generation,omitempty"`
+	Format            string                 `protobuf:"bytes,3,opt,name=format,proto3" json:"format,omitempty"`
+	Size              int64                  `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
+	SuggestName       string                 `protobuf:"bytes,5,opt,name=suggestName,proto3" json:"suggestName,omitempty"`
+	Continuable       *bool                  `protobuf:"varint,6,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
+	ResumeWriteOffset *int64                 `protobuf:"varint,7,opt,name=resumeWriteOffset,proto3,oneof" json:"resumeWriteOffset,omitempty"` // 续传写入偏移(仅 Resume);nil=信任主程序 offset
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *StoreSpecMeta) Reset() {
@@ -2204,6 +2205,13 @@ func (x *StoreSpecMeta) GetContinuable() bool {
 		return *x.Continuable
 	}
 	return false
+}
+
+func (x *StoreSpecMeta) GetResumeWriteOffset() int64 {
+	if x != nil && x.ResumeWriteOffset != nil {
+		return *x.ResumeWriteOffset
+	}
+	return 0
 }
 
 // 产出声明集合(Start/Resume 首批,声明全部轨道元数据)
@@ -3496,7 +3504,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x04data\x18\x02 \x01(\fH\x00R\x04data\x12\x12\n" +
 	"\x03eof\x18\x03 \x01(\bH\x00R\x03eof\x12\x16\n" +
 	"\x05error\x18\x04 \x01(\tH\x00R\x05errorB\t\n" +
-	"\apayload\"\xc8\x01\n" +
+	"\apayload\"\x91\x02\n" +
 	"\rStoreSpecMeta\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x1e\n" +
 	"\n" +
@@ -3505,8 +3513,10 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x06format\x18\x03 \x01(\tR\x06format\x12\x12\n" +
 	"\x04size\x18\x04 \x01(\x03R\x04size\x12 \n" +
 	"\vsuggestName\x18\x05 \x01(\tR\vsuggestName\x12%\n" +
-	"\vcontinuable\x18\x06 \x01(\bH\x00R\vcontinuable\x88\x01\x01B\x0e\n" +
-	"\f_continuable\":\n" +
+	"\vcontinuable\x18\x06 \x01(\bH\x00R\vcontinuable\x88\x01\x01\x121\n" +
+	"\x11resumeWriteOffset\x18\a \x01(\x03H\x01R\x11resumeWriteOffset\x88\x01\x01B\x0e\n" +
+	"\f_continuableB\x14\n" +
+	"\x12_resumeWriteOffset\":\n" +
 	"\n" +
 	"StoreSpecs\x12,\n" +
 	"\x05items\x18\x01 \x03(\v2\x16.plugins.StoreSpecMetaR\x05items\"2\n" +

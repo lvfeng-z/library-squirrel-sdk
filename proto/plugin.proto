@@ -250,6 +250,7 @@ message StoreSpecMeta {
   int64 size = 4;
   string suggestName = 5;
   optional bool continuable = 6;
+  optional int64 resumeWriteOffset = 7; // 续传写入偏移(仅 Resume);nil=信任主程序 offset
 }
 
 // 产出声明集合(Start/Resume 首批,声明全部轨道元数据)

@@ -71,6 +71,7 @@ type StoreSpec struct {
 	Size        int64         `json:"size"`                                                                  // 远程大小;-1 未知
 	SuggestName string        `json:"suggestName,omitempty"`                                                 // 插件建议文件名
 	Continuable *bool         `json:"continuable,omitempty"`                                                 // 是否支持续传(derived 恒为 false)
+	ResumeWriteOffset *int64  `json:"resumeWriteOffset,omitempty"`                                           // 续传写入偏移(仅 Resume 返回的 spec);nil=信任主程序 stat 的 offset,非 nil=插件指定确切位置
 }
 
 // TaskSiteAuthorDTO 任务处理器站点作者DTO
