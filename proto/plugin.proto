@@ -171,11 +171,11 @@ message ActivateResponse {}
 service TaskHandlerService {
   rpc Create(CreateRequest) returns (stream CreateChunk);
   rpc CreateWorkInfo(CreateWorkInfoRequest) returns (WorkResponse);
-  rpc Start(StartRequest) returns (stream StreamChunk);
+  rpc Start(stream StartFrame) returns (stream StreamChunk);
   rpc Retry(RetryRequest) returns (WorkResponse);
   rpc Pause(TaskResParamMessage) returns (Empty);
   rpc Stop(TaskResParamMessage) returns (Empty);
-  rpc Resume(TaskResumeParamMessage) returns (stream StreamChunk);
+  rpc Resume(stream ResumeFrame) returns (stream StreamChunk);
 }
 
 message CreateRequest {
@@ -240,6 +240,28 @@ message StreamChunk {
     bool eof = 3;
     string error = 4;
   }
+}
+
+// Start bidi 请求帧:首帧携带 StartRequest,后续帧按需拉取数据(PullRequest)
+message StartFrame {
+  oneof frame {
+    StartRequest start = 1;
+    PullRequest pull = 2;
+  }
+}
+
+// Resume bidi 请求帧:首帧携带 TaskResumeParamMessage,后续帧按需拉取数据(PullRequest)
+message ResumeFrame {
+  oneof frame {
+    TaskResumeParamMessage resume = 1;
+    PullRequest pull = 2;
+  }
+}
+
+// 主程序按需拉取:插件据 max_bytes 调对应 role reader.Read 一次,回一个 StreamChunk{role, data/eof/error}
+message PullRequest {
+  string role = 1;
+  int32 max_bytes = 2;
 }
 
 // StoreSpec 可序列化元数据(不含 reader,reader 数据走 data 块)

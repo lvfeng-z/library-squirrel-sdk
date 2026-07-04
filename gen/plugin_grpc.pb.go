@@ -174,11 +174,11 @@ const (
 type TaskHandlerServiceClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateChunk], error)
 	CreateWorkInfo(ctx context.Context, in *CreateWorkInfoRequest, opts ...grpc.CallOption) (*WorkResponse, error)
-	Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChunk], error)
+	Start(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StartFrame, StreamChunk], error)
 	Retry(ctx context.Context, in *RetryRequest, opts ...grpc.CallOption) (*WorkResponse, error)
 	Pause(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error)
 	Stop(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error)
-	Resume(ctx context.Context, in *TaskResumeParamMessage, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChunk], error)
+	Resume(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ResumeFrame, StreamChunk], error)
 }
 
 type taskHandlerServiceClient struct {
@@ -218,24 +218,18 @@ func (c *taskHandlerServiceClient) CreateWorkInfo(ctx context.Context, in *Creat
 	return out, nil
 }
 
-func (c *taskHandlerServiceClient) Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChunk], error) {
+func (c *taskHandlerServiceClient) Start(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StartFrame, StreamChunk], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[1], TaskHandlerService_Start_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[StartRequest, StreamChunk]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
+	x := &grpc.GenericClientStream[StartFrame, StreamChunk]{ClientStream: stream}
 	return x, nil
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_StartClient = grpc.ServerStreamingClient[StreamChunk]
+type TaskHandlerService_StartClient = grpc.BidiStreamingClient[StartFrame, StreamChunk]
 
 func (c *taskHandlerServiceClient) Retry(ctx context.Context, in *RetryRequest, opts ...grpc.CallOption) (*WorkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -267,24 +261,18 @@ func (c *taskHandlerServiceClient) Stop(ctx context.Context, in *TaskResParamMes
 	return out, nil
 }
 
-func (c *taskHandlerServiceClient) Resume(ctx context.Context, in *TaskResumeParamMessage, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChunk], error) {
+func (c *taskHandlerServiceClient) Resume(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ResumeFrame, StreamChunk], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[2], TaskHandlerService_Resume_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[TaskResumeParamMessage, StreamChunk]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
+	x := &grpc.GenericClientStream[ResumeFrame, StreamChunk]{ClientStream: stream}
 	return x, nil
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_ResumeClient = grpc.ServerStreamingClient[StreamChunk]
+type TaskHandlerService_ResumeClient = grpc.BidiStreamingClient[ResumeFrame, StreamChunk]
 
 // TaskHandlerServiceServer is the server API for TaskHandlerService service.
 // All implementations must embed UnimplementedTaskHandlerServiceServer
@@ -292,11 +280,11 @@ type TaskHandlerService_ResumeClient = grpc.ServerStreamingClient[StreamChunk]
 type TaskHandlerServiceServer interface {
 	Create(*CreateRequest, grpc.ServerStreamingServer[CreateChunk]) error
 	CreateWorkInfo(context.Context, *CreateWorkInfoRequest) (*WorkResponse, error)
-	Start(*StartRequest, grpc.ServerStreamingServer[StreamChunk]) error
+	Start(grpc.BidiStreamingServer[StartFrame, StreamChunk]) error
 	Retry(context.Context, *RetryRequest) (*WorkResponse, error)
 	Pause(context.Context, *TaskResParamMessage) (*Empty, error)
 	Stop(context.Context, *TaskResParamMessage) (*Empty, error)
-	Resume(*TaskResumeParamMessage, grpc.ServerStreamingServer[StreamChunk]) error
+	Resume(grpc.BidiStreamingServer[ResumeFrame, StreamChunk]) error
 	mustEmbedUnimplementedTaskHandlerServiceServer()
 }
 
@@ -313,7 +301,7 @@ func (UnimplementedTaskHandlerServiceServer) Create(*CreateRequest, grpc.ServerS
 func (UnimplementedTaskHandlerServiceServer) CreateWorkInfo(context.Context, *CreateWorkInfoRequest) (*WorkResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateWorkInfo not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) Start(*StartRequest, grpc.ServerStreamingServer[StreamChunk]) error {
+func (UnimplementedTaskHandlerServiceServer) Start(grpc.BidiStreamingServer[StartFrame, StreamChunk]) error {
 	return status.Error(codes.Unimplemented, "method Start not implemented")
 }
 func (UnimplementedTaskHandlerServiceServer) Retry(context.Context, *RetryRequest) (*WorkResponse, error) {
@@ -325,7 +313,7 @@ func (UnimplementedTaskHandlerServiceServer) Pause(context.Context, *TaskResPara
 func (UnimplementedTaskHandlerServiceServer) Stop(context.Context, *TaskResParamMessage) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method Stop not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) Resume(*TaskResumeParamMessage, grpc.ServerStreamingServer[StreamChunk]) error {
+func (UnimplementedTaskHandlerServiceServer) Resume(grpc.BidiStreamingServer[ResumeFrame, StreamChunk]) error {
 	return status.Error(codes.Unimplemented, "method Resume not implemented")
 }
 func (UnimplementedTaskHandlerServiceServer) mustEmbedUnimplementedTaskHandlerServiceServer() {}
@@ -379,15 +367,11 @@ func _TaskHandlerService_CreateWorkInfo_Handler(srv interface{}, ctx context.Con
 }
 
 func _TaskHandlerService_Start_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(StartRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(TaskHandlerServiceServer).Start(m, &grpc.GenericServerStream[StartRequest, StreamChunk]{ServerStream: stream})
+	return srv.(TaskHandlerServiceServer).Start(&grpc.GenericServerStream[StartFrame, StreamChunk]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_StartServer = grpc.ServerStreamingServer[StreamChunk]
+type TaskHandlerService_StartServer = grpc.BidiStreamingServer[StartFrame, StreamChunk]
 
 func _TaskHandlerService_Retry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RetryRequest)
@@ -444,15 +428,11 @@ func _TaskHandlerService_Stop_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _TaskHandlerService_Resume_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(TaskResumeParamMessage)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(TaskHandlerServiceServer).Resume(m, &grpc.GenericServerStream[TaskResumeParamMessage, StreamChunk]{ServerStream: stream})
+	return srv.(TaskHandlerServiceServer).Resume(&grpc.GenericServerStream[ResumeFrame, StreamChunk]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_ResumeServer = grpc.ServerStreamingServer[StreamChunk]
+type TaskHandlerService_ResumeServer = grpc.BidiStreamingServer[ResumeFrame, StreamChunk]
 
 // TaskHandlerService_ServiceDesc is the grpc.ServiceDesc for TaskHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -488,11 +468,13 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "Start",
 			Handler:       _TaskHandlerService_Start_Handler,
 			ServerStreams: true,
+			ClientStreams: true,
 		},
 		{
 			StreamName:    "Resume",
 			Handler:       _TaskHandlerService_Resume_Handler,
 			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "proto/plugin.proto",

@@ -3,7 +3,6 @@ package transport
 import (
 	"context"
 	"io"
-	"sync"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
@@ -97,27 +96,28 @@ func (s *taskHandlerServer) CreateWorkInfo(ctx context.Context, req *gen.CreateW
 	return workResponseToProto(workResp), nil
 }
 
-func (s *taskHandlerServer) Start(req *gen.StartRequest, stream gen.TaskHandlerService_StartServer) error {
-	task := protoToTask(req.Task)
-	specs, workResp, err := s.handler.Start(task, req.StoreRoles)
+func (s *taskHandlerServer) Start(stream gen.TaskHandlerService_StartServer) error {
+	// 首帧:StartRequest
+	frame, err := stream.Recv()
+	if err != nil {
+		return status.Errorf(codes.Internal, "start: 收首帧失败: %v", err)
+	}
+	startReq := frame.GetStart()
+	if startReq == nil {
+		return status.Errorf(codes.InvalidArgument, "start: 首帧必须为 StartRequest")
+	}
+	task := protoToTask(startReq.Task)
+	specs, workResp, err := s.handler.Start(task, startReq.StoreRoles)
 	if err != nil {
 		return status.Errorf(codes.Internal, "start failed: %v", err)
 	}
-	defer closeSpecReaders(specs)
-
-	if workResp != nil {
-		if err := stream.Send(&gen.StreamChunk{
-			Payload: &gen.StreamChunk_WorkResponse{WorkResponse: workResponseToProto(workResp)},
-		}); err != nil {
-			return err
+	return serveSpecsPull(stream.Send, func() (*gen.PullRequest, error) {
+		f, err := stream.Recv()
+		if err != nil {
+			return nil, err
 		}
-	}
-	if err := stream.Send(&gen.StreamChunk{
-		Payload: &gen.StreamChunk_Specs{Specs: storeSpecsToProto(specs)},
-	}); err != nil {
-		return err
-	}
-	return streamStoreSpecs(stream, specs)
+		return f.GetPull(), nil
+	}, specs, workResp)
 }
 
 func (s *taskHandlerServer) Retry(ctx context.Context, req *gen.RetryRequest) (*gen.WorkResponse, error) {
@@ -145,27 +145,28 @@ func (s *taskHandlerServer) Stop(ctx context.Context, req *gen.TaskResParamMessa
 	return &gen.Empty{}, nil
 }
 
-func (s *taskHandlerServer) Resume(req *gen.TaskResumeParamMessage, stream gen.TaskHandlerService_ResumeServer) error {
-	param := protoToTaskResumeParam(req.Param)
+func (s *taskHandlerServer) Resume(stream gen.TaskHandlerService_ResumeServer) error {
+	// 首帧:TaskResumeParamMessage
+	frame, err := stream.Recv()
+	if err != nil {
+		return status.Errorf(codes.Internal, "resume: 收首帧失败: %v", err)
+	}
+	resumeReq := frame.GetResume()
+	if resumeReq == nil {
+		return status.Errorf(codes.InvalidArgument, "resume: 首帧必须为 TaskResumeParamMessage")
+	}
+	param := protoToTaskResumeParam(resumeReq.Param)
 	specs, workResp, err := s.handler.Resume(param)
 	if err != nil {
 		return status.Errorf(codes.Internal, "resume failed: %v", err)
 	}
-	defer closeSpecReaders(specs)
-
-	if workResp != nil {
-		if err := stream.Send(&gen.StreamChunk{
-			Payload: &gen.StreamChunk_WorkResponse{WorkResponse: workResponseToProto(workResp)},
-		}); err != nil {
-			return err
+	return serveSpecsPull(stream.Send, func() (*gen.PullRequest, error) {
+		f, err := stream.Recv()
+		if err != nil {
+			return nil, err
 		}
-	}
-	if err := stream.Send(&gen.StreamChunk{
-		Payload: &gen.StreamChunk_Specs{Specs: storeSpecsToProto(specs)},
-	}); err != nil {
-		return err
-	}
-	return streamStoreSpecs(stream, specs)
+		return f.GetPull(), nil
+	}, specs, workResp)
 }
 
 // closeSpecReaders 关闭所有 spec 的 reader(忽略 nil)
@@ -177,59 +178,85 @@ func closeSpecReaders(specs []*dto.StoreSpec) {
 	}
 }
 
-// streamChunkSender 约束 Start/Resume 两种 server stream 的发送能力
-type streamChunkSender interface {
-	Send(*gen.StreamChunk) error
-}
+// serveSpecsPull 发送 WorkResponse(可选)+ Specs 声明,随后进入 pull 循环:
+// Recv(PullRequest) → 按 role 选 reader → reader.Read(max_bytes) 一批 → Send(data/eof/error)。
+// reader.Read 由主程序按需驱动,reader 不领先主程序落盘(主程序保证持久化的前提)
+func serveSpecsPull(
+	send func(*gen.StreamChunk) error,
+	recvPull func() (*gen.PullRequest, error),
+	specs []*dto.StoreSpec, workResp *dto.WorkResponse,
+) error {
+	defer closeSpecReaders(specs)
+	if workResp != nil {
+		if err := send(&gen.StreamChunk{Payload: &gen.StreamChunk_WorkResponse{WorkResponse: workResponseToProto(workResp)}}); err != nil {
+			return err
+		}
+	}
+	if err := send(&gen.StreamChunk{Payload: &gen.StreamChunk_Specs{Specs: storeSpecsToProto(specs)}}); err != nil {
+		return err
+	}
 
-// streamStoreSpecs 并发读取各 spec 的 reader,按 role 推送 data 块,逐 role 发送 EOF
-// grpc server stream 的 Send 非并发安全,通过 mutex 串行化
-func streamStoreSpecs(stream streamChunkSender, specs []*dto.StoreSpec) error {
-	var sendMu sync.Mutex
-	var firstErr error
-	var errOnce sync.Once
-	var wg sync.WaitGroup
+	readers := make(map[string]io.ReadCloser, len(specs))
 	for _, sp := range specs {
-		if sp == nil || sp.ReadCloser == nil {
+		if sp != nil && sp.ReadCloser != nil {
+			readers[sp.Role] = sp.ReadCloser
+		}
+	}
+	completed := make(map[string]struct{}, len(readers))
+	buf := make([]byte, 32*1024)
+	for {
+		pull, err := recvPull()
+		if err == io.EOF {
+			return nil // 主程序关闭发送侧
+		}
+		if err != nil {
+			return err
+		}
+		if pull == nil {
 			continue
 		}
-		wg.Add(1)
-		go func(sp *dto.StoreSpec) {
-			defer wg.Done()
-			buf := make([]byte, 32*1024)
-			for {
-				n, readErr := sp.ReadCloser.Read(buf)
-				if n > 0 {
-					chunk := &gen.StreamChunk{Role: sp.Role, Payload: &gen.StreamChunk_Data{Data: append([]byte(nil), buf[:n]...)}}
-					sendMu.Lock()
-					e := stream.Send(chunk)
-					sendMu.Unlock()
-					if e != nil {
-						errOnce.Do(func() { firstErr = e })
-						return
-					}
-				}
-				if readErr == io.EOF {
-					break
-				}
-				if readErr != nil {
-					sendMu.Lock()
-					_ = stream.Send(&gen.StreamChunk{Role: sp.Role, Payload: &gen.StreamChunk_Error{Error: readErr.Error()}})
-					sendMu.Unlock()
-					errOnce.Do(func() { firstErr = readErr })
-					return
-				}
+		role := pull.GetRole()
+		reader, ok := readers[role]
+		if !ok {
+			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Error{Error: "未知 role: " + role}}); e != nil {
+				return e
 			}
-			sendMu.Lock()
-			e := stream.Send(&gen.StreamChunk{Role: sp.Role, Payload: &gen.StreamChunk_Eof{Eof: true}})
-			sendMu.Unlock()
-			if e != nil {
-				errOnce.Do(func() { firstErr = e })
+			continue
+		}
+		if _, done := completed[role]; done {
+			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Eof{Eof: true}}); e != nil {
+				return e
 			}
-		}(sp)
+			continue
+		}
+		maxN := int(pull.GetMaxBytes())
+		if maxN <= 0 || maxN > len(buf) {
+			maxN = len(buf)
+		}
+		n, readErr := reader.Read(buf[:maxN])
+		if n > 0 {
+			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Data{Data: append([]byte(nil), buf[:n]...)}}); e != nil {
+				return e
+			}
+		}
+		if readErr == io.EOF {
+			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Eof{Eof: true}}); e != nil {
+				return e
+			}
+			completed[role] = struct{}{}
+			if len(completed) == len(readers) {
+				return nil // 全部 role EOF
+			}
+		} else if readErr != nil {
+			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Error{Error: readErr.Error()}}); e != nil {
+				return e
+			}
+			completed[role] = struct{}{}
+			if len(completed) == len(readers) {
+				return nil
+			}
+		}
 	}
-	wg.Wait()
-	return firstErr
 }
 
 // ========== SiteBrowserServiceServer ==========
