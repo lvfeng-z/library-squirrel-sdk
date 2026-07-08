@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"io"
+	"log"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
@@ -97,6 +98,7 @@ func (s *taskHandlerServer) CreateWorkInfo(ctx context.Context, req *gen.CreateW
 }
 
 func (s *taskHandlerServer) Start(stream gen.TaskHandlerService_StartServer) error {
+	ctx := stream.Context()
 	// 首帧:StartRequest
 	frame, err := stream.Recv()
 	if err != nil {
@@ -107,11 +109,11 @@ func (s *taskHandlerServer) Start(stream gen.TaskHandlerService_StartServer) err
 		return status.Errorf(codes.InvalidArgument, "start: 首帧必须为 StartRequest")
 	}
 	task := protoToTask(startReq.Task)
-	specs, workResp, err := s.handler.Start(task, startReq.StoreRoles)
+	specs, workResp, err := s.handler.Start(ctx, task, startReq.StoreRoles)
 	if err != nil {
 		return status.Errorf(codes.Internal, "start failed: %v", err)
 	}
-	return serveSpecsPull(stream.Send, func() (*gen.PullRequest, error) {
+	return serveSpecsPull(ctx, stream.Send, func() (*gen.PullRequest, error) {
 		f, err := stream.Recv()
 		if err != nil {
 			return nil, err
@@ -146,6 +148,7 @@ func (s *taskHandlerServer) Stop(ctx context.Context, req *gen.TaskResParamMessa
 }
 
 func (s *taskHandlerServer) Resume(stream gen.TaskHandlerService_ResumeServer) error {
+	ctx := stream.Context()
 	// 首帧:TaskResumeParamMessage
 	frame, err := stream.Recv()
 	if err != nil {
@@ -156,11 +159,11 @@ func (s *taskHandlerServer) Resume(stream gen.TaskHandlerService_ResumeServer) e
 		return status.Errorf(codes.InvalidArgument, "resume: 首帧必须为 TaskResumeParamMessage")
 	}
 	param := protoToTaskResumeParam(resumeReq.Param)
-	specs, workResp, err := s.handler.Resume(param)
+	specs, workResp, err := s.handler.Resume(ctx, param)
 	if err != nil {
 		return status.Errorf(codes.Internal, "resume failed: %v", err)
 	}
-	return serveSpecsPull(stream.Send, func() (*gen.PullRequest, error) {
+	return serveSpecsPull(ctx, stream.Send, func() (*gen.PullRequest, error) {
 		f, err := stream.Recv()
 		if err != nil {
 			return nil, err
@@ -178,10 +181,19 @@ func closeSpecReaders(specs []*dto.StoreSpec) {
 	}
 }
 
+// pullReadResult 单次 reader.Read 的结果,供 goroutine + select 把阻塞读的结果传回主循环
+type pullReadResult struct {
+	n   int
+	err error
+}
+
 // serveSpecsPull 发送 WorkResponse(可选)+ Specs 声明,随后进入 pull 循环:
 // Recv(PullRequest) → 按 role 选 reader → reader.Read(max_bytes) 一批 → Send(data/eof/error)。
-// reader.Read 由主程序按需驱动,reader 不领先主程序落盘(主程序保证持久化的前提)
+// reader.Read 由主程序按需驱动,reader 不领先主程序落盘(主程序保证持久化的前提)。
+// ctx 为 gRPC stream context:主程序取消任务时 ctx Done,若 reader.Read 正阻塞在网络,
+// 通过 Close reader 令其返回(合规 reader 的 Close 可中断在途 Read),使 serveSpecsPull 及时退出。
 func serveSpecsPull(
+	ctx context.Context,
 	send func(*gen.StreamChunk) error,
 	recvPull func() (*gen.PullRequest, error),
 	specs []*dto.StoreSpec, workResp *dto.WorkResponse,
@@ -233,27 +245,50 @@ func serveSpecsPull(
 		if maxN <= 0 || maxN > len(buf) {
 			maxN = len(buf)
 		}
-		n, readErr := reader.Read(buf[:maxN])
-		if n > 0 {
-			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Data{Data: append([]byte(nil), buf[:n]...)}}); e != nil {
-				return e
+		// reader.Read 可能阻塞在网络、不响应 ctx;用 goroutine + select 让 ctx 取消可中断:
+		// ctx Done 时 Close reader,合规 reader 的 Close 会让阻塞的 Read 返回,
+		// goroutine 随后写入 buffered channel 退出,无泄漏。
+		ch := make(chan pullReadResult, 1)
+		go func() {
+			n, err := reader.Read(buf[:maxN])
+			ch <- pullReadResult{n, err}
+		}()
+		select {
+		case <-ctx.Done():
+			// ctx 取消时 reader.Read 可能恰好完成,chunk 被丢弃(reader 内部 offset 已推进而主程序未落盘)。
+			// 仅记录丢包窗口命中(n>0)作长期哨兵;常态(Read 阻塞或 n=0)静默。
+			select {
+			case res := <-ch:
+				if res.n > 0 {
+					log.Printf("[serveSpecsPull] 丢包窗口命中: ctx 取消时 reader.Read 已完成, 丢弃 %d 字节 role=%s err=%v", res.n, role, res.err)
+				}
+			default:
 			}
-		}
-		if readErr == io.EOF {
-			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Eof{Eof: true}}); e != nil {
-				return e
+			reader.Close()
+			return ctx.Err()
+		case res := <-ch:
+			n, readErr := res.n, res.err
+			if n > 0 {
+				if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Data{Data: append([]byte(nil), buf[:n]...)}}); e != nil {
+					return e
+				}
 			}
-			completed[role] = struct{}{}
-			if len(completed) == len(readers) {
-				return nil // 全部 role EOF
-			}
-		} else if readErr != nil {
-			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Error{Error: readErr.Error()}}); e != nil {
-				return e
-			}
-			completed[role] = struct{}{}
-			if len(completed) == len(readers) {
-				return nil
+			if readErr == io.EOF {
+				if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Eof{Eof: true}}); e != nil {
+					return e
+				}
+				completed[role] = struct{}{}
+				if len(completed) == len(readers) {
+					return nil // 全部 role EOF
+				}
+			} else if readErr != nil {
+				if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Error{Error: readErr.Error()}}); e != nil {
+					return e
+				}
+				completed[role] = struct{}{}
+				if len(completed) == len(readers) {
+					return nil
+				}
 			}
 		}
 	}
@@ -416,22 +451,22 @@ func protoToTask(pb *gen.Task) *dto.TaskDTO {
 		return nil
 	}
 	return &dto.TaskDTO{
-		ID:                   pb.Id,
-		CreateTime:           pb.CreateTime,
-		UpdateTime:           pb.UpdateTime,
-		HasChild:             pb.HasChild,
-		Pid:                  pb.Pid,
-		TaskName:             pb.TaskName,
-		SiteID:               pb.SiteId,
-		SiteWorkID:           pb.SiteWorkId,
-		URL:                  pb.Url,
-		Status:               int(pb.Status),
-		PendingResourceID:    pb.PendingResourceId,
-		Continuable:          pb.Continuable,
-		PluginPublicID:       pb.PluginPublicId,
+		ID:                pb.Id,
+		CreateTime:        pb.CreateTime,
+		UpdateTime:        pb.UpdateTime,
+		HasChild:          pb.HasChild,
+		Pid:               pb.Pid,
+		TaskName:          pb.TaskName,
+		SiteID:            pb.SiteId,
+		SiteWorkID:        pb.SiteWorkId,
+		URL:               pb.Url,
+		Status:            int(pb.Status),
+		PendingResourceID: pb.PendingResourceId,
+		Continuable:       pb.Continuable,
+		PluginPublicID:    pb.PluginPublicId,
 		PluginExtensionID: pb.PluginExtensionId,
-		PluginData:           pb.PluginData,
-		ErrorMessage:         pb.ErrorMessage,
+		PluginData:        pb.PluginData,
+		ErrorMessage:      pb.ErrorMessage,
 	}
 }
 
