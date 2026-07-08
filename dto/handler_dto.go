@@ -64,14 +64,14 @@ type WorkResponse struct {
 
 // StoreSpec 单条资源产出声明(对应一个 store)
 type StoreSpec struct {
-	Role        string        `json:"role"`                                                                  // store_type: main | thumbnail | videoTrack | audioTrack | ...
-	Generation  string        `json:"generation"`                                                            // downloaded(流式可续传) | derived(一次性派生)
-	ReadCloser  io.ReadCloser `json:"-"`                                                                     // 资源数据流(downloaded=流式 reader;derived=一次性 payload 包装的 reader),调用方负责 Close
-	Format      string        `json:"format"`                                                                // 文件扩展名
-	Size        int64         `json:"size"`                                                                  // 远程大小;-1 未知
-	SuggestName string        `json:"suggestName,omitempty"`                                                 // 插件建议文件名
-	Continuable *bool         `json:"continuable,omitempty"`                                                 // 是否支持续传(derived 恒为 false)
-	ResumeWriteOffset *int64  `json:"resumeWriteOffset,omitempty"`                                           // 续传写入偏移(仅 Resume 返回的 spec);nil=信任主程序 stat 的 offset,非 nil=插件指定确切位置
+	Role              string        `json:"role"`                        // store_type: main | thumbnail | videoTrack | audioTrack | ...
+	Generation        string        `json:"generation"`                  // downloaded(流式可续传) | derived(一次性派生)
+	ReadCloser        io.ReadCloser `json:"-"`                           // 资源数据流(downloaded=流式 reader;derived=一次性 payload 包装的 reader),调用方负责 Close
+	Format            string        `json:"format"`                      // 文件扩展名
+	Size              int64         `json:"size"`                        // 完整资源大小(非 Range 续传剩余字节,206 需据 Content-Range 还原);-1 未知
+	SuggestName       string        `json:"suggestName,omitempty"`       // 插件建议文件名
+	Continuable       *bool         `json:"continuable,omitempty"`       // 是否支持续传(derived 恒为 false)
+	ResumeWriteOffset *int64        `json:"resumeWriteOffset,omitempty"` // 续传写入偏移(仅 Resume 返回的 spec);nil=信任主程序 stat 的 offset,非 nil=插件指定确切位置
 }
 
 // TaskSiteAuthorDTO 任务处理器站点作者DTO
