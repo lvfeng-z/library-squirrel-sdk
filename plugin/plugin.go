@@ -4,6 +4,7 @@ import (
 	goPlugin "github.com/hashicorp/go-plugin"
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
+	"github.com/lvfeng-z/library-squirrel-sdk/liveness"
 	"github.com/lvfeng-z/library-squirrel-sdk/transport"
 )
 
@@ -50,6 +51,6 @@ func Serve(handler dto.TaskHandler, opts ...ServeOption) {
 		Plugins: map[string]goPlugin.Plugin{
 			"library_squirrel": lsPlugin,
 		},
-		GRPCServer: goPlugin.DefaultGRPCServer,
+		GRPCServer: liveness.GRPCServerFactory,
 	})
 }
