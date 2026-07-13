@@ -120,6 +120,7 @@ message TaskCreateChildResponse {
   string url = 3;
   string pluginData = 4;
   string siteName = 5;
+  repeated string involved_roles = 6; // 子任务涉及的 store_type 集合(创建期声明,universe);空=未确定
 }
 
 message TaskCreateResponse {
@@ -130,6 +131,7 @@ message TaskCreateResponse {
   string pluginData = 5;
   string siteName = 6;
   repeated TaskCreateChildResponse children = 7;
+  repeated string involved_roles = 8; // 任务涉及的 store_type 集合(创建期声明,universe);空=未确定
 }
 
 message WorkResponse {

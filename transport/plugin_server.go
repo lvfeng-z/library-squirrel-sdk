@@ -319,20 +319,22 @@ func (s *siteBrowserServer) Close(ctx context.Context, req *gen.BrowserRequest) 
 
 func taskCreateResponseToProto(r *dto.TaskCreateResponse) *gen.TaskCreateResponse {
 	pb := &gen.TaskCreateResponse{
-		PluginTaskId: r.PluginTaskID,
-		TaskName:     r.TaskName,
-		SiteWorkId:   r.SiteWorkID,
-		Url:          r.URL,
-		PluginData:   r.PluginData,
-		SiteName:     r.SiteName,
+		PluginTaskId:  r.PluginTaskID,
+		TaskName:      r.TaskName,
+		SiteWorkId:    r.SiteWorkID,
+		Url:           r.URL,
+		PluginData:    r.PluginData,
+		SiteName:      r.SiteName,
+		InvolvedRoles: r.InvolvedRoles,
 	}
 	for _, c := range r.Children {
 		pb.Children = append(pb.Children, &gen.TaskCreateChildResponse{
-			TaskName:   c.TaskName,
-			SiteWorkId: c.SiteWorkID,
-			Url:        c.URL,
-			PluginData: c.PluginData,
-			SiteName:   c.SiteName,
+			TaskName:      c.TaskName,
+			SiteWorkId:    c.SiteWorkID,
+			Url:           c.URL,
+			PluginData:    c.PluginData,
+			SiteName:      c.SiteName,
+			InvolvedRoles: c.InvolvedRoles,
 		})
 	}
 	return pb

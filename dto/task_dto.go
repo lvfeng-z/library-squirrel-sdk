@@ -2,22 +2,23 @@ package dto
 
 // TaskDTO 任务数据传输对象
 type TaskDTO struct {
-	ID                   int64   `json:"id"`
-	HasChild             *bool   `json:"hasChild"`
-	Pid                  *int64  `json:"pid"`
-	TaskName             *string `json:"taskName"`
-	SiteID               *int64  `json:"siteId"`
-	SiteWorkID           *string `json:"siteWorkId"`
-	URL                  *string `json:"url"`
-	Status               int     `json:"status"`
-	PendingResourceID    *int64  `json:"pendingResourceId"`
-	Continuable          *bool   `json:"continuable"`
-	PluginPublicID       *string `json:"pluginPublicId"`
-	PluginExtensionID *string `json:"pluginExtensionId"`
-	PluginData           *string `json:"pluginData"`
-	ErrorMessage         *string `json:"errorMessage"`
-	CreateTime           int64   `json:"createTime"`
-	UpdateTime           int64   `json:"updateTime"`
+	ID                int64    `json:"id"`
+	HasChild          *bool    `json:"hasChild"`
+	Pid               *int64   `json:"pid"`
+	TaskName          *string  `json:"taskName"`
+	SiteID            *int64   `json:"siteId"`
+	SiteWorkID        *string  `json:"siteWorkId"`
+	URL               *string  `json:"url"`
+	Status            int      `json:"status"`
+	PendingResourceID *int64   `json:"pendingResourceId"`
+	Continuable       *bool    `json:"continuable"`
+	PluginPublicID    *string  `json:"pluginPublicId"`
+	PluginExtensionID *string  `json:"pluginExtensionId"`
+	PluginData        *string  `json:"pluginData"`
+	ErrorMessage      *string  `json:"errorMessage"`
+	InvolvedRoles     []string `json:"involvedRoles"` // 任务涉及的 store_type 集合(创建期声明,universe);nil=未确定;用于前端按任务自选展示
+	CreateTime        int64    `json:"createTime"`
+	UpdateTime        int64    `json:"updateTime"`
 }
 
 // TaskProgressDTO 任务进度DTO
@@ -39,15 +40,15 @@ type TaskProgressTreeDTO struct {
 
 // CreateTaskRequest 创建任务请求
 type CreateTaskRequest struct {
-	Pid                  int64  `json:"pid"`
-	TaskName             string `json:"taskName"`
-	SiteID               int    `json:"siteId"`
-	SiteWorkID           string `json:"siteWorkId"`
-	URL                  string `json:"url"`
-	HasChild             bool   `json:"hasChild"`
-	PluginPublicID       string `json:"pluginPublicId"`
+	Pid               int64  `json:"pid"`
+	TaskName          string `json:"taskName"`
+	SiteID            int    `json:"siteId"`
+	SiteWorkID        string `json:"siteWorkId"`
+	URL               string `json:"url"`
+	HasChild          bool   `json:"hasChild"`
+	PluginPublicID    string `json:"pluginPublicId"`
 	PluginExtensionID string `json:"pluginExtensionId"`
-	PluginData           string `json:"pluginData"`
+	PluginData        string `json:"pluginData"`
 }
 
 // TreeDataPageDTO 任务树数据分页DTO

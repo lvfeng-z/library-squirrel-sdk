@@ -33,22 +33,24 @@ type TaskResumeParam struct {
 
 // TaskCreateResponse 任务创建响应
 type TaskCreateResponse struct {
-	PluginTaskID string                     `json:"pluginTaskId"`
-	TaskName     string                     `json:"taskName"`
-	SiteWorkID   string                     `json:"siteWorkId"`
-	URL          string                     `json:"url"`
-	PluginData   string                     `json:"pluginData"`
-	SiteName     string                     `json:"siteName"`
-	Children     []*TaskCreateChildResponse `json:"children"`
+	PluginTaskID  string                     `json:"pluginTaskId"`
+	TaskName      string                     `json:"taskName"`
+	SiteWorkID    string                     `json:"siteWorkId"`
+	URL           string                     `json:"url"`
+	PluginData    string                     `json:"pluginData"`
+	SiteName      string                     `json:"siteName"`
+	InvolvedRoles []string                   `json:"involvedRoles"` // 任务涉及的 store_type 集合(创建期声明,universe);空/nil=未确定,执行期插件下全量
+	Children      []*TaskCreateChildResponse `json:"children"`
 }
 
 // TaskCreateChildResponse 子任务创建响应
 type TaskCreateChildResponse struct {
-	TaskName   string `json:"taskName"`
-	SiteWorkID string `json:"siteWorkId"`
-	URL        string `json:"url"`
-	PluginData string `json:"pluginData"`
-	SiteName   string `json:"siteName"`
+	TaskName      string   `json:"taskName"`
+	SiteWorkID    string   `json:"siteWorkId"`
+	URL           string   `json:"url"`
+	PluginData    string   `json:"pluginData"`
+	SiteName      string   `json:"siteName"`
+	InvolvedRoles []string `json:"involvedRoles"` // 子任务涉及的 store_type 集合(创建期声明,universe);空/nil=未确定,执行期插件下全量
 }
 
 // WorkResponse 作品响应(仅承载作品级信息;资源细节由 StoreSpec 承载)
