@@ -1033,6 +1033,7 @@ type TaskCreateChildResponse struct {
 	PluginData    string                 `protobuf:"bytes,4,opt,name=pluginData,proto3" json:"pluginData,omitempty"`
 	SiteName      string                 `protobuf:"bytes,5,opt,name=siteName,proto3" json:"siteName,omitempty"`
 	InvolvedRoles []string               `protobuf:"bytes,6,rep,name=involved_roles,json=involvedRoles,proto3" json:"involved_roles,omitempty"` // 子任务涉及的 store_type 集合(创建期声明,universe);空=未确定
+	ResourceType  string                 `protobuf:"bytes,7,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`    // 子任务产生的 resource 的资源类型(预定义 image/video/article/document/unknown);空=未声明
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1109,6 +1110,13 @@ func (x *TaskCreateChildResponse) GetInvolvedRoles() []string {
 	return nil
 }
 
+func (x *TaskCreateChildResponse) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
+}
+
 type TaskCreateResponse struct {
 	state         protoimpl.MessageState     `protogen:"open.v1"`
 	PluginTaskId  string                     `protobuf:"bytes,1,opt,name=pluginTaskId,proto3" json:"pluginTaskId,omitempty"`
@@ -1119,6 +1127,7 @@ type TaskCreateResponse struct {
 	SiteName      string                     `protobuf:"bytes,6,opt,name=siteName,proto3" json:"siteName,omitempty"`
 	Children      []*TaskCreateChildResponse `protobuf:"bytes,7,rep,name=children,proto3" json:"children,omitempty"`
 	InvolvedRoles []string                   `protobuf:"bytes,8,rep,name=involved_roles,json=involvedRoles,proto3" json:"involved_roles,omitempty"` // 任务涉及的 store_type 集合(创建期声明,universe);空=未确定
+	ResourceType  string                     `protobuf:"bytes,9,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`    // 任务产生的 resource 的资源类型(预定义值);空=未声明;有 children 时由各 child 声明
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1207,6 +1216,13 @@ func (x *TaskCreateResponse) GetInvolvedRoles() []string {
 		return x.InvolvedRoles
 	}
 	return nil
+}
+
+func (x *TaskCreateResponse) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
 }
 
 type WorkResponse struct {
@@ -3650,7 +3666,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\"X\n" +
 	"\x0eTaskWorkSetDTO\x12$\n" +
 	"\rsiteWorkSetId\x18\x01 \x01(\tR\rsiteWorkSetId\x12 \n" +
-	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\"\xca\x01\n" +
+	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\"\xef\x01\n" +
 	"\x17TaskCreateChildResponse\x12\x1a\n" +
 	"\btaskName\x18\x01 \x01(\tR\btaskName\x12\x1e\n" +
 	"\n" +
@@ -3661,7 +3677,8 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"pluginData\x18\x04 \x01(\tR\n" +
 	"pluginData\x12\x1a\n" +
 	"\bsiteName\x18\x05 \x01(\tR\bsiteName\x12%\n" +
-	"\x0einvolved_roles\x18\x06 \x03(\tR\rinvolvedRoles\"\xa7\x02\n" +
+	"\x0einvolved_roles\x18\x06 \x03(\tR\rinvolvedRoles\x12#\n" +
+	"\rresource_type\x18\a \x01(\tR\fresourceType\"\xcc\x02\n" +
 	"\x12TaskCreateResponse\x12\"\n" +
 	"\fpluginTaskId\x18\x01 \x01(\tR\fpluginTaskId\x12\x1a\n" +
 	"\btaskName\x18\x02 \x01(\tR\btaskName\x12\x1e\n" +
@@ -3674,7 +3691,8 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"pluginData\x12\x1a\n" +
 	"\bsiteName\x18\x06 \x01(\tR\bsiteName\x12<\n" +
 	"\bchildren\x18\a \x03(\v2 .plugins.TaskCreateChildResponseR\bchildren\x12%\n" +
-	"\x0einvolved_roles\x18\b \x03(\tR\rinvolvedRoles\"\xf0\x02\n" +
+	"\x0einvolved_roles\x18\b \x03(\tR\rinvolvedRoles\x12#\n" +
+	"\rresource_type\x18\t \x01(\tR\fresourceType\"\xf0\x02\n" +
 	"\fWorkResponse\x12!\n" +
 	"\x04work\x18\x01 \x01(\v2\r.plugins.WorkR\x04work\x12$\n" +
 	"\x04site\x18\x02 \x01(\v2\x10.plugins.SiteDTOR\x04site\x12;\n" +

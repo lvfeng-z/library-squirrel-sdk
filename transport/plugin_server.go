@@ -326,6 +326,7 @@ func taskCreateResponseToProto(r *dto.TaskCreateResponse) *gen.TaskCreateRespons
 		PluginData:    r.PluginData,
 		SiteName:      r.SiteName,
 		InvolvedRoles: r.InvolvedRoles,
+		ResourceType:  r.ResourceType,
 	}
 	for _, c := range r.Children {
 		pb.Children = append(pb.Children, &gen.TaskCreateChildResponse{
@@ -335,6 +336,7 @@ func taskCreateResponseToProto(r *dto.TaskCreateResponse) *gen.TaskCreateRespons
 			PluginData:    c.PluginData,
 			SiteName:      c.SiteName,
 			InvolvedRoles: c.InvolvedRoles,
+			ResourceType:  c.ResourceType,
 		})
 	}
 	return pb

@@ -7,6 +7,7 @@ type ResourceDTO struct {
 	TaskID           int64   `json:"taskId"`
 	Enabled          bool    `json:"enabled"`
 	SuggestName      *string `json:"suggestName"`
+	ResourceType     string  `json:"resourceType"`
 	ResourceComplete int     `json:"resourceComplete"`
 	CreateTime       int64   `json:"createTime"`
 	UpdateTime       int64   `json:"updateTime"`

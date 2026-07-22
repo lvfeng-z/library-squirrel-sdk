@@ -17,6 +17,7 @@ type TaskDTO struct {
 	PluginData        *string  `json:"pluginData"`
 	ErrorMessage      *string  `json:"errorMessage"`
 	InvolvedRoles     []string `json:"involvedRoles"` // 任务涉及的 store_type 集合(创建期声明,universe);nil=未确定;用于前端按任务自选展示
+	ResourceType      string   `json:"resourceType"`  // 任务产生的 resource 的资源类型(预定义值);空=未声明
 	CreateTime        int64    `json:"createTime"`
 	UpdateTime        int64    `json:"updateTime"`
 }
