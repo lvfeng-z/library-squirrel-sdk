@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -57,6 +58,14 @@ func (p *TaskResumeParam) OffsetForRole(role string) (offset int64, found bool) 
 		}
 	}
 	return 0, false
+}
+
+// String 让 []*StoreResumeOffset 的 %v 日志可读(否则打印指针地址)
+func (o *StoreResumeOffset) String() string {
+	if o == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("{%s/%d:%d}", o.Role, o.StoreSeq, o.Offset)
 }
 
 // TaskCreateResponse 任务创建响应
