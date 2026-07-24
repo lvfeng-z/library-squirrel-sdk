@@ -490,9 +490,25 @@ func protoToTaskResumeParam(pb *gen.TaskResumeParam) *dto.TaskResumeParam {
 	if pb == nil {
 		return nil
 	}
+	offsets := make([]*dto.StoreResumeOffset, 0, len(pb.StreamOffsets))
+	for _, o := range pb.StreamOffsets {
+		offsets = append(offsets, protoToStoreResumeOffset(o))
+	}
 	return &dto.TaskResumeParam{
 		Task:          protoToTask(pb.Task),
-		StreamOffsets: pb.StreamOffsets,
+		StreamOffsets: offsets,
+	}
+}
+
+// protoToStoreResumeOffset 把续传偏移从 proto 转为 DTO(身份化:role+store_seq)
+func protoToStoreResumeOffset(pb *gen.StoreResumeOffset) *dto.StoreResumeOffset {
+	if pb == nil {
+		return nil
+	}
+	return &dto.StoreResumeOffset{
+		Role:     pb.Role,
+		StoreSeq: pb.StoreSeq,
+		Offset:   pb.Offset,
 	}
 }
 

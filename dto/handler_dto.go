@@ -35,10 +35,28 @@ type TaskResParam struct {
 	DownloadedBytes int64    `json:"downloadedBytes"`
 }
 
-// TaskResumeParam 续传参数(每条 downloaded 轨独立偏移)
+// TaskResumeParam 续传参数(每条 downloaded store 独立偏移,按 role+store_seq 身份化)
 type TaskResumeParam struct {
-	Task          *TaskDTO         `json:"task"`
-	StreamOffsets map[string]int64 `json:"streamOffsets"` // role → 该轨已写入字节数(仅未完成 downloaded 轨出现;derived 轨不出现,未完成即整轨重产)
+	Task          *TaskDTO             `json:"task"`
+	StreamOffsets []*StoreResumeOffset `json:"streamOffsets"` // 未完成 downloaded store 的续传偏移;同 role 多 store 各自独立(N-同 role 多 store 支持)
+}
+
+// StoreResumeOffset 单条 downloaded store 的续传偏移(身份化:role+store_seq 唯一定位一个 store)
+type StoreResumeOffset struct {
+	Role     string `json:"role"`     // store_type(image/document/videoTrack/audioTrack/...)
+	StoreSeq int32  `json:"storeSeq"` // 同 role 内的 store 序号(单例为 0;N-同 role 多 store 各自 0..N-1)
+	Offset   int64  `json:"offset"`   // 该 store 已写入字节数(磁盘 stat 为权威)
+}
+
+// OffsetForRole 按 role 查询续传偏移(单例场景便捷方法,取首个命中)。
+// N-同 role 多 store 须插件自行遍历 StreamOffsets 按 store_seq 精确匹配。
+func (p *TaskResumeParam) OffsetForRole(role string) (offset int64, found bool) {
+	for _, o := range p.StreamOffsets {
+		if o != nil && o.Role == role {
+			return o.Offset, true
+		}
+	}
+	return 0, false
 }
 
 // TaskCreateResponse 任务创建响应

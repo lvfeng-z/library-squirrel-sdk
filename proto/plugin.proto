@@ -221,11 +221,18 @@ message TaskResParamMessage {
   string extensionId = 2;
 }
 
-// 续传参数(每条 downloaded 轨独立偏移)
+// 续传参数(每条 downloaded store 独立偏移,按 role+store_seq 身份化)
 message TaskResumeParam {
   Task task = 1;
-  map<string, int64> streamOffsets = 2; // role → 已写入字节数(仅未完成 downloaded 轨);Resume 产出由其 key 集合决定
+  repeated StoreResumeOffset streamOffsets = 2; // 未完成 downloaded store 的续传偏移;同 role 多 store 各自独立(N-同 role 多 store 支持)
   reserved 3; // 已移除 storeRoles(Resume 由 streamOffsets 控制)
+}
+
+// StoreResumeOffset 单条 downloaded store 的续传偏移(身份化:role+store_seq 唯一定位一个 store)
+message StoreResumeOffset {
+  string role = 1;     // store_type(image/document/videoTrack/audioTrack/...)
+  int32 store_seq = 2; // 同 role 内的 store 序号(单例为 0;N-同 role 多 store 各自 0..N-1)
+  int64 offset = 3;    // 该 store 已写入字节数(磁盘 stat 为权威)
 }
 
 message TaskResumeParamMessage {
