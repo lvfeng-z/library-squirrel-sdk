@@ -2,6 +2,7 @@ package transport
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 
@@ -208,13 +209,21 @@ func serveSpecsPull(
 		return err
 	}
 
-	readers := make(map[string]io.ReadCloser, len(specs))
-	for _, sp := range specs {
+	// readers 按 spec 顺序(specIndex 索引);同 role 多 spec 各自独立 reader,替代旧 map[role] 同 role 覆盖
+	readers := make([]io.ReadCloser, len(specs))
+	for i, sp := range specs {
 		if sp != nil && sp.ReadCloser != nil {
-			readers[sp.Role] = sp.ReadCloser
+			readers[i] = sp.ReadCloser
 		}
 	}
-	completed := make(map[string]struct{}, len(readers))
+	completed := make([]bool, len(readers))
+	completedCount := 0
+	totalReaders := 0
+	for _, r := range readers {
+		if r != nil {
+			totalReaders++
+		}
+	}
 	buf := make([]byte, 32*1024)
 	for {
 		pull, err := recvPull()
@@ -227,20 +236,22 @@ func serveSpecsPull(
 		if pull == nil {
 			continue
 		}
-		role := pull.GetRole()
-		reader, ok := readers[role]
-		if !ok {
-			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Error{Error: "未知 role: " + role}}); e != nil {
+		// role 字段编码 "role#specIndex"(主程序 recvSpecsAndPull 编码),解析回纯 role + spec 索引
+		encodedRole := pull.GetRole()
+		role, specIdx := DecodePullRole(encodedRole)
+		if specIdx < 0 || specIdx >= len(readers) || readers[specIdx] == nil {
+			if e := send(&gen.StreamChunk{Role: encodedRole, Payload: &gen.StreamChunk_Error{Error: fmt.Sprintf("未知 spec 索引: %d (role=%s)", specIdx, role)}}); e != nil {
 				return e
 			}
 			continue
 		}
-		if _, done := completed[role]; done {
-			if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Eof{Eof: true}}); e != nil {
+		if completed[specIdx] {
+			if e := send(&gen.StreamChunk{Role: encodedRole, Payload: &gen.StreamChunk_Eof{Eof: true}}); e != nil {
 				return e
 			}
 			continue
 		}
+		reader := readers[specIdx]
 		maxN := int(pull.GetMaxBytes())
 		if maxN <= 0 || maxN > len(buf) {
 			maxN = len(buf)
@@ -269,24 +280,26 @@ func serveSpecsPull(
 		case res := <-ch:
 			n, readErr := res.n, res.err
 			if n > 0 {
-				if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Data{Data: append([]byte(nil), buf[:n]...)}}); e != nil {
+				if e := send(&gen.StreamChunk{Role: encodedRole, Payload: &gen.StreamChunk_Data{Data: append([]byte(nil), buf[:n]...)}}); e != nil {
 					return e
 				}
 			}
 			if readErr == io.EOF {
-				if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Eof{Eof: true}}); e != nil {
+				if e := send(&gen.StreamChunk{Role: encodedRole, Payload: &gen.StreamChunk_Eof{Eof: true}}); e != nil {
 					return e
 				}
-				completed[role] = struct{}{}
-				if len(completed) == len(readers) {
-					return nil // 全部 role EOF
+				completed[specIdx] = true
+				completedCount++
+				if completedCount == totalReaders {
+					return nil // 全部 reader EOF
 				}
 			} else if readErr != nil {
-				if e := send(&gen.StreamChunk{Role: role, Payload: &gen.StreamChunk_Error{Error: readErr.Error()}}); e != nil {
+				if e := send(&gen.StreamChunk{Role: encodedRole, Payload: &gen.StreamChunk_Error{Error: readErr.Error()}}); e != nil {
 					return e
 				}
-				completed[role] = struct{}{}
-				if len(completed) == len(readers) {
+				completed[specIdx] = true
+				completedCount++
+				if completedCount == totalReaders {
 					return nil
 				}
 			}
