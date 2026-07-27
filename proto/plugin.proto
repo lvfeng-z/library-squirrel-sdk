@@ -284,6 +284,7 @@ message StoreSpecMeta {
   string suggestName = 5;
   optional bool continuable = 6;
   optional int64 resumeWriteOffset = 7; // 续传写入偏移(仅 Resume);nil=信任主程序 offset
+  string description = 8;               // 资源描述(多 store 命名可选拼段;空则省略描述段)
 }
 
 // 产出声明集合(Start/Resume 首批,声明全部轨道元数据)

@@ -111,6 +111,7 @@ type StoreSpec struct {
 	Format            string        `json:"format"`                      // 文件扩展名
 	Size              int64         `json:"size"`                        // 完整资源大小(非 Range 续传剩余字节,206 需据 Content-Range 还原);-1 未知
 	SuggestName       string        `json:"suggestName,omitempty"`       // 插件建议文件名
+	Description       string        `json:"description,omitempty"`       // 资源描述(多 store 命名可选拼段;空则省略描述段)
 	Continuable       *bool         `json:"continuable,omitempty"`       // 是否支持续传(derived 恒为 false)
 	ResumeWriteOffset *int64        `json:"resumeWriteOffset,omitempty"` // 续传写入偏移(仅 Resume 返回的 spec);nil=信任主程序 stat 的 offset,非 nil=插件指定确切位置
 }

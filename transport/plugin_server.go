@@ -537,6 +537,7 @@ func storeSpecsToProto(specs []*dto.StoreSpec) *gen.StoreSpecs {
 			Format:      sp.Format,
 			Size:        sp.Size,
 			SuggestName: sp.SuggestName,
+			Description: sp.Description,
 		}
 		if sp.Continuable != nil {
 			meta.Continuable = sp.Continuable
