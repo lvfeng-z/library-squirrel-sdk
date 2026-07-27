@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v5.29.5
-// source: plugin.proto
+// source: proto/plugin.proto
 
 package gen
 
@@ -155,7 +155,7 @@ var PluginLifecycle_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "plugin.proto",
+	Metadata: "proto/plugin.proto",
 }
 
 const (
@@ -477,7 +477,7 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "plugin.proto",
+	Metadata: "proto/plugin.proto",
 }
 
 const (
@@ -617,7 +617,7 @@ var SiteBrowserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "plugin.proto",
+	Metadata: "proto/plugin.proto",
 }
 
 const (
@@ -635,6 +635,7 @@ const (
 	HostService_UnregisterUrlListener_FullMethodName     = "/plugins.HostService/UnregisterUrlListener"
 	HostService_CreateTask_FullMethodName                = "/plugins.HostService/CreateTask"
 	HostService_GetPluginRoot_FullMethodName             = "/plugins.HostService/GetPluginRoot"
+	HostService_GetStoreRelPath_FullMethodName           = "/plugins.HostService/GetStoreRelPath"
 	HostService_Log_FullMethodName                       = "/plugins.HostService/Log"
 	HostService_PublishToFrontend_FullMethodName         = "/plugins.HostService/PublishToFrontend"
 	HostService_SubscribeFrontend_FullMethodName         = "/plugins.HostService/SubscribeFrontend"
@@ -664,6 +665,8 @@ type HostServiceClient interface {
 	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error)
 	// 路径
 	GetPluginRoot(ctx context.Context, in *GetPluginRootRequest, opts ...grpc.CallOption) (*GetPluginRootResponse, error)
+	// 资源路径查询(插件据 task+role+store_seq 查真实落盘路径,供兄弟文件按真实名引用)
+	GetStoreRelPath(ctx context.Context, in *GetStoreRelPathRequest, opts ...grpc.CallOption) (*GetStoreRelPathResponse, error)
 	// 日志
 	Log(ctx context.Context, in *LogRequest, opts ...grpc.CallOption) (*Empty, error)
 	// 前后端通信
@@ -820,6 +823,16 @@ func (c *hostServiceClient) GetPluginRoot(ctx context.Context, in *GetPluginRoot
 	return out, nil
 }
 
+func (c *hostServiceClient) GetStoreRelPath(ctx context.Context, in *GetStoreRelPathRequest, opts ...grpc.CallOption) (*GetStoreRelPathResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetStoreRelPathResponse)
+	err := c.cc.Invoke(ctx, HostService_GetStoreRelPath_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) Log(ctx context.Context, in *LogRequest, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
@@ -892,6 +905,8 @@ type HostServiceServer interface {
 	CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error)
 	// 路径
 	GetPluginRoot(context.Context, *GetPluginRootRequest) (*GetPluginRootResponse, error)
+	// 资源路径查询(插件据 task+role+store_seq 查真实落盘路径,供兄弟文件按真实名引用)
+	GetStoreRelPath(context.Context, *GetStoreRelPathRequest) (*GetStoreRelPathResponse, error)
 	// 日志
 	Log(context.Context, *LogRequest) (*Empty, error)
 	// 前后端通信
@@ -949,6 +964,9 @@ func (UnimplementedHostServiceServer) CreateTask(context.Context, *CreateTaskReq
 }
 func (UnimplementedHostServiceServer) GetPluginRoot(context.Context, *GetPluginRootRequest) (*GetPluginRootResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPluginRoot not implemented")
+}
+func (UnimplementedHostServiceServer) GetStoreRelPath(context.Context, *GetStoreRelPathRequest) (*GetStoreRelPathResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetStoreRelPath not implemented")
 }
 func (UnimplementedHostServiceServer) Log(context.Context, *LogRequest) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method Log not implemented")
@@ -1235,6 +1253,24 @@ func _HostService_GetPluginRoot_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_GetStoreRelPath_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStoreRelPathRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).GetStoreRelPath(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_GetStoreRelPath_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).GetStoreRelPath(ctx, req.(*GetStoreRelPathRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_Log_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LogRequest)
 	if err := dec(in); err != nil {
@@ -1364,6 +1400,10 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_GetPluginRoot_Handler,
 		},
 		{
+			MethodName: "GetStoreRelPath",
+			Handler:    _HostService_GetStoreRelPath_Handler,
+		},
+		{
 			MethodName: "Log",
 			Handler:    _HostService_Log_Handler,
 		},
@@ -1383,5 +1423,5 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "plugin.proto",
+	Metadata: "proto/plugin.proto",
 }

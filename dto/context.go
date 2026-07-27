@@ -33,6 +33,12 @@ type PluginContext interface {
 	// 路径
 	GetPluginRoot(isRelative bool) string
 
+	// 资源路径查询
+	// GetStoreRelPath 查询当前任务(taskId)资源中指定 (role, storeSeq) store 的真实落盘路径(workDir 相对)。
+	// 供插件在资源路径可知后(如 document lazy 生成)按真实文件名引用兄弟文件,取代 Create 阶段的占位。
+	// 失败(任务无 PendingResourceID / resource_store 无此 role+seq / DB 错误)返回 error。
+	GetStoreRelPath(taskId int64, role string, storeSeq int) (string, error)
+
 	// 窗口
 	GetMainWindowHandle() uintptr
 

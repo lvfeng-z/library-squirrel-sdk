@@ -20,6 +20,7 @@ type HostDeps struct {
 	dto.TaskCreateProvider
 	dto.UrlListenerRegistry
 	dto.FrontendEventProvider
+	dto.StorePathQueryProvider
 	LogFunc                 func(level int32, template string, args []string, loggerName string)
 	OnRegisterTaskHandler   func(extensionId, name, description string) error
 	OnRegisterSiteBrowser   func(extensionId, name, description string) error
@@ -130,6 +131,17 @@ func (s *HostServiceServer) CreateTask(ctx context.Context, req *gen.CreateTaskR
 func (s *HostServiceServer) GetPluginRoot(ctx context.Context, req *gen.GetPluginRootRequest) (*gen.GetPluginRootResponse, error) {
 	path := s.deps.GetPluginRoot(ctx, req.IsRelative)
 	return &gen.GetPluginRootResponse{Path: path}, nil
+}
+
+// GetStoreRelPath 查询任务资源 store 的真实落盘路径。
+// 失败(任务无 PendingResourceID / resource_store 无此 role+seq / DB 错误)返回 error,
+// 调用方(插件 document lazy 生成)据此失败该 store,不静默降级。
+func (s *HostServiceServer) GetStoreRelPath(ctx context.Context, req *gen.GetStoreRelPathRequest) (*gen.GetStoreRelPathResponse, error) {
+	relPath, err := s.deps.GetStoreRelPath(ctx, req.TaskId, req.Role, int(req.StoreSeq))
+	if err != nil {
+		return nil, fmt.Errorf("查询 store 路径失败(task=%d, role=%s, seq=%d): %w", req.TaskId, req.Role, req.StoreSeq, err)
+	}
+	return &gen.GetStoreRelPathResponse{RelPath: relPath}, nil
 }
 
 func (s *HostServiceServer) Log(ctx context.Context, req *gen.LogRequest) (*gen.Empty, error) {

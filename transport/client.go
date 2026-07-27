@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
@@ -155,6 +156,22 @@ func (c *PluginContextClient) GetPluginRoot(isRelative bool) string {
 		return ""
 	}
 	return resp.Path
+}
+
+// GetStoreRelPath 查询当前任务资源中指定 store 的真实落盘路径。
+// 设 5s deadline 防主程序异常时调用方(document lazy 生成)无限阻塞。
+func (c *PluginContextClient) GetStoreRelPath(taskId int64, role string, storeSeq int) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	resp, err := c.hostClient.GetStoreRelPath(ctx, &gen.GetStoreRelPathRequest{
+		TaskId:   taskId,
+		Role:     role,
+		StoreSeq: int32(storeSeq),
+	})
+	if err != nil {
+		return "", err
+	}
+	return resp.RelPath, nil
 }
 
 func (c *PluginContextClient) GetMainWindowHandle() uintptr {

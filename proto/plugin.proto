@@ -330,6 +330,9 @@ service HostService {
   // 路径
   rpc GetPluginRoot(GetPluginRootRequest) returns (GetPluginRootResponse);
 
+  // 资源路径查询(插件据 task+role+store_seq 查真实落盘路径,供兄弟文件按真实名引用)
+  rpc GetStoreRelPath(GetStoreRelPathRequest) returns (GetStoreRelPathResponse);
+
   // 日志
   rpc Log(LogRequest) returns (Empty);
 
@@ -400,6 +403,19 @@ message GetPluginRootRequest {
 
 message GetPluginRootResponse {
   string path = 1;
+}
+
+// GetStoreRelPath 查询当前任务资源中指定 store 的真实落盘路径
+// 主程序据 task_id → 任务 PendingResourceID 定位资源(插件 Start 时资源尚未创建,PendingResourceID 不可用,
+// 故用 task_id;主程序在 downloadLoop 查询时事务已提交,PendingResourceID 已就位)
+message GetStoreRelPathRequest {
+  int64 task_id = 1;   // 任务 ID
+  string role = 2;     // store_type(image/document/videoTrack/...)
+  int32 store_seq = 3; // 同 role 内 store 序号(单例为 0)
+}
+
+message GetStoreRelPathResponse {
+  string rel_path = 1; // workDir 相对路径
 }
 
 message LogRequest {
