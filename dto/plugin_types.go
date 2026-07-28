@@ -79,7 +79,7 @@ func NewPluginManifest() *PluginManifest {
 type PluginExtensions struct {
 	TaskHandlers    []TaskHandlerDeclaration `json:"taskHandlers,omitempty"`
 	SiteBrowsers    []SiteBrowserDeclaration `json:"siteBrowsers,omitempty"`
-	Slots           []SlotDeclaration        `json:"slots,omitempty"`
+	FrontendExtensions []FrontendExtensionDeclaration `json:"frontendExtensions,omitempty"`
 	StaticResources *StaticResourcesConfig   `json:"staticResources,omitempty"`
 }
 
@@ -97,18 +97,18 @@ type SiteBrowserDeclaration struct {
 	Description string `json:"description,omitempty"`
 }
 
-// SlotDeclaration 插槽声明
-type SlotDeclaration struct {
+// FrontendExtensionDeclaration 前端扩展声明
+type FrontendExtensionDeclaration struct {
 	ID          string          `json:"id"`
 	Name        string          `json:"name"`
 	Description string          `json:"description,omitempty"`
-	SlotType    string          `json:"slotType"`
+	Kind        string          `json:"kind"`
 	Order       int             `json:"order,omitempty"`
 	Content     json.RawMessage `json:"content"`
 }
 
-// EmbedSlotContent embed 类型插槽配置
-type EmbedSlotContent struct {
+// EmbedContent embed 类型前端扩展配置
+type EmbedContent struct {
 	ContentType    string          `json:"contentType"`
 	Source         json.RawMessage `json:"source"`
 	Position       string          `json:"position"`
@@ -116,33 +116,23 @@ type EmbedSlotContent struct {
 	Props          json.RawMessage `json:"props,omitempty"`
 }
 
-// PanelSlotContent panel 类型插槽配置
-type PanelSlotContent struct {
-	ContentType string          `json:"contentType"`
-	Source      json.RawMessage `json:"source"`
-	Position    string          `json:"position"`
-	Width       *int            `json:"width,omitempty"`
-	Height      *int            `json:"height,omitempty"`
-	Props       json.RawMessage `json:"props,omitempty"`
-}
-
-// ViewSlotContent view 类型插槽配置
-type ViewSlotContent struct {
+// ViewContent view 类型前端扩展配置
+type ViewContent struct {
 	ContentType string          `json:"contentType"`
 	Source      json.RawMessage `json:"source"`
 	Title       string          `json:"title,omitempty"`
 	Props       json.RawMessage `json:"props,omitempty"`
 }
 
-// MenuSlotContent menu 类型插槽配置
-type MenuSlotContent struct {
-	Icon     string           `json:"icon,omitempty"`
-	ViewId   string           `json:"viewId,omitempty"`
-	Children []SlotDeclaration `json:"children,omitempty"`
+// MenuContent menu 类型前端扩展配置
+type MenuContent struct {
+	Icon     string                          `json:"icon,omitempty"`
+	ViewId   string                          `json:"viewId,omitempty"`
+	Children []FrontendExtensionDeclaration  `json:"children,omitempty"`
 }
 
-// SiteBrowserListSlotContent siteBrowserList 类型插槽配置
-type SiteBrowserListSlotContent struct {
+// SiteBrowserListContent siteBrowserList 类型前端扩展配置
+type SiteBrowserListContent struct {
 	Icon           string `json:"icon,omitempty"`
 	ExtensionId string `json:"extensionId"`
 }
