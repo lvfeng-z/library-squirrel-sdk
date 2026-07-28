@@ -2,7 +2,7 @@ package dto
 
 // ResourceStoreDTO Resource 关联的单个 typed store(包装 PersistentStoreDTO + store_type/generation)
 type ResourceStoreDTO struct {
-	StoreType  string              `json:"storeType"`       // image | document | thumbnail | videoTrack | audioTrack | merged
+	StoreType  string              `json:"storeType"`       // image | document | thumbnail | videoTrack | audioTrack | videoMain
 	Generation string              `json:"generation"`      // downloaded | derived
 	Store      *PersistentStoreDTO `json:"store,omitempty"` // 对应的 PersistentStore 信息
 }

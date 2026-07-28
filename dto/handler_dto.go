@@ -11,9 +11,9 @@ const (
 	StoreRoleImage      = "image"      // 图片(image 资源主体;article 内嵌图多例)
 	StoreRoleDocument   = "document"   // 文档文件(article 正文 .md;document 原文件 .pdf/.docx)
 	StoreRoleThumbnail  = "thumbnail"  // 缩略图/封面
-	StoreRoleVideoTrack = "videoTrack" // 视频轨
-	StoreRoleAudioTrack = "audioTrack" // 音频轨
-	StoreRoleMerged     = "merged"     // 合并产物
+	StoreRoleVideoTrack = "videoTrack" // 分离流视频原料(无音频)
+	StoreRoleAudioTrack = "audioTrack" // 分离流音频原料
+	StoreRoleVideoMain  = "videoMain"  // 视频可播放主体(封装原文件 downloaded 或合并产物 derived)
 
 	GenerationDownloaded = "downloaded" // 流式下载,支持断点续传
 	GenerationDerived    = "derived"    // 一次性派生,不可续传
@@ -105,7 +105,7 @@ type WorkResponse struct {
 
 // StoreSpec 单条资源产出声明(对应一个 store)
 type StoreSpec struct {
-	Role              string        `json:"role"`                        // store_type: image | document | thumbnail | videoTrack | audioTrack | merged
+	Role              string        `json:"role"`                        // store_type: image | document | thumbnail | videoTrack | audioTrack | videoMain
 	Generation        string        `json:"generation"`                  // downloaded(流式可续传) | derived(一次性派生)
 	ReadCloser        io.ReadCloser `json:"-"`                           // 资源数据流(downloaded=流式 reader;derived=一次性 payload 包装的 reader),调用方负责 Close
 	Format            string        `json:"format"`                      // 文件扩展名
