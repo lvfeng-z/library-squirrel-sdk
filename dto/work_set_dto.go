@@ -11,6 +11,7 @@ type WorkSetDTO struct {
 	SiteUploadTime         *int64  `json:"siteUploadTime"`
 	SiteUpdateTime         *int64  `json:"siteUpdateTime"`
 	NickName               *string `json:"nickName"`
+	Description            *string `json:"description"`
 	LastView               *int64  `json:"lastView"`
 	CreateTime             int64   `json:"createTime"`
 	UpdateTime             int64   `json:"updateTime"`
