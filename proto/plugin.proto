@@ -180,6 +180,22 @@ service TaskHandlerService {
   rpc Pause(TaskResParamMessage) returns (Empty);
   rpc Stop(TaskResParamMessage) returns (Empty);
   rpc Resume(stream ResumeFrame) returns (stream StreamChunk);
+  rpc QueryWorkSetOrder(QueryWorkSetOrderRequest) returns (QueryWorkSetOrderResponse);
+}
+
+// QueryWorkSetOrder 查询作品集内作品的原站顺序（主程序作品入库后拉取，仅写 site_sort_order，不碰本地序）
+message QueryWorkSetOrderRequest {
+  int64 site_id = 1;            // 站点内部 ID（主程序已知）
+  string site_work_set_id = 2;  // 站点作品集 ID（插件原生 ID）
+}
+
+message QueryWorkSetOrderResponse {
+  repeated WorkOrderEntry entries = 1;  // 集内全序；空=插件不掌握/不提供
+}
+
+message WorkOrderEntry {
+  string site_work_id = 1;  // 站点作品 ID
+  int64 sort_order = 2;     // 该作品在此集内的原站序号（从 0 起）
 }
 
 message CreateRequest {

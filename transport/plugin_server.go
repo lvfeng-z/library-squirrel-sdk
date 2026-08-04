@@ -173,6 +173,20 @@ func (s *taskHandlerServer) Resume(stream gen.TaskHandlerService_ResumeServer) e
 	}, specs, workResp)
 }
 
+// QueryWorkSetOrder 查询作品集内作品原站顺序（主程序作品入库后拉取，仅写 site_sort_order）
+// 可选能力：插件未实现 dto.WorkOrderQuerier 时返回空响应（site_sort_order 保持空，仅本地序）
+func (s *taskHandlerServer) QueryWorkSetOrder(ctx context.Context, req *gen.QueryWorkSetOrderRequest) (*gen.QueryWorkSetOrderResponse, error) {
+	querier, ok := s.handler.(dto.WorkOrderQuerier)
+	if !ok {
+		return &gen.QueryWorkSetOrderResponse{}, nil
+	}
+	entries, err := querier.QueryWorkSetOrder(req.GetSiteId(), req.GetSiteWorkSetId())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "queryWorkSetOrder failed: %v", err)
+	}
+	return &gen.QueryWorkSetOrderResponse{Entries: workOrderEntriesToProto(entries)}, nil
+}
+
 // closeSpecReaders 关闭所有 spec 的 reader(忽略 nil)
 func closeSpecReaders(specs []*dto.StoreSpec) {
 	for _, sp := range specs {
@@ -395,6 +409,18 @@ func workResponseToProto(r *dto.WorkResponse) *gen.WorkResponse {
 		})
 	}
 	return pb
+}
+
+// workOrderEntriesToProto 作品原站排序条目 DTO → proto
+func workOrderEntriesToProto(entries []*dto.WorkOrderEntry) []*gen.WorkOrderEntry {
+	result := make([]*gen.WorkOrderEntry, 0, len(entries))
+	for _, e := range entries {
+		result = append(result, &gen.WorkOrderEntry{
+			SiteWorkId: e.SiteWorkID,
+			SortOrder:  e.SortOrder,
+		})
+	}
+	return result
 }
 
 func workToProto(w *dto.WorkDTO) *gen.Work {

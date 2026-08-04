@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v5.29.5
-// source: proto/plugin.proto
+// source: plugin.proto
 
 package gen
 
@@ -155,17 +155,18 @@ var PluginLifecycle_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
-	TaskHandlerService_Create_FullMethodName         = "/plugins.TaskHandlerService/Create"
-	TaskHandlerService_CreateWorkInfo_FullMethodName = "/plugins.TaskHandlerService/CreateWorkInfo"
-	TaskHandlerService_Start_FullMethodName          = "/plugins.TaskHandlerService/Start"
-	TaskHandlerService_Retry_FullMethodName          = "/plugins.TaskHandlerService/Retry"
-	TaskHandlerService_Pause_FullMethodName          = "/plugins.TaskHandlerService/Pause"
-	TaskHandlerService_Stop_FullMethodName           = "/plugins.TaskHandlerService/Stop"
-	TaskHandlerService_Resume_FullMethodName         = "/plugins.TaskHandlerService/Resume"
+	TaskHandlerService_Create_FullMethodName            = "/plugins.TaskHandlerService/Create"
+	TaskHandlerService_CreateWorkInfo_FullMethodName    = "/plugins.TaskHandlerService/CreateWorkInfo"
+	TaskHandlerService_Start_FullMethodName             = "/plugins.TaskHandlerService/Start"
+	TaskHandlerService_Retry_FullMethodName             = "/plugins.TaskHandlerService/Retry"
+	TaskHandlerService_Pause_FullMethodName             = "/plugins.TaskHandlerService/Pause"
+	TaskHandlerService_Stop_FullMethodName              = "/plugins.TaskHandlerService/Stop"
+	TaskHandlerService_Resume_FullMethodName            = "/plugins.TaskHandlerService/Resume"
+	TaskHandlerService_QueryWorkSetOrder_FullMethodName = "/plugins.TaskHandlerService/QueryWorkSetOrder"
 )
 
 // TaskHandlerServiceClient is the client API for TaskHandlerService service.
@@ -179,6 +180,7 @@ type TaskHandlerServiceClient interface {
 	Pause(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error)
 	Stop(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error)
 	Resume(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ResumeFrame, StreamChunk], error)
+	QueryWorkSetOrder(ctx context.Context, in *QueryWorkSetOrderRequest, opts ...grpc.CallOption) (*QueryWorkSetOrderResponse, error)
 }
 
 type taskHandlerServiceClient struct {
@@ -274,6 +276,16 @@ func (c *taskHandlerServiceClient) Resume(ctx context.Context, opts ...grpc.Call
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TaskHandlerService_ResumeClient = grpc.BidiStreamingClient[ResumeFrame, StreamChunk]
 
+func (c *taskHandlerServiceClient) QueryWorkSetOrder(ctx context.Context, in *QueryWorkSetOrderRequest, opts ...grpc.CallOption) (*QueryWorkSetOrderResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryWorkSetOrderResponse)
+	err := c.cc.Invoke(ctx, TaskHandlerService_QueryWorkSetOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TaskHandlerServiceServer is the server API for TaskHandlerService service.
 // All implementations must embed UnimplementedTaskHandlerServiceServer
 // for forward compatibility.
@@ -285,6 +297,7 @@ type TaskHandlerServiceServer interface {
 	Pause(context.Context, *TaskResParamMessage) (*Empty, error)
 	Stop(context.Context, *TaskResParamMessage) (*Empty, error)
 	Resume(grpc.BidiStreamingServer[ResumeFrame, StreamChunk]) error
+	QueryWorkSetOrder(context.Context, *QueryWorkSetOrderRequest) (*QueryWorkSetOrderResponse, error)
 	mustEmbedUnimplementedTaskHandlerServiceServer()
 }
 
@@ -315,6 +328,9 @@ func (UnimplementedTaskHandlerServiceServer) Stop(context.Context, *TaskResParam
 }
 func (UnimplementedTaskHandlerServiceServer) Resume(grpc.BidiStreamingServer[ResumeFrame, StreamChunk]) error {
 	return status.Error(codes.Unimplemented, "method Resume not implemented")
+}
+func (UnimplementedTaskHandlerServiceServer) QueryWorkSetOrder(context.Context, *QueryWorkSetOrderRequest) (*QueryWorkSetOrderResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method QueryWorkSetOrder not implemented")
 }
 func (UnimplementedTaskHandlerServiceServer) mustEmbedUnimplementedTaskHandlerServiceServer() {}
 func (UnimplementedTaskHandlerServiceServer) testEmbeddedByValue()                            {}
@@ -434,6 +450,24 @@ func _TaskHandlerService_Resume_Handler(srv interface{}, stream grpc.ServerStrea
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TaskHandlerService_ResumeServer = grpc.BidiStreamingServer[ResumeFrame, StreamChunk]
 
+func _TaskHandlerService_QueryWorkSetOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWorkSetOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskHandlerServiceServer).QueryWorkSetOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskHandlerService_QueryWorkSetOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskHandlerServiceServer).QueryWorkSetOrder(ctx, req.(*QueryWorkSetOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TaskHandlerService_ServiceDesc is the grpc.ServiceDesc for TaskHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -457,6 +491,10 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Stop",
 			Handler:    _TaskHandlerService_Stop_Handler,
 		},
+		{
+			MethodName: "QueryWorkSetOrder",
+			Handler:    _TaskHandlerService_QueryWorkSetOrder_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -477,7 +515,7 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -617,7 +655,7 @@ var SiteBrowserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -1423,5 +1461,5 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
