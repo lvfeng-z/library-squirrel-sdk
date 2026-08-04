@@ -10,9 +10,3 @@ type LocalTagDTO struct {
 	CreateTime     int64   `json:"createTime"`
 	UpdateTime     int64   `json:"updateTime"`
 }
-
-// LocalTagWithBaseTagDTO 本地标签及其基础标签数据传输对象
-type LocalTagWithBaseTagDTO struct {
-	LocalTag *LocalTagDTO `json:"localTag,omitempty"`
-	BaseTag  *LocalTagDTO `json:"baseTag,omitempty"`
-}

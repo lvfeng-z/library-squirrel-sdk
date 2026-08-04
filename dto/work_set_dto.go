@@ -17,19 +17,6 @@ type WorkSetDTO struct {
 	UpdateTime             int64   `json:"updateTime"`
 }
 
-// WorkSetWithWorksResultDTO 作品集及其作品信息
-type WorkSetWithWorksResultDTO struct {
-	WorkSet *WorkSetDTO    `json:"workSet"`
-	Works   []*WorkFullDTO `json:"works,omitempty"`
-}
-
-// WorkSetWithCoverDTO 作品集及其封面作品信息
-type WorkSetWithCoverDTO struct {
-	WorkSet       *WorkSetDTO       `json:"workSet"`
-	CoverWork     *WorkDTO          `json:"coverWork,omitempty"`
-	CoverResource *ResourceFullDTO  `json:"coverResource,omitempty"`
-}
-
 // WorkOrderEntry 作品在作品集内的原站排序条目（插件返回集内全序，主程序据此写 site_sort_order）
 type WorkOrderEntry struct {
 	SiteWorkID string `json:"siteWorkId"`

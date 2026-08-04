@@ -9,18 +9,3 @@ type LocalAuthorDTO struct {
 	CreateTime int64   `json:"createTime"`
 	UpdateTime int64   `json:"updateTime"`
 }
-
-// RankedLocalAuthor 带排序的本地作者
-type RankedLocalAuthor struct {
-	Author    LocalAuthorDTO `json:"author"`
-	RoleName  string         `json:"roleName"`
-	SortOrder int            `json:"sortOrder"`
-}
-
-// RankedLocalAuthorWithWorkId 带作品ID的本地作者
-type RankedLocalAuthorWithWorkId struct {
-	Author    LocalAuthorDTO `json:"author"`
-	RoleName  string         `json:"roleName"`
-	SortOrder int            `json:"sortOrder"`
-	WorkId    int64          `json:"workId"`
-}
