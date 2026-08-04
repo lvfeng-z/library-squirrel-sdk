@@ -102,14 +102,14 @@ func (c *PluginContextClient) GetWorkSetBySiteWorkSetId(siteWorkSetId, siteName 
 	if err != nil {
 		return nil, err
 	}
-	return protoToWorkSet(resp.WorkSet), nil
+	return resp.WorkSet, nil
 }
 
 func (c *PluginContextClient) AddSite(sites []*dto.SiteDTO) error {
 	pbSites := make([]*gen.Site, len(sites))
 	for i, s := range sites {
 		pbSites[i] = &gen.Site{
-			Id:              s.ID,
+			Id:              s.Id,
 			CreateTime:      s.CreateTime,
 			UpdateTime:      s.UpdateTime,
 			SiteName:        s.SiteName,
@@ -230,25 +230,4 @@ func (c *PluginContextClient) UnsubscribeFrontend(topic string) error {
 	}
 	_, err := c.hostClient.UnsubscribeFrontend(context.Background(), &gen.UnsubscribeFrontendRequest{Topic: topic})
 	return err
-}
-
-// protoToWorkSet 将 proto WorkSet 转换为 WorkSetDTO
-func protoToWorkSet(pb *gen.WorkSet) *dto.WorkSetDTO {
-	if pb == nil {
-		return nil
-	}
-	return &dto.WorkSetDTO{
-		ID:                     pb.Id,
-		CreateTime:             pb.CreateTime,
-		UpdateTime:             pb.UpdateTime,
-		SiteID:                 pb.SiteId,
-		SiteWorkSetID:          pb.SiteWorkSetId,
-		SiteWorkSetName:        pb.SiteWorkSetName,
-		SiteAuthorID:           pb.SiteAuthorId,
-		SiteWorkSetDescription: pb.SiteWorkSetDescription,
-		SiteUploadTime:         pb.SiteUploadTime,
-		SiteUpdateTime:         pb.SiteUpdateTime,
-		NickName:               pb.NickName,
-		LastView:               pb.LastView,
-	}
 }

@@ -68,7 +68,7 @@ func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStr
 		for resp := range result.Stream() {
 			if err := stream.Send(&gen.CreateChunk{
 				Payload: &gen.CreateChunk_Task{
-					Task: taskCreateResponseToProto(resp),
+					Task: resp,
 				},
 			}); err != nil {
 				return err
@@ -78,7 +78,7 @@ func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStr
 		for _, resp := range result.Array() {
 			if err := stream.Send(&gen.CreateChunk{
 				Payload: &gen.CreateChunk_Task{
-					Task: taskCreateResponseToProto(resp),
+					Task: resp,
 				},
 			}); err != nil {
 				return err
@@ -90,12 +90,12 @@ func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStr
 }
 
 func (s *taskHandlerServer) CreateWorkInfo(ctx context.Context, req *gen.CreateWorkInfoRequest) (*gen.WorkResponse, error) {
-	task := protoToTask(req.Task)
+	task := req.Task
 	workResp, err := s.handler.CreateWorkInfo(task)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "createWorkInfo failed: %v", err)
 	}
-	return workResponseToProto(workResp), nil
+	return workResp, nil
 }
 
 func (s *taskHandlerServer) Start(stream gen.TaskHandlerService_StartServer) error {
@@ -109,7 +109,7 @@ func (s *taskHandlerServer) Start(stream gen.TaskHandlerService_StartServer) err
 	if startReq == nil {
 		return status.Errorf(codes.InvalidArgument, "start: 首帧必须为 StartRequest")
 	}
-	task := protoToTask(startReq.Task)
+	task := startReq.Task
 	specs, workResp, err := s.handler.Start(ctx, task, startReq.StoreRoles)
 	if err != nil {
 		return status.Errorf(codes.Internal, "start failed: %v", err)
@@ -124,16 +124,16 @@ func (s *taskHandlerServer) Start(stream gen.TaskHandlerService_StartServer) err
 }
 
 func (s *taskHandlerServer) Retry(ctx context.Context, req *gen.RetryRequest) (*gen.WorkResponse, error) {
-	task := protoToTask(req.Task)
+	task := req.Task
 	workResp, err := s.handler.Retry(task)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "retry failed: %v", err)
 	}
-	return workResponseToProto(workResp), nil
+	return workResp, nil
 }
 
 func (s *taskHandlerServer) Pause(ctx context.Context, req *gen.TaskResParamMessage) (*gen.Empty, error) {
-	param := protoToTaskResParam(req.Param)
+	param := req.Param
 	if err := s.handler.Pause(param); err != nil {
 		return nil, status.Errorf(codes.Internal, "pause failed: %v", err)
 	}
@@ -141,7 +141,7 @@ func (s *taskHandlerServer) Pause(ctx context.Context, req *gen.TaskResParamMess
 }
 
 func (s *taskHandlerServer) Stop(ctx context.Context, req *gen.TaskResParamMessage) (*gen.Empty, error) {
-	param := protoToTaskResParam(req.Param)
+	param := req.Param
 	if err := s.handler.Stop(param); err != nil {
 		return nil, status.Errorf(codes.Internal, "stop failed: %v", err)
 	}
@@ -184,7 +184,7 @@ func (s *taskHandlerServer) QueryWorkSetOrder(ctx context.Context, req *gen.Quer
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "queryWorkSetOrder failed: %v", err)
 	}
-	return &gen.QueryWorkSetOrderResponse{Entries: workOrderEntriesToProto(entries)}, nil
+	return &gen.QueryWorkSetOrderResponse{Entries: entries}, nil
 }
 
 // closeSpecReaders 关闭所有 spec 的 reader(忽略 nil)
@@ -215,7 +215,7 @@ func serveSpecsPull(
 ) error {
 	defer closeSpecReaders(specs)
 	if workResp != nil {
-		if err := send(&gen.StreamChunk{Payload: &gen.StreamChunk_WorkResponse{WorkResponse: workResponseToProto(workResp)}}); err != nil {
+		if err := send(&gen.StreamChunk{Payload: &gen.StreamChunk_WorkResponse{WorkResponse: workResp}}); err != nil {
 			return err
 		}
 	}
@@ -342,189 +342,12 @@ func (s *siteBrowserServer) Close(ctx context.Context, req *gen.BrowserRequest) 
 	return &gen.Empty{}, nil
 }
 
-// ========== 转换函数：DTO → Proto ==========
+// ========== 转换函数 ==========
+// 别名类型(dto=gen,如 TaskDTO/WorkDTO/WorkResponse/TaskCreateResponse 等)在 gRPC 边界直传,无需转换。
+// 仅 TaskResumeParam(含 OffsetForRole 方法)/StoreResumeOffset(含 String 方法)保留为 struct,
+// 及 StoreSpec(手写 io.ReadCloser)需手工 proto↔DTO 转换。
 
-func taskCreateResponseToProto(r *dto.TaskCreateResponse) *gen.TaskCreateResponse {
-	pb := &gen.TaskCreateResponse{
-		PluginTaskId:  r.PluginTaskID,
-		TaskName:      r.TaskName,
-		SiteWorkId:    r.SiteWorkID,
-		Url:           r.URL,
-		PluginData:    r.PluginData,
-		SiteName:      r.SiteName,
-		InvolvedRoles: r.InvolvedRoles,
-		ResourceType:  r.ResourceType,
-	}
-	for _, c := range r.Children {
-		pb.Children = append(pb.Children, &gen.TaskCreateChildResponse{
-			TaskName:      c.TaskName,
-			SiteWorkId:    c.SiteWorkID,
-			Url:           c.URL,
-			PluginData:    c.PluginData,
-			SiteName:      c.SiteName,
-			InvolvedRoles: c.InvolvedRoles,
-			ResourceType:  c.ResourceType,
-		})
-	}
-	return pb
-}
-
-func workResponseToProto(r *dto.WorkResponse) *gen.WorkResponse {
-	if r == nil {
-		return nil
-	}
-	pb := &gen.WorkResponse{}
-	if r.Work != nil {
-		pb.Work = workToProto(r.Work)
-	}
-	if r.Site != nil {
-		pb.Site = siteDTOToProto(r.Site)
-	}
-	for _, a := range r.LocalAuthors {
-		pb.LocalAuthors = append(pb.LocalAuthors, localAuthorDTOToProto(a))
-	}
-	for _, t := range r.LocalTags {
-		pb.LocalTags = append(pb.LocalTags, localTagDTOToProto(t))
-	}
-	for _, a := range r.SiteAuthors {
-		pb.SiteAuthors = append(pb.SiteAuthors, &gen.TaskSiteAuthorDTO{
-			SiteAuthorId:    a.SiteAuthorID,
-			AuthorName:      a.AuthorName,
-			Homepage:        a.Homepage,
-			FixedAuthorName: a.FixedAuthorName,
-			Introduce:       a.Introduce,
-		})
-	}
-	for _, t := range r.SiteTags {
-		pb.SiteTags = append(pb.SiteTags, &gen.TaskSiteTagDTO{
-			SiteTagId:   t.SiteTagID,
-			TagName:     t.TagName,
-			Description: t.Description,
-		})
-	}
-	for _, ws := range r.WorkSets {
-		pb.WorkSets = append(pb.WorkSets, &gen.TaskWorkSetDTO{
-			SiteWorkSetId: ws.SiteWorkSetID,
-			WorkSetName:   ws.WorkSetName,
-		})
-	}
-	return pb
-}
-
-// workOrderEntriesToProto 作品原站排序条目 DTO → proto
-func workOrderEntriesToProto(entries []*dto.WorkOrderEntry) []*gen.WorkOrderEntry {
-	result := make([]*gen.WorkOrderEntry, 0, len(entries))
-	for _, e := range entries {
-		result = append(result, &gen.WorkOrderEntry{
-			SiteWorkId: e.SiteWorkID,
-			SortOrder:  e.SortOrder,
-		})
-	}
-	return result
-}
-
-func workToProto(w *dto.WorkDTO) *gen.Work {
-	if w == nil {
-		return nil
-	}
-	return &gen.Work{
-		Id:                  w.ID,
-		CreateTime:          w.CreateTime,
-		UpdateTime:          w.UpdateTime,
-		SiteId:              w.SiteID,
-		SiteWorkId:          w.SiteWorkID,
-		SiteWorkName:        w.SiteWorkName,
-		SiteAuthorId:        w.SiteAuthorID,
-		SiteWorkDescription: w.SiteWorkDescription,
-		SiteUploadTime:      w.SiteUploadTime,
-		SiteUpdateTime:      w.SiteUpdateTime,
-		NickName:            w.NickName,
-		LocalAuthorId:       w.LocalAuthorID,
-		LastView:            w.LastView,
-	}
-}
-
-func siteDTOToProto(s *dto.SiteDTO) *gen.SiteDTO {
-	if s == nil {
-		return nil
-	}
-	return &gen.SiteDTO{
-		Id:              s.ID,
-		SiteName:        s.SiteName,
-		SiteDescription: s.SiteDescription,
-		Homepage:        s.Homepage,
-		CreateTime:      s.CreateTime,
-		UpdateTime:      s.UpdateTime,
-	}
-}
-
-func localAuthorDTOToProto(a *dto.LocalAuthorDTO) *gen.LocalAuthorDTO {
-	if a == nil {
-		return nil
-	}
-	return &gen.LocalAuthorDTO{
-		Id:         a.ID,
-		AuthorName: a.AuthorName,
-		Introduce:  a.Introduce,
-		LastUse:    a.LastUse,
-		CreateTime: a.CreateTime,
-		UpdateTime: a.UpdateTime,
-	}
-}
-
-func localTagDTOToProto(t *dto.LocalTagDTO) *gen.LocalTagDTO {
-	if t == nil {
-		return nil
-	}
-	return &gen.LocalTagDTO{
-		Id:             t.ID,
-		LocalTagName:   t.LocalTagName,
-		BaseLocalTagId: t.BaseLocalTagID,
-		Description:    t.Description,
-		LastUse:        t.LastUse,
-		CreateTime:     t.CreateTime,
-		UpdateTime:     t.UpdateTime,
-	}
-}
-
-// ========== 转换函数：Proto → DTO ==========
-
-func protoToTask(pb *gen.Task) *dto.TaskDTO {
-	if pb == nil {
-		return nil
-	}
-	return &dto.TaskDTO{
-		ID:                pb.Id,
-		CreateTime:        pb.CreateTime,
-		UpdateTime:        pb.UpdateTime,
-		HasChild:          pb.HasChild,
-		Pid:               pb.Pid,
-		TaskName:          pb.TaskName,
-		SiteID:            pb.SiteId,
-		SiteWorkID:        pb.SiteWorkId,
-		URL:               pb.Url,
-		Status:            int(pb.Status),
-		PendingResourceID: pb.PendingResourceId,
-		Continuable:       pb.Continuable,
-		PluginPublicID:    pb.PluginPublicId,
-		PluginExtensionID: pb.PluginExtensionId,
-		PluginData:        pb.PluginData,
-		ErrorMessage:      pb.ErrorMessage,
-	}
-}
-
-func protoToTaskResParam(pb *gen.TaskResParam) *dto.TaskResParam {
-	if pb == nil {
-		return nil
-	}
-	return &dto.TaskResParam{
-		Task:            protoToTask(pb.Task),
-		ResourceID:      pb.ResourceId,
-		ResourcePath:    pb.ResourcePath,
-		DownloadedBytes: pb.DownloadedBytes,
-	}
-}
-
+// protoToTaskResumeParam 续传参数 proto → DTO(TaskResumeParam 非别名:含 OffsetForRole 方法)
 func protoToTaskResumeParam(pb *gen.TaskResumeParam) *dto.TaskResumeParam {
 	if pb == nil {
 		return nil
@@ -534,7 +357,7 @@ func protoToTaskResumeParam(pb *gen.TaskResumeParam) *dto.TaskResumeParam {
 		offsets = append(offsets, protoToStoreResumeOffset(o))
 	}
 	return &dto.TaskResumeParam{
-		Task:          protoToTask(pb.Task),
+		Task:          pb.Task,
 		StreamOffsets: offsets,
 	}
 }

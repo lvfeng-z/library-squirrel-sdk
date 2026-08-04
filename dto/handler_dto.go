@@ -3,6 +3,8 @@ package dto
 import (
 	"fmt"
 	"io"
+
+	"github.com/lvfeng-z/library-squirrel-sdk/gen"
 )
 
 // StoreSpec 的 role(generation)契约常量,供插件与主程序共用,避免魔法字符串漂移。
@@ -28,25 +30,14 @@ const (
 	ResourceTypeUnknown  = "unknown"  // 插件确实无法分类时声明
 )
 
-// TaskResParam 任务和资源参数(Pause/Stop 共用)
-type TaskResParam struct {
-	Task            *TaskDTO `json:"task"`
-	ResourceID      int64    `json:"resourceId"`
-	ResourcePath    string   `json:"resourcePath"`
-	DownloadedBytes int64    `json:"downloadedBytes"`
-}
+// TaskResParam 任务和资源参数(Pause/Stop 共用)（别名 gen.TaskResParam，proto 单源）
+type TaskResParam = gen.TaskResParam
 
 // TaskResumeParam 续传参数(每条 downloaded store 独立偏移,按 role+store_seq 身份化)
+// 保留为 struct：含 OffsetForRole 便捷方法,别名后无法在 dto 包为 gen 类型定义方法。
 type TaskResumeParam struct {
 	Task          *TaskDTO             `json:"task"`
 	StreamOffsets []*StoreResumeOffset `json:"streamOffsets"` // 未完成 downloaded store 的续传偏移;同 role 多 store 各自独立(N-同 role 多 store 支持)
-}
-
-// StoreResumeOffset 单条 downloaded store 的续传偏移(身份化:role+store_seq 唯一定位一个 store)
-type StoreResumeOffset struct {
-	Role     string `json:"role"`     // store_type(image/document/videoTrack/audioTrack/...)
-	StoreSeq int32  `json:"storeSeq"` // 同 role 内的 store 序号(单例为 0;N-同 role 多 store 各自 0..N-1)
-	Offset   int64  `json:"offset"`   // 该 store 已写入字节数(磁盘 stat 为权威)
 }
 
 // OffsetForRole 按 role 查询续传偏移(单例场景便捷方法,取首个命中)。
@@ -68,42 +59,25 @@ func (o *StoreResumeOffset) String() string {
 	return fmt.Sprintf("{%s/%d:%d}", o.Role, o.StoreSeq, o.Offset)
 }
 
-// TaskCreateResponse 任务创建响应
-type TaskCreateResponse struct {
-	PluginTaskID  string                     `json:"pluginTaskId"`
-	TaskName      string                     `json:"taskName"`
-	SiteWorkID    string                     `json:"siteWorkId"`
-	URL           string                     `json:"url"`
-	PluginData    string                     `json:"pluginData"`
-	SiteName      string                     `json:"siteName"`
-	InvolvedRoles []string                   `json:"involvedRoles"` // 任务涉及的 store_type 集合(创建期声明,universe);空/nil=未确定,执行期插件下全量
-	ResourceType  string                     `json:"resourceType"`  // 任务产生的 resource 的资源类型(预定义 image/video/article/document/unknown);空=未声明;有 children 时由各 child 声明
-	Children      []*TaskCreateChildResponse `json:"children"`
+// StoreResumeOffset 单条 downloaded store 的续传偏移(身份化:role+store_seq 唯一定位一个 store)
+// 保留为 struct：含 String 方法,且 gen.StoreResumeOffset 已有同名 proto 方法(冲突,无法别名)。
+type StoreResumeOffset struct {
+	Role     string `json:"role"`     // store_type(image/document/videoTrack/audioTrack/...)
+	StoreSeq int32  `json:"storeSeq"` // 同 role 内的 store 序号(单例为 0;N-同 role 多 store 各自 0..N-1)
+	Offset   int64  `json:"offset"`   // 该 store 已写入字节数(磁盘 stat 为权威)
 }
 
-// TaskCreateChildResponse 子任务创建响应
-type TaskCreateChildResponse struct {
-	TaskName      string   `json:"taskName"`
-	SiteWorkID    string   `json:"siteWorkId"`
-	URL           string   `json:"url"`
-	PluginData    string   `json:"pluginData"`
-	SiteName      string   `json:"siteName"`
-	InvolvedRoles []string `json:"involvedRoles"` // 子任务涉及的 store_type 集合(创建期声明,universe);空/nil=未确定,执行期插件下全量
-	ResourceType  string   `json:"resourceType"`  // 子任务产生的 resource 的资源类型(预定义值);空=未声明
-}
+// TaskCreateResponse 任务创建响应（别名 gen.TaskCreateResponse，proto 单源）
+type TaskCreateResponse = gen.TaskCreateResponse
 
-// WorkResponse 作品响应(仅承载作品级信息;资源细节由 StoreSpec 承载)
-type WorkResponse struct {
-	Work         *WorkDTO             `json:"work"`
-	Site         *SiteDTO             `json:"site"`
-	LocalAuthors []*LocalAuthorDTO    `json:"localAuthors"`
-	LocalTags    []*LocalTagDTO       `json:"localTags"`
-	SiteAuthors  []*TaskSiteAuthorDTO `json:"siteAuthors"`
-	SiteTags     []*TaskSiteTagDTO    `json:"siteTags"`
-	WorkSets     []*TaskWorkSetDTO    `json:"workSets"`
-}
+// TaskCreateChildResponse 子任务创建响应（别名 gen.TaskCreateChildResponse，proto 单源）
+type TaskCreateChildResponse = gen.TaskCreateChildResponse
+
+// WorkResponse 作品响应(仅承载作品级信息;资源细节由 StoreSpec 承载)（别名 gen.WorkResponse，proto 单源）
+type WorkResponse = gen.WorkResponse
 
 // StoreSpec 单条资源产出声明(对应一个 store)
+// 手写保留：含 io.ReadCloser(非可序列化),非 proto 类型;元数据经 StoreSpecMeta 跨 gRPC、reader 数据走 stream data 块。
 type StoreSpec struct {
 	Role              string        `json:"role"`                        // store_type: image | document | thumbnail | videoTrack | audioTrack | videoMain
 	Generation        string        `json:"generation"`                  // downloaded(流式可续传) | derived(一次性派生)
@@ -116,24 +90,11 @@ type StoreSpec struct {
 	ResumeWriteOffset *int64        `json:"resumeWriteOffset,omitempty"` // 续传写入偏移(仅 Resume 返回的 spec);nil=信任主程序 stat 的 offset,非 nil=插件指定确切位置
 }
 
-// TaskSiteAuthorDTO 任务处理器站点作者DTO
-type TaskSiteAuthorDTO struct {
-	SiteAuthorID    string `json:"siteAuthorId"`
-	AuthorName      string `json:"authorName"`
-	FixedAuthorName string `json:"fixedAuthorName"`
-	Introduce       string `json:"introduce"`
-	Homepage        string `json:"homepage"`
-}
+// TaskSiteAuthorDTO 任务处理器站点作者DTO（别名 gen.TaskSiteAuthorDTO，proto 单源）
+type TaskSiteAuthorDTO = gen.TaskSiteAuthorDTO
 
-// TaskSiteTagDTO 任务处理器站点标签DTO
-type TaskSiteTagDTO struct {
-	SiteTagID   string `json:"siteTagId"`
-	TagName     string `json:"tagName"`
-	Description string `json:"description"`
-}
+// TaskSiteTagDTO 任务处理器站点标签DTO（别名 gen.TaskSiteTagDTO，proto 单源）
+type TaskSiteTagDTO = gen.TaskSiteTagDTO
 
-// TaskWorkSetDTO 任务处理器作品集DTO
-type TaskWorkSetDTO struct {
-	SiteWorkSetID string `json:"siteWorkSetId"`
-	WorkSetName   string `json:"workSetName"`
-}
+// TaskWorkSetDTO 任务处理器作品集DTO（别名 gen.TaskWorkSetDTO，proto 单源）
+type TaskWorkSetDTO = gen.TaskWorkSetDTO

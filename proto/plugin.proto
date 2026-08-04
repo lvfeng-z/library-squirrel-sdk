@@ -25,6 +25,8 @@ message Task {
   optional string pluginExtensionId = 14;
   optional string pluginData = 15;
   optional string errorMessage = 16;
+  repeated string involvedRoles = 17; // 任务涉及的 store_type 集合(创建期声明,universe);与主程序 TaskDTO 对齐,使 dto.TaskDTO 可作 gen.Task 别名
+  string resourceType = 18;           // 任务产生的 resource 资源类型(预定义值);空=未声明
 }
 
 message Work {
@@ -56,6 +58,7 @@ message WorkSet {
   optional int64 siteUpdateTime = 10;
   optional string nickName = 11;
   optional int64 lastView = 12;
+  optional string description = 13; // 作品集描述;与主程序 WorkSetDTO 对齐,使 dto.WorkSetDTO 可作 gen.WorkSet 别名
 }
 
 message Site {
@@ -120,8 +123,8 @@ message TaskCreateChildResponse {
   string url = 3;
   string pluginData = 4;
   string siteName = 5;
-  repeated string involved_roles = 6; // 子任务涉及的 store_type 集合(创建期声明,universe);空=未确定
-  string resource_type = 7; // 子任务产生的 resource 的资源类型(预定义 image/video/article/document/unknown);空=未声明
+  repeated string involvedRoles = 6; // 子任务涉及的 store_type 集合(创建期声明,universe);空=未确定
+  string resourceType = 7; // 子任务产生的 resource 的资源类型(预定义 image/video/article/document/unknown);空=未声明
 }
 
 message TaskCreateResponse {
@@ -132,8 +135,8 @@ message TaskCreateResponse {
   string pluginData = 5;
   string siteName = 6;
   repeated TaskCreateChildResponse children = 7;
-  repeated string involved_roles = 8; // 任务涉及的 store_type 集合(创建期声明,universe);空=未确定
-  string resource_type = 9; // 任务产生的 resource 的资源类型(预定义值);空=未声明;有 children 时由各 child 声明
+  repeated string involvedRoles = 8; // 任务涉及的 store_type 集合(创建期声明,universe);空=未确定
+  string resourceType = 9; // 任务产生的 resource 的资源类型(预定义值);空=未声明;有 children 时由各 child 声明
 }
 
 message WorkResponse {
@@ -194,8 +197,8 @@ message QueryWorkSetOrderResponse {
 }
 
 message WorkOrderEntry {
-  string site_work_id = 1;  // 站点作品 ID
-  int64 sort_order = 2;     // 该作品在此集内的原站序号（从 0 起）
+  string siteWorkId = 1;  // 站点作品 ID
+  int64 sortOrder = 2;     // 该作品在此集内的原站序号（从 0 起）
 }
 
 message CreateRequest {
@@ -247,7 +250,7 @@ message TaskResumeParam {
 // StoreResumeOffset 单条 downloaded store 的续传偏移(身份化:role+store_seq 唯一定位一个 store)
 message StoreResumeOffset {
   string role = 1;     // store_type(image/document/videoTrack/audioTrack/...)
-  int32 store_seq = 2; // 同 role 内的 store 序号(单例为 0;N-同 role 多 store 各自 0..N-1)
+  int32 storeSeq = 2; // 同 role 内的 store 序号(单例为 0;N-同 role 多 store 各自 0..N-1)
   int64 offset = 3;    // 该 store 已写入字节数(磁盘 stat 为权威)
 }
 

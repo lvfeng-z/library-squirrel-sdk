@@ -97,7 +97,7 @@ func (s *HostServiceServer) GetWorkSetBySiteWorkSetId(ctx context.Context, req *
 	if err != nil {
 		return nil, err
 	}
-	return &gen.WorkSetQueryResponse{WorkSet: workSetToProto(ws)}, nil
+	return &gen.WorkSetQueryResponse{WorkSet: ws}, nil
 }
 
 func (s *HostServiceServer) AddSite(ctx context.Context, req *gen.AddSiteRequest) (*gen.Empty, error) {
@@ -219,33 +219,14 @@ func GetGRPCConn(pluginClient *plugin.Client) (*grpc.ClientConn, error) {
 }
 
 // ========== 转换函数（host 侧）==========
-
-func workSetToProto(ws *dto.WorkSetDTO) *gen.WorkSet {
-	if ws == nil {
-		return nil
-	}
-	return &gen.WorkSet{
-		Id:                     ws.ID,
-		CreateTime:             ws.CreateTime,
-		UpdateTime:             ws.UpdateTime,
-		SiteId:                 ws.SiteID,
-		SiteWorkSetId:          ws.SiteWorkSetID,
-		SiteWorkSetName:        ws.SiteWorkSetName,
-		SiteAuthorId:           ws.SiteAuthorID,
-		SiteWorkSetDescription: ws.SiteWorkSetDescription,
-		SiteUploadTime:         ws.SiteUploadTime,
-		SiteUpdateTime:         ws.SiteUpdateTime,
-		NickName:               ws.NickName,
-		LastView:               ws.LastView,
-	}
-}
+// 别名类型(dto=gen)直传;仅 gen.Site→gen.SiteDTO 不同 proto 消息间需转换(AddSite 入参)。
 
 func protoToSite(pb *gen.Site) *dto.SiteDTO {
 	if pb == nil {
 		return nil
 	}
 	return &dto.SiteDTO{
-		ID:              pb.Id,
+		Id:              pb.Id,
 		CreateTime:      pb.CreateTime,
 		UpdateTime:      pb.UpdateTime,
 		SiteName:        pb.SiteName,
