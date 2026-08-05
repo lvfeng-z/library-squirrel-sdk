@@ -184,6 +184,7 @@ service TaskHandlerService {
   rpc Stop(TaskResParamMessage) returns (Empty);
   rpc Resume(stream ResumeFrame) returns (stream StreamChunk);
   rpc QueryWorkSetOrder(QueryWorkSetOrderRequest) returns (QueryWorkSetOrderResponse);
+  rpc QueryWorkSetRelations(QueryWorkSetRelationsRequest) returns (QueryWorkSetRelationsResponse);
 }
 
 // QueryWorkSetOrder 查询作品集内作品的原站顺序（主程序作品入库后拉取，仅写 site_sort_order，不碰本地序）
@@ -199,6 +200,24 @@ message QueryWorkSetOrderResponse {
 message WorkOrderEntry {
   string siteWorkId = 1;  // 站点作品 ID
   int64 sortOrder = 2;     // 该作品在此集内的原站序号（从 0 起）
+}
+
+// QueryWorkSetRelations 查询本作品集的父集关系 + 在各父集下的原站序（主程序作品入库后拉取，仅写 site_sort_order，不碰本地序）
+// 与 QueryWorkSetOrder 的区别：QueryWorkSetOrder 查「作品集内作品」的序；本 RPC 查「作品集的父集」关系 + 本集在各父下的序。
+// 拉取方向选「成员→父集」而非「父集→成员」：父集（如 series）无 work 直接归属，只能经子集拉取发现。
+message QueryWorkSetRelationsRequest {
+  int64 site_id = 1;            // 站点内部 ID（主程序已知）
+  string site_work_set_id = 2;  // 本作品集站点 ID（主程序已通过 WorkResponse.workSets 知其存在）
+}
+
+message QueryWorkSetRelationsResponse {
+  repeated WorkSetRelationEntry parents = 1;  // 本集的父集 + 在各父集下的序；空=无父/插件不掌握
+}
+
+message WorkSetRelationEntry {
+  string parentSiteWorkSetId = 1;  // 父作品集站点 ID
+  string parentWorkSetName = 2;    // 父集名（父集首次入库时落库；series 标题由此带回）
+  int64 sortOrder = 3;              // 本集在该父集下的原站序号（从 0 起）
 }
 
 message CreateRequest {

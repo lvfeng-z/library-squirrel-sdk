@@ -187,6 +187,20 @@ func (s *taskHandlerServer) QueryWorkSetOrder(ctx context.Context, req *gen.Quer
 	return &gen.QueryWorkSetOrderResponse{Entries: entries}, nil
 }
 
+// QueryWorkSetRelations 查询本作品集的父集关系 + 在各父集下的原站序（主程序作品入库后拉取，仅写 site_sort_order）
+// 可选能力：插件未实现 dto.WorkSetRelationQuerier 时返回空响应（site_sort_order 保持空，作品集层级不生效）
+func (s *taskHandlerServer) QueryWorkSetRelations(ctx context.Context, req *gen.QueryWorkSetRelationsRequest) (*gen.QueryWorkSetRelationsResponse, error) {
+	querier, ok := s.handler.(dto.WorkSetRelationQuerier)
+	if !ok {
+		return &gen.QueryWorkSetRelationsResponse{}, nil
+	}
+	parents, err := querier.QueryWorkSetRelations(req.GetSiteId(), req.GetSiteWorkSetId())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "queryWorkSetRelations failed: %v", err)
+	}
+	return &gen.QueryWorkSetRelationsResponse{Parents: parents}, nil
+}
+
 // closeSpecReaders 关闭所有 spec 的 reader(忽略 nil)
 func closeSpecReaders(specs []*dto.StoreSpec) {
 	for _, sp := range specs {

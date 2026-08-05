@@ -159,14 +159,15 @@ var PluginLifecycle_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	TaskHandlerService_Create_FullMethodName            = "/plugins.TaskHandlerService/Create"
-	TaskHandlerService_CreateWorkInfo_FullMethodName    = "/plugins.TaskHandlerService/CreateWorkInfo"
-	TaskHandlerService_Start_FullMethodName             = "/plugins.TaskHandlerService/Start"
-	TaskHandlerService_Retry_FullMethodName             = "/plugins.TaskHandlerService/Retry"
-	TaskHandlerService_Pause_FullMethodName             = "/plugins.TaskHandlerService/Pause"
-	TaskHandlerService_Stop_FullMethodName              = "/plugins.TaskHandlerService/Stop"
-	TaskHandlerService_Resume_FullMethodName            = "/plugins.TaskHandlerService/Resume"
-	TaskHandlerService_QueryWorkSetOrder_FullMethodName = "/plugins.TaskHandlerService/QueryWorkSetOrder"
+	TaskHandlerService_Create_FullMethodName                = "/plugins.TaskHandlerService/Create"
+	TaskHandlerService_CreateWorkInfo_FullMethodName        = "/plugins.TaskHandlerService/CreateWorkInfo"
+	TaskHandlerService_Start_FullMethodName                 = "/plugins.TaskHandlerService/Start"
+	TaskHandlerService_Retry_FullMethodName                 = "/plugins.TaskHandlerService/Retry"
+	TaskHandlerService_Pause_FullMethodName                 = "/plugins.TaskHandlerService/Pause"
+	TaskHandlerService_Stop_FullMethodName                  = "/plugins.TaskHandlerService/Stop"
+	TaskHandlerService_Resume_FullMethodName                = "/plugins.TaskHandlerService/Resume"
+	TaskHandlerService_QueryWorkSetOrder_FullMethodName     = "/plugins.TaskHandlerService/QueryWorkSetOrder"
+	TaskHandlerService_QueryWorkSetRelations_FullMethodName = "/plugins.TaskHandlerService/QueryWorkSetRelations"
 )
 
 // TaskHandlerServiceClient is the client API for TaskHandlerService service.
@@ -181,6 +182,7 @@ type TaskHandlerServiceClient interface {
 	Stop(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error)
 	Resume(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ResumeFrame, StreamChunk], error)
 	QueryWorkSetOrder(ctx context.Context, in *QueryWorkSetOrderRequest, opts ...grpc.CallOption) (*QueryWorkSetOrderResponse, error)
+	QueryWorkSetRelations(ctx context.Context, in *QueryWorkSetRelationsRequest, opts ...grpc.CallOption) (*QueryWorkSetRelationsResponse, error)
 }
 
 type taskHandlerServiceClient struct {
@@ -286,6 +288,16 @@ func (c *taskHandlerServiceClient) QueryWorkSetOrder(ctx context.Context, in *Qu
 	return out, nil
 }
 
+func (c *taskHandlerServiceClient) QueryWorkSetRelations(ctx context.Context, in *QueryWorkSetRelationsRequest, opts ...grpc.CallOption) (*QueryWorkSetRelationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryWorkSetRelationsResponse)
+	err := c.cc.Invoke(ctx, TaskHandlerService_QueryWorkSetRelations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TaskHandlerServiceServer is the server API for TaskHandlerService service.
 // All implementations must embed UnimplementedTaskHandlerServiceServer
 // for forward compatibility.
@@ -298,6 +310,7 @@ type TaskHandlerServiceServer interface {
 	Stop(context.Context, *TaskResParamMessage) (*Empty, error)
 	Resume(grpc.BidiStreamingServer[ResumeFrame, StreamChunk]) error
 	QueryWorkSetOrder(context.Context, *QueryWorkSetOrderRequest) (*QueryWorkSetOrderResponse, error)
+	QueryWorkSetRelations(context.Context, *QueryWorkSetRelationsRequest) (*QueryWorkSetRelationsResponse, error)
 	mustEmbedUnimplementedTaskHandlerServiceServer()
 }
 
@@ -331,6 +344,9 @@ func (UnimplementedTaskHandlerServiceServer) Resume(grpc.BidiStreamingServer[Res
 }
 func (UnimplementedTaskHandlerServiceServer) QueryWorkSetOrder(context.Context, *QueryWorkSetOrderRequest) (*QueryWorkSetOrderResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method QueryWorkSetOrder not implemented")
+}
+func (UnimplementedTaskHandlerServiceServer) QueryWorkSetRelations(context.Context, *QueryWorkSetRelationsRequest) (*QueryWorkSetRelationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method QueryWorkSetRelations not implemented")
 }
 func (UnimplementedTaskHandlerServiceServer) mustEmbedUnimplementedTaskHandlerServiceServer() {}
 func (UnimplementedTaskHandlerServiceServer) testEmbeddedByValue()                            {}
@@ -468,6 +484,24 @@ func _TaskHandlerService_QueryWorkSetOrder_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TaskHandlerService_QueryWorkSetRelations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWorkSetRelationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskHandlerServiceServer).QueryWorkSetRelations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskHandlerService_QueryWorkSetRelations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskHandlerServiceServer).QueryWorkSetRelations(ctx, req.(*QueryWorkSetRelationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TaskHandlerService_ServiceDesc is the grpc.ServiceDesc for TaskHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +528,10 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "QueryWorkSetOrder",
 			Handler:    _TaskHandlerService_QueryWorkSetOrder_Handler,
+		},
+		{
+			MethodName: "QueryWorkSetRelations",
+			Handler:    _TaskHandlerService_QueryWorkSetRelations_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
