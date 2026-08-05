@@ -4,30 +4,28 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/lvfeng-z/library-squirrel-sdk/contract"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
 )
 
-// StoreSpec 的 role(generation)契约常量,供插件与主程序共用,避免魔法字符串漂移。
-// 与主程序 entity 包的 StoreType*/Generation* 字面量一致。
+// StoreSpec 的 role(generation)与 ResourceType 契约常量，别名 SDK contract 包（单一真相源）。
+// StoreRole* 保留旧名兼容现有插件引用（值 = contract.StoreType*）。
 const (
-	StoreRoleImage      = "image"      // 图片(image 资源主体;article 内嵌图多例)
-	StoreRoleDocument   = "document"   // 文档文件(article 正文 .md;document 原文件 .pdf/.docx)
-	StoreRoleThumbnail  = "thumbnail"  // 缩略图/封面
-	StoreRoleVideoTrack = "videoTrack" // 分离流视频原料(无音频)
-	StoreRoleAudioTrack = "audioTrack" // 分离流音频原料
-	StoreRoleVideoMain  = "videoMain"  // 视频可播放主体(封装原文件 downloaded 或合并产物 derived)
+	StoreRoleImage      = contract.StoreTypeImage
+	StoreRoleDocument   = contract.StoreTypeDocument
+	StoreRoleThumbnail  = contract.StoreTypeThumbnail
+	StoreRoleVideoTrack = contract.StoreTypeVideoTrack
+	StoreRoleAudioTrack = contract.StoreTypeAudioTrack
+	StoreRoleVideoMain  = contract.StoreTypeVideoMain
 
-	GenerationDownloaded = "downloaded" // 流式下载,支持断点续传
-	GenerationDerived    = "derived"    // 一次性派生,不可续传
-)
+	GenerationDownloaded = contract.GenerationDownloaded
+	GenerationDerived    = contract.GenerationDerived
 
-// ResourceType 预定义资源类型常量(与主程序 entity 包的 ResourceType* 字面量一致)
-const (
-	ResourceTypeImage    = "image"    // 图片资源
-	ResourceTypeVideo    = "video"    // 视频资源
-	ResourceTypeArticle  = "article"  // 图文紧密结合文档(正文+内嵌图)
-	ResourceTypeDocument = "document" // 现成文档原文件
-	ResourceTypeUnknown  = "unknown"  // 插件确实无法分类时声明
+	ResourceTypeImage    = contract.ResourceTypeImage
+	ResourceTypeVideo    = contract.ResourceTypeVideo
+	ResourceTypeArticle  = contract.ResourceTypeArticle
+	ResourceTypeDocument = contract.ResourceTypeDocument
+	ResourceTypeUnknown  = contract.ResourceTypeUnknown
 )
 
 // TaskResParam 任务和资源参数(Pause/Stop 共用)（别名 gen.TaskResParam，proto 单源）
