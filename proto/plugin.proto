@@ -375,8 +375,15 @@ message StorageKeyRequest {
   string key = 1;
 }
 
+// StorageValue 带配置 schema 版本的存储值，用作全量读取的 map 值类型
+message StorageValue {
+  string value = 1;
+  int32 schema_version = 2;   // 该值写入时的插件配置 schema 版本（host 盖戳，详见主程序 configSchemaVersion）
+}
+
 message StorageValueResponse {
   string value = 1;
+  int32 schema_version = 2;   // GetValue 单条返回的值对应的 schema 版本
 }
 
 message StorageEntryRequest {
@@ -385,7 +392,7 @@ message StorageEntryRequest {
 }
 
 message AllStorageValuesResponse {
-  map<string, string> values = 1;
+  map<string, StorageValue> values = 1;   // 全量：key → 带版本的值
 }
 
 message WorkSetQueryRequest {

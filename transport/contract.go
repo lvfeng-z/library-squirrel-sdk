@@ -12,4 +12,8 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 1
+const ContractVersion = 2
+
+// 版本历史：
+//   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
+//   2 — GetValue/GetAllValues 返回带 schemaVersion：配置 schema 版本感知（E 节点）

@@ -10,11 +10,11 @@ type PluginContext interface {
 	UnregisterSiteBrowser(id string) error
 
 	// 插件自存信息（统一 KV 存储，取代临时 plugin_data 与加密存储）
-	GetValue(key string) (string, error)
+	GetValue(key string) (*StorageValue, error)
 	SetValue(key string, value string) error
 	SetValueEncrypted(key string, value string) error
 	DeleteValue(key string) error
-	GetAllValues() (map[string]string, error)
+	GetAllValues() (map[string]*StorageValue, error)
 
 	// 业务查询
 	GetWorkSetBySiteWorkSetId(siteWorkSetId string, siteName string) (*WorkSetDTO, error)

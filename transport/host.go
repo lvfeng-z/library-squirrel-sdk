@@ -65,11 +65,14 @@ func (s *HostServiceServer) UnregisterSiteBrowser(ctx context.Context, req *gen.
 }
 
 func (s *HostServiceServer) GetValue(ctx context.Context, req *gen.StorageKeyRequest) (*gen.StorageValueResponse, error) {
-	value, err := s.deps.GetValue(ctx, req.Key)
+	v, err := s.deps.GetValue(ctx, req.Key)
 	if err != nil {
 		return nil, err
 	}
-	return &gen.StorageValueResponse{Value: value}, nil
+	if v == nil {
+		return &gen.StorageValueResponse{}, nil // key 不存在：零值（Value="", SchemaVersion=0）
+	}
+	return &gen.StorageValueResponse{Value: v.Value, SchemaVersion: v.SchemaVersion}, nil
 }
 
 func (s *HostServiceServer) SetValue(ctx context.Context, req *gen.StorageEntryRequest) (*gen.Empty, error) {

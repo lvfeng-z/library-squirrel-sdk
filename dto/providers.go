@@ -4,11 +4,11 @@ import "context"
 
 // StorageProvider 插件自存信息（统一 KV 存储，取代临时 plugin_data 与加密存储）
 type StorageProvider interface {
-	GetValue(ctx context.Context, key string) (string, error)
+	GetValue(ctx context.Context, key string) (*StorageValue, error)
 	SetValue(ctx context.Context, key, value string) error
 	SetValueEncrypted(ctx context.Context, key, value string) error
 	DeleteValue(ctx context.Context, key string) error
-	GetAllValues(ctx context.Context) (map[string]string, error)
+	GetAllValues(ctx context.Context) (map[string]*StorageValue, error)
 }
 
 // PluginRootProvider 插件根路径

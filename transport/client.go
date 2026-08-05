@@ -57,12 +57,12 @@ func (c *PluginContextClient) UnregisterSiteBrowser(id string) error {
 	return err
 }
 
-func (c *PluginContextClient) GetValue(key string) (string, error) {
+func (c *PluginContextClient) GetValue(key string) (*dto.StorageValue, error) {
 	resp, err := c.hostClient.GetValue(context.Background(), &gen.StorageKeyRequest{Key: key})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return resp.Value, nil
+	return &dto.StorageValue{Value: resp.Value, SchemaVersion: resp.SchemaVersion}, nil
 }
 
 func (c *PluginContextClient) SetValue(key string, value string) error {
@@ -86,7 +86,7 @@ func (c *PluginContextClient) DeleteValue(key string) error {
 	return err
 }
 
-func (c *PluginContextClient) GetAllValues() (map[string]string, error) {
+func (c *PluginContextClient) GetAllValues() (map[string]*dto.StorageValue, error) {
 	resp, err := c.hostClient.GetAllValues(context.Background(), &gen.Empty{})
 	if err != nil {
 		return nil, err
