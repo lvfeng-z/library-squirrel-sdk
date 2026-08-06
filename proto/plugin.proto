@@ -124,7 +124,7 @@ message TaskCreateChildResponse {
   string pluginData = 4;
   string siteName = 5;
   repeated string involvedRoles = 6; // 子任务涉及的 store_type 集合(创建期声明,universe);空=未确定
-  string resourceType = 7; // 子任务产生的 resource 的资源类型(预定义 image/video/article/document/unknown);空=未声明
+  string resourceType = 7; // 子任务产生的 resource 的资源类型(预定义 image/video/article/document/audio/unknown);空=未声明
 }
 
 message TaskCreateResponse {

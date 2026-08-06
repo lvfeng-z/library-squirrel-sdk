@@ -17,6 +17,7 @@ const (
 	StoreRoleVideoTrack = contract.StoreTypeVideoTrack
 	StoreRoleAudioTrack = contract.StoreTypeAudioTrack
 	StoreRoleVideoMain  = contract.StoreTypeVideoMain
+	StoreRoleAudioMain  = contract.StoreTypeAudioMain
 
 	GenerationDownloaded = contract.GenerationDownloaded
 	GenerationDerived    = contract.GenerationDerived
@@ -25,6 +26,7 @@ const (
 	ResourceTypeVideo    = contract.ResourceTypeVideo
 	ResourceTypeArticle  = contract.ResourceTypeArticle
 	ResourceTypeDocument = contract.ResourceTypeDocument
+	ResourceTypeAudio    = contract.ResourceTypeAudio
 	ResourceTypeUnknown  = contract.ResourceTypeUnknown
 )
 
@@ -77,7 +79,7 @@ type WorkResponse = gen.WorkResponse
 // StoreSpec 单条资源产出声明(对应一个 store)
 // 手写保留：含 io.ReadCloser(非可序列化),非 proto 类型;元数据经 StoreSpecMeta 跨 gRPC、reader 数据走 stream data 块。
 type StoreSpec struct {
-	Role              string        `json:"role"`                        // store_type: image | document | thumbnail | videoTrack | audioTrack | videoMain
+	Role              string        `json:"role"`                        // store_type: image | document | thumbnail | videoTrack | audioTrack | videoMain | audioMain
 	Generation        string        `json:"generation"`                  // downloaded(流式可续传) | derived(一次性派生)
 	ReadCloser        io.ReadCloser `json:"-"`                           // 资源数据流(downloaded=流式 reader;derived=一次性 payload 包装的 reader),调用方负责 Close
 	Format            string        `json:"format"`                      // 文件扩展名
