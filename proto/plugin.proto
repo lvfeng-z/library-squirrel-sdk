@@ -110,6 +110,7 @@ message TaskSiteTagDTO {
   string siteTagId = 1;
   string tagName = 2;
   string description = 3;
+  string namespace = 4; // tag namespace（language/character/parody/female/male/misc/general 等）；空=无 namespace（pixiv 等无 namespace 站点）
 }
 
 message TaskWorkSetDTO {
