@@ -49,12 +49,8 @@ type PluginInstallDTO struct {
 	PublicID    string            `json:"publicId,omitempty"`
 }
 
-// GetPublicID 获取插件公开ID（格式：作者/名称）
-func (p *PluginManifest) GetPublicID() string {
-	return p.Author + "/" + p.ID
-}
-
-// ToPluginInstallDTO 转换为安装DTO
+// ToPluginInstallDTO 转换为安装DTO。publicId 即插件 id（纯反向域名，全局唯一身份键），
+// author 是纯展示属性、不参与身份
 func (p *PluginManifest) ToPluginInstallDTO(packagePath string) *PluginInstallDTO {
 	return &PluginInstallDTO{
 		ID:          p.ID,
@@ -66,7 +62,7 @@ func (p *PluginManifest) ToPluginInstallDTO(packagePath string) *PluginInstallDT
 		Activation:  p.Activation,
 		EntryFile:   p.EntryFile,
 		PackagePath: packagePath,
-		PublicID:    p.GetPublicID(),
+		PublicID:    p.ID,
 	}
 }
 
