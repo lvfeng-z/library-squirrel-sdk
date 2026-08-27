@@ -27,6 +27,7 @@ message Task {
   optional string errorMessage = 16;
   repeated string involvedRoles = 17; // 任务涉及的 store_type 集合(创建期声明,universe);与主程序 TaskDTO 对齐,使 dto.TaskDTO 可作 gen.Task 别名
   string resourceType = 18;           // 任务产生的 resource 资源类型(预定义值);空=未声明
+  optional string taskType = 19;      // 任务类型:空=插件任务;内置类型如 share-host/share-receive(主程序内置执行面,插件不产出)
 }
 
 message Work {

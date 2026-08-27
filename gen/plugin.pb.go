@@ -77,6 +77,7 @@ type Task struct {
 	ErrorMessage      *string                `protobuf:"bytes,16,opt,name=errorMessage,proto3,oneof" json:"errorMessage,omitempty"`
 	InvolvedRoles     []string               `protobuf:"bytes,17,rep,name=involvedRoles,proto3" json:"involvedRoles,omitempty"` // 任务涉及的 store_type 集合(创建期声明,universe);与主程序 TaskDTO 对齐,使 dto.TaskDTO 可作 gen.Task 别名
 	ResourceType      string                 `protobuf:"bytes,18,opt,name=resourceType,proto3" json:"resourceType,omitempty"`   // 任务产生的 resource 资源类型(预定义值);空=未声明
+	TaskType          *string                `protobuf:"bytes,19,opt,name=taskType,proto3,oneof" json:"taskType,omitempty"`     // 任务类型:空=插件任务;内置类型如 share-host/share-receive(主程序内置执行面,插件不产出)
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -233,6 +234,13 @@ func (x *Task) GetInvolvedRoles() []string {
 func (x *Task) GetResourceType() string {
 	if x != nil {
 		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *Task) GetTaskType() string {
+	if x != nil && x.TaskType != nil {
+		return *x.TaskType
 	}
 	return ""
 }
@@ -4068,7 +4076,7 @@ var File_proto_plugin_proto protoreflect.FileDescriptor
 const file_proto_plugin_proto_rawDesc = "" +
 	"\n" +
 	"\x12proto/plugin.proto\x12\aplugins\"\a\n" +
-	"\x05Empty\"\xa5\x06\n" +
+	"\x05Empty\"\xd3\x06\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1e\n" +
 	"\n" +
@@ -4097,7 +4105,8 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"pluginData\x88\x01\x01\x12'\n" +
 	"\ferrorMessage\x18\x10 \x01(\tH\vR\ferrorMessage\x88\x01\x01\x12$\n" +
 	"\rinvolvedRoles\x18\x11 \x03(\tR\rinvolvedRoles\x12\"\n" +
-	"\fresourceType\x18\x12 \x01(\tR\fresourceTypeB\v\n" +
+	"\fresourceType\x18\x12 \x01(\tR\fresourceType\x12\x1f\n" +
+	"\btaskType\x18\x13 \x01(\tH\fR\btaskType\x88\x01\x01B\v\n" +
 	"\t_hasChildB\x06\n" +
 	"\x04_pidB\v\n" +
 	"\t_taskNameB\t\n" +
@@ -4109,7 +4118,8 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x0f_pluginPublicIdB\x14\n" +
 	"\x12_pluginExtensionIdB\r\n" +
 	"\v_pluginDataB\x0f\n" +
-	"\r_errorMessage\"\x8e\x05\n" +
+	"\r_errorMessageB\v\n" +
+	"\t_taskType\"\x8e\x05\n" +
 	"\x04Work\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1e\n" +
 	"\n" +
