@@ -67,17 +67,19 @@ message Site {
   int64 createTime = 2;
   int64 updateTime = 3;
   optional string siteName = 4;
-  optional string siteDescription = 5;
+  reserved 5; // 已移除 siteDescription(站点描述全链退役)
   optional string homepage = 6;
+  string siteKey = 7; // 站点唯一身份键(identity 注册表分配);AddSite 按键查重/创建,siteName 仅展示
 }
 
 message SiteDTO {
   int64 id = 1;
   optional string siteName = 2;
-  optional string siteDescription = 3;
+  reserved 3; // 已移除 siteDescription(站点描述全链退役)
   optional string homepage = 4;
   int64 createTime = 5;
   int64 updateTime = 6;
+  string siteKey = 7; // 站点唯一身份键(identity 注册表分配);主程序侧必填校验,siteName 仅展示
 }
 
 message LocalAuthorDTO {
@@ -139,6 +141,7 @@ message TaskCreateResponse {
   repeated TaskCreateChildResponse children = 7;
   repeated string involvedRoles = 8; // 任务涉及的 store_type 集合(创建期声明,universe);空=未确定
   string resourceType = 9; // 任务产生的 resource 的资源类型(预定义值);空=未声明;有 children 时由各 child 声明
+  string siteKey = 10; // 站点唯一身份键(identity 注册表分配);主程序据此解析任务归属站点,siteName 仅展示
 }
 
 message WorkResponse {

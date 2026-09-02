@@ -17,7 +17,6 @@ type PluginContext interface {
 	GetAllValues() (map[string]*StorageValue, error)
 
 	// 业务查询
-	GetWorkSetBySiteWorkSetId(siteWorkSetId string, siteName string) (*WorkSetDTO, error)
 	AddSite(sites []*SiteDTO) error
 
 	// 任务

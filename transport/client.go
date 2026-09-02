@@ -94,27 +94,16 @@ func (c *PluginContextClient) GetAllValues() (map[string]*dto.StorageValue, erro
 	return resp.Values, nil
 }
 
-func (c *PluginContextClient) GetWorkSetBySiteWorkSetId(siteWorkSetId, siteName string) (*dto.WorkSetDTO, error) {
-	resp, err := c.hostClient.GetWorkSetBySiteWorkSetId(context.Background(), &gen.WorkSetQueryRequest{
-		SiteWorkSetId: siteWorkSetId,
-		SiteName:      siteName,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return resp.WorkSet, nil
-}
-
 func (c *PluginContextClient) AddSite(sites []*dto.SiteDTO) error {
 	pbSites := make([]*gen.Site, len(sites))
 	for i, s := range sites {
 		pbSites[i] = &gen.Site{
-			Id:              s.Id,
-			CreateTime:      s.CreateTime,
-			UpdateTime:      s.UpdateTime,
-			SiteName:        s.SiteName,
-			SiteDescription: s.SiteDescription,
-			Homepage:        s.Homepage,
+			Id:         s.Id,
+			CreateTime: s.CreateTime,
+			UpdateTime: s.UpdateTime,
+			SiteName:   s.SiteName,
+			Homepage:   s.Homepage,
+			SiteKey:    s.SiteKey,
 		}
 	}
 	_, err := c.hostClient.AddSite(context.Background(), &gen.AddSiteRequest{Sites: pbSites})

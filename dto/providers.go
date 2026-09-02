@@ -21,11 +21,6 @@ type StorePathQueryProvider interface {
 	GetStoreRelPath(ctx context.Context, taskId int64, role string, storeSeq int) (string, error)
 }
 
-// WorkSetQueryProvider 作品集查询
-type WorkSetQueryProvider interface {
-	GetWorkSetBySiteWorkSetId(ctx context.Context, siteWorkSetId, siteName string) (*WorkSetDTO, error)
-}
-
 // SiteSaveProvider 站点保存
 type SiteSaveProvider interface {
 	AddSite(ctx context.Context, sites []*SiteDTO) error

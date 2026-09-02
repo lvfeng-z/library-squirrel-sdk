@@ -526,15 +526,15 @@ func (x *WorkSet) GetDescription() string {
 }
 
 type Site struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreateTime      int64                  `protobuf:"varint,2,opt,name=createTime,proto3" json:"createTime,omitempty"`
-	UpdateTime      int64                  `protobuf:"varint,3,opt,name=updateTime,proto3" json:"updateTime,omitempty"`
-	SiteName        *string                `protobuf:"bytes,4,opt,name=siteName,proto3,oneof" json:"siteName,omitempty"`
-	SiteDescription *string                `protobuf:"bytes,5,opt,name=siteDescription,proto3,oneof" json:"siteDescription,omitempty"`
-	Homepage        *string                `protobuf:"bytes,6,opt,name=homepage,proto3,oneof" json:"homepage,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreateTime    int64                  `protobuf:"varint,2,opt,name=createTime,proto3" json:"createTime,omitempty"`
+	UpdateTime    int64                  `protobuf:"varint,3,opt,name=updateTime,proto3" json:"updateTime,omitempty"`
+	SiteName      *string                `protobuf:"bytes,4,opt,name=siteName,proto3,oneof" json:"siteName,omitempty"`
+	Homepage      *string                `protobuf:"bytes,6,opt,name=homepage,proto3,oneof" json:"homepage,omitempty"`
+	SiteKey       string                 `protobuf:"bytes,7,opt,name=siteKey,proto3" json:"siteKey,omitempty"` // 站点唯一身份键(identity 注册表分配);AddSite 按键查重/创建,siteName 仅展示
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Site) Reset() {
@@ -595,13 +595,6 @@ func (x *Site) GetSiteName() string {
 	return ""
 }
 
-func (x *Site) GetSiteDescription() string {
-	if x != nil && x.SiteDescription != nil {
-		return *x.SiteDescription
-	}
-	return ""
-}
-
 func (x *Site) GetHomepage() string {
 	if x != nil && x.Homepage != nil {
 		return *x.Homepage
@@ -609,16 +602,23 @@ func (x *Site) GetHomepage() string {
 	return ""
 }
 
+func (x *Site) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
 type SiteDTO struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	SiteName        *string                `protobuf:"bytes,2,opt,name=siteName,proto3,oneof" json:"siteName,omitempty"`
-	SiteDescription *string                `protobuf:"bytes,3,opt,name=siteDescription,proto3,oneof" json:"siteDescription,omitempty"`
-	Homepage        *string                `protobuf:"bytes,4,opt,name=homepage,proto3,oneof" json:"homepage,omitempty"`
-	CreateTime      int64                  `protobuf:"varint,5,opt,name=createTime,proto3" json:"createTime,omitempty"`
-	UpdateTime      int64                  `protobuf:"varint,6,opt,name=updateTime,proto3" json:"updateTime,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	SiteName      *string                `protobuf:"bytes,2,opt,name=siteName,proto3,oneof" json:"siteName,omitempty"`
+	Homepage      *string                `protobuf:"bytes,4,opt,name=homepage,proto3,oneof" json:"homepage,omitempty"`
+	CreateTime    int64                  `protobuf:"varint,5,opt,name=createTime,proto3" json:"createTime,omitempty"`
+	UpdateTime    int64                  `protobuf:"varint,6,opt,name=updateTime,proto3" json:"updateTime,omitempty"`
+	SiteKey       string                 `protobuf:"bytes,7,opt,name=siteKey,proto3" json:"siteKey,omitempty"` // 站点唯一身份键(identity 注册表分配);主程序侧必填校验,siteName 仅展示
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SiteDTO) Reset() {
@@ -665,13 +665,6 @@ func (x *SiteDTO) GetSiteName() string {
 	return ""
 }
 
-func (x *SiteDTO) GetSiteDescription() string {
-	if x != nil && x.SiteDescription != nil {
-		return *x.SiteDescription
-	}
-	return ""
-}
-
 func (x *SiteDTO) GetHomepage() string {
 	if x != nil && x.Homepage != nil {
 		return *x.Homepage
@@ -691,6 +684,13 @@ func (x *SiteDTO) GetUpdateTime() int64 {
 		return x.UpdateTime
 	}
 	return 0
+}
+
+func (x *SiteDTO) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
 }
 
 type LocalAuthorDTO struct {
@@ -1168,6 +1168,7 @@ type TaskCreateResponse struct {
 	Children      []*TaskCreateChildResponse `protobuf:"bytes,7,rep,name=children,proto3" json:"children,omitempty"`
 	InvolvedRoles []string                   `protobuf:"bytes,8,rep,name=involvedRoles,proto3" json:"involvedRoles,omitempty"` // 任务涉及的 store_type 集合(创建期声明,universe);空=未确定
 	ResourceType  string                     `protobuf:"bytes,9,opt,name=resourceType,proto3" json:"resourceType,omitempty"`   // 任务产生的 resource 的资源类型(预定义值);空=未声明;有 children 时由各 child 声明
+	SiteKey       string                     `protobuf:"bytes,10,opt,name=siteKey,proto3" json:"siteKey,omitempty"`            // 站点唯一身份键(identity 注册表分配);主程序据此解析任务归属站点,siteName 仅展示
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1261,6 +1262,13 @@ func (x *TaskCreateResponse) GetInvolvedRoles() []string {
 func (x *TaskCreateResponse) GetResourceType() string {
 	if x != nil {
 		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *TaskCreateResponse) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
 	}
 	return ""
 }
@@ -4179,7 +4187,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x0f_siteUpdateTimeB\v\n" +
 	"\t_nickNameB\v\n" +
 	"\t_lastViewB\x0e\n" +
-	"\f_description\"\xf5\x01\n" +
+	"\f_description\"\xd2\x01\n" +
 	"\x04Site\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1e\n" +
 	"\n" +
@@ -4188,26 +4196,24 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\n" +
 	"updateTime\x18\x03 \x01(\x03R\n" +
 	"updateTime\x12\x1f\n" +
-	"\bsiteName\x18\x04 \x01(\tH\x00R\bsiteName\x88\x01\x01\x12-\n" +
-	"\x0fsiteDescription\x18\x05 \x01(\tH\x01R\x0fsiteDescription\x88\x01\x01\x12\x1f\n" +
-	"\bhomepage\x18\x06 \x01(\tH\x02R\bhomepage\x88\x01\x01B\v\n" +
-	"\t_siteNameB\x12\n" +
-	"\x10_siteDescriptionB\v\n" +
-	"\t_homepage\"\xf8\x01\n" +
+	"\bsiteName\x18\x04 \x01(\tH\x00R\bsiteName\x88\x01\x01\x12\x1f\n" +
+	"\bhomepage\x18\x06 \x01(\tH\x01R\bhomepage\x88\x01\x01\x12\x18\n" +
+	"\asiteKey\x18\a \x01(\tR\asiteKeyB\v\n" +
+	"\t_siteNameB\v\n" +
+	"\t_homepageJ\x04\b\x05\x10\x06\"\xd5\x01\n" +
 	"\aSiteDTO\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1f\n" +
-	"\bsiteName\x18\x02 \x01(\tH\x00R\bsiteName\x88\x01\x01\x12-\n" +
-	"\x0fsiteDescription\x18\x03 \x01(\tH\x01R\x0fsiteDescription\x88\x01\x01\x12\x1f\n" +
-	"\bhomepage\x18\x04 \x01(\tH\x02R\bhomepage\x88\x01\x01\x12\x1e\n" +
+	"\bsiteName\x18\x02 \x01(\tH\x00R\bsiteName\x88\x01\x01\x12\x1f\n" +
+	"\bhomepage\x18\x04 \x01(\tH\x01R\bhomepage\x88\x01\x01\x12\x1e\n" +
 	"\n" +
 	"createTime\x18\x05 \x01(\x03R\n" +
 	"createTime\x12\x1e\n" +
 	"\n" +
 	"updateTime\x18\x06 \x01(\x03R\n" +
-	"updateTimeB\v\n" +
-	"\t_siteNameB\x12\n" +
-	"\x10_siteDescriptionB\v\n" +
-	"\t_homepage\"\xf0\x01\n" +
+	"updateTime\x12\x18\n" +
+	"\asiteKey\x18\a \x01(\tR\asiteKeyB\v\n" +
+	"\t_siteNameB\v\n" +
+	"\t_homepageJ\x04\b\x03\x10\x04\"\xf0\x01\n" +
 	"\x0eLocalAuthorDTO\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12#\n" +
 	"\n" +
@@ -4270,7 +4276,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"pluginData\x12\x1a\n" +
 	"\bsiteName\x18\x05 \x01(\tR\bsiteName\x12$\n" +
 	"\rinvolvedRoles\x18\x06 \x03(\tR\rinvolvedRoles\x12\"\n" +
-	"\fresourceType\x18\a \x01(\tR\fresourceType\"\xca\x02\n" +
+	"\fresourceType\x18\a \x01(\tR\fresourceType\"\xe4\x02\n" +
 	"\x12TaskCreateResponse\x12\"\n" +
 	"\fpluginTaskId\x18\x01 \x01(\tR\fpluginTaskId\x12\x1a\n" +
 	"\btaskName\x18\x02 \x01(\tR\btaskName\x12\x1e\n" +
@@ -4284,7 +4290,9 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\bsiteName\x18\x06 \x01(\tR\bsiteName\x12<\n" +
 	"\bchildren\x18\a \x03(\v2 .plugins.TaskCreateChildResponseR\bchildren\x12$\n" +
 	"\rinvolvedRoles\x18\b \x03(\tR\rinvolvedRoles\x12\"\n" +
-	"\fresourceType\x18\t \x01(\tR\fresourceType\"\xf0\x02\n" +
+	"\fresourceType\x18\t \x01(\tR\fresourceType\x12\x18\n" +
+	"\asiteKey\x18\n" +
+	" \x01(\tR\asiteKey\"\xf0\x02\n" +
 	"\fWorkResponse\x12!\n" +
 	"\x04work\x18\x01 \x01(\v2\r.plugins.WorkR\x04work\x12$\n" +
 	"\x04site\x18\x02 \x01(\v2\x10.plugins.SiteDTOR\x04site\x12;\n" +

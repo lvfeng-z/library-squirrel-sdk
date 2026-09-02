@@ -15,7 +15,6 @@ import (
 type HostDeps struct {
 	dto.StorageProvider
 	dto.PluginRootProvider
-	dto.WorkSetQueryProvider
 	dto.SiteSaveProvider
 	dto.TaskCreateProvider
 	dto.UrlListenerRegistry
@@ -93,14 +92,6 @@ func (s *HostServiceServer) GetAllValues(ctx context.Context, req *gen.Empty) (*
 		return nil, err
 	}
 	return &gen.AllStorageValuesResponse{Values: values}, nil
-}
-
-func (s *HostServiceServer) GetWorkSetBySiteWorkSetId(ctx context.Context, req *gen.WorkSetQueryRequest) (*gen.WorkSetQueryResponse, error) {
-	ws, err := s.deps.GetWorkSetBySiteWorkSetId(ctx, req.SiteWorkSetId, req.SiteName)
-	if err != nil {
-		return nil, err
-	}
-	return &gen.WorkSetQueryResponse{WorkSet: ws}, nil
 }
 
 func (s *HostServiceServer) AddSite(ctx context.Context, req *gen.AddSiteRequest) (*gen.Empty, error) {
@@ -229,11 +220,11 @@ func protoToSite(pb *gen.Site) *dto.SiteDTO {
 		return nil
 	}
 	return &dto.SiteDTO{
-		Id:              pb.Id,
-		CreateTime:      pb.CreateTime,
-		UpdateTime:      pb.UpdateTime,
-		SiteName:        pb.SiteName,
-		SiteDescription: pb.SiteDescription,
-		Homepage:        pb.Homepage,
+		Id:         pb.Id,
+		CreateTime: pb.CreateTime,
+		UpdateTime: pb.UpdateTime,
+		SiteName:   pb.SiteName,
+		Homepage:   pb.Homepage,
+		SiteKey:    pb.SiteKey,
 	}
 }
