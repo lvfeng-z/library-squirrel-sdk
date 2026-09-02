@@ -41,3 +41,46 @@ func TestIdentityLookup(t *testing.T) {
 		t.Error("空键不应命中")
 	}
 }
+
+// TestIdentityAll 全量枚举与 Lookup 逐键一致且互相覆盖、多次调用序稳定、
+// 返回切片为副本（调用方修改不泄漏进注册表）
+func TestIdentityAll(t *testing.T) {
+	first := All()
+	if len(first) != len(registry) {
+		t.Fatalf("全量枚举条目数(%d)与注册表(%d)不一致", len(first), len(registry))
+	}
+	seen := make(map[string]Site, len(first))
+	for _, s := range first {
+		if _, dup := seen[s.Key]; dup {
+			t.Errorf("全量枚举出现重复键：%s", s.Key)
+			continue
+		}
+		seen[s.Key] = s
+		got, ok := Lookup(s.Key)
+		if !ok {
+			t.Errorf("All 中的键 %s 经 Lookup 未命中", s.Key)
+			continue
+		}
+		if got != s {
+			t.Errorf("键 %s 的 All 条目与 Lookup 不一致：All %+v, Lookup %+v", s.Key, s, got)
+		}
+	}
+	// 覆盖性：注册表索引中的每个键都出现在 All 结果中
+	for key := range registryIndex {
+		if _, ok := seen[key]; !ok {
+			t.Errorf("注册表键 %s 未出现在 All 结果中", key)
+		}
+	}
+	// 序稳定：多次调用输出逐位一致
+	second := All()
+	for i := range first {
+		if first[i] != second[i] {
+			t.Errorf("两次 All 第 %d 位不一致：%+v vs %+v", i, first[i], second[i])
+		}
+	}
+	// 副本语义：修改返回切片不影响注册表
+	first[0].Name = "已篡改"
+	if All()[0].Name == "已篡改" {
+		t.Error("All 返回切片未做副本——调用方修改泄漏进注册表")
+	}
+}

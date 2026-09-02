@@ -62,16 +62,6 @@ message WorkSet {
   optional string description = 13; // 作品集描述;与主程序 WorkSetDTO 对齐,使 dto.WorkSetDTO 可作 gen.WorkSet 别名
 }
 
-message Site {
-  int64 id = 1;
-  int64 createTime = 2;
-  int64 updateTime = 3;
-  optional string siteName = 4;
-  reserved 5; // 已移除 siteDescription(站点描述全链退役)
-  optional string homepage = 6;
-  string siteKey = 7; // 站点唯一身份键(identity 注册表分配);AddSite 按键查重/创建,siteName 仅展示
-}
-
 message SiteDTO {
   int64 id = 1;
   optional string siteName = 2;
@@ -363,7 +353,6 @@ service HostService {
 
   // 业务查询
   rpc GetWorkSetBySiteWorkSetId(WorkSetQueryRequest) returns (WorkSetQueryResponse);
-  rpc AddSite(AddSiteRequest) returns (Empty);
 
   // 任务管理
   rpc RegisterUrlListener(UrlListenerRequest) returns (Empty);
@@ -426,10 +415,6 @@ message WorkSetQueryRequest {
 
 message WorkSetQueryResponse {
   WorkSet workSet = 1;
-}
-
-message AddSiteRequest {
-  repeated Site sites = 1;
 }
 
 message UrlListenerRequest {

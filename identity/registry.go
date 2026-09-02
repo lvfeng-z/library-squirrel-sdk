@@ -56,16 +56,34 @@ var (
 	Local = Site{Key: "local", Name: "local"}
 )
 
-// registry 键到条目的索引，供 Lookup 检索；条目集合与上方常量一一对应。
-var registry = map[string]Site{
-	Pixiv.Key:    Pixiv,
-	Bilibili.Key: Bilibili,
-	Local.Key:    Local,
+// registry 注册表条目的有序承载，条目顺序即注册序；全量枚举（All）的稳定输出序
+// 以此切片承载（map 无序，不能作序源）。新条目只追加到尾部。
+var registry = []Site{
+	Pixiv,
+	Bilibili,
+	Local,
 }
+
+// registryIndex 键到条目的索引，供 Lookup 检索；由 registry 派生，非独立数据源。
+var registryIndex = func() map[string]Site {
+	index := make(map[string]Site, len(registry))
+	for _, site := range registry {
+		index[site.Key] = site
+	}
+	return index
+}()
 
 // Lookup 按键查注册表条目；主程序的键校验与站点行创建共用此入口。
 // 未注册键（含空键）返回 false，拒绝策略由调用方决定。
 func Lookup(key string) (Site, bool) {
-	s, ok := registry[key]
+	s, ok := registryIndex[key]
 	return s, ok
+}
+
+// All 返回注册表全量条目，按注册序稳定输出；供宿主将注册表投影为主库站点行
+// 等需要遍历全部已注册站点的场景。返回切片为注册表副本，调用方修改不影响注册表。
+func All() []Site {
+	all := make([]Site, len(registry))
+	copy(all, registry)
+	return all
 }

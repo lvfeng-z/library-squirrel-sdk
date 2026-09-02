@@ -15,7 +15,6 @@ import (
 type HostDeps struct {
 	dto.StorageProvider
 	dto.PluginRootProvider
-	dto.SiteSaveProvider
 	dto.TaskCreateProvider
 	dto.UrlListenerRegistry
 	dto.FrontendEventProvider
@@ -92,14 +91,6 @@ func (s *HostServiceServer) GetAllValues(ctx context.Context, req *gen.Empty) (*
 		return nil, err
 	}
 	return &gen.AllStorageValuesResponse{Values: values}, nil
-}
-
-func (s *HostServiceServer) AddSite(ctx context.Context, req *gen.AddSiteRequest) (*gen.Empty, error) {
-	sites := make([]*dto.SiteDTO, len(req.Sites))
-	for i, ps := range req.Sites {
-		sites[i] = protoToSite(ps)
-	}
-	return &gen.Empty{}, s.deps.AddSite(ctx, sites)
 }
 
 func (s *HostServiceServer) RegisterUrlListener(ctx context.Context, req *gen.UrlListenerRequest) (*gen.Empty, error) {
@@ -210,21 +201,4 @@ func GetGRPCConn(pluginClient *plugin.Client) (*grpc.ClientConn, error) {
 		return nil, fmt.Errorf("failed to dispense plugin: %w", err)
 	}
 	return nil, fmt.Errorf("GetGRPCConn: use rpcClient.Conn() instead")
-}
-
-// ========== 转换函数（host 侧）==========
-// 别名类型(dto=gen)直传;仅 gen.Site→gen.SiteDTO 不同 proto 消息间需转换(AddSite 入参)。
-
-func protoToSite(pb *gen.Site) *dto.SiteDTO {
-	if pb == nil {
-		return nil
-	}
-	return &dto.SiteDTO{
-		Id:         pb.Id,
-		CreateTime: pb.CreateTime,
-		UpdateTime: pb.UpdateTime,
-		SiteName:   pb.SiteName,
-		Homepage:   pb.Homepage,
-		SiteKey:    pb.SiteKey,
-	}
 }

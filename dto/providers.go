@@ -21,11 +21,6 @@ type StorePathQueryProvider interface {
 	GetStoreRelPath(ctx context.Context, taskId int64, role string, storeSeq int) (string, error)
 }
 
-// SiteSaveProvider 站点保存
-type SiteSaveProvider interface {
-	AddSite(ctx context.Context, sites []*SiteDTO) error
-}
-
 // TaskCreateProvider 任务创建
 type TaskCreateProvider interface {
 	CreateTask(ctx context.Context, url string) (*CreateTaskResult, error)

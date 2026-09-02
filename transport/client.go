@@ -35,8 +35,8 @@ func (c *PluginContextClient) SetMainWindowHandle(hwnd uintptr) {
 func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, handler dto.TaskHandler) error {
 	_, err := c.hostClient.RegisterTaskHandler(context.Background(), &gen.RegisterExtensionRequest{
 		ExtensionId: id,
-		Name:           name,
-		Description:    description,
+		Name:        name,
+		Description: description,
 	})
 	return err
 }
@@ -44,8 +44,8 @@ func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, 
 func (c *PluginContextClient) RegisterSiteBrowser(id, name, description string, browser dto.SiteBrowser) error {
 	_, err := c.hostClient.RegisterSiteBrowser(context.Background(), &gen.RegisterExtensionRequest{
 		ExtensionId: id,
-		Name:           name,
-		Description:    description,
+		Name:        name,
+		Description: description,
 	})
 	return err
 }
@@ -94,26 +94,10 @@ func (c *PluginContextClient) GetAllValues() (map[string]*dto.StorageValue, erro
 	return resp.Values, nil
 }
 
-func (c *PluginContextClient) AddSite(sites []*dto.SiteDTO) error {
-	pbSites := make([]*gen.Site, len(sites))
-	for i, s := range sites {
-		pbSites[i] = &gen.Site{
-			Id:         s.Id,
-			CreateTime: s.CreateTime,
-			UpdateTime: s.UpdateTime,
-			SiteName:   s.SiteName,
-			Homepage:   s.Homepage,
-			SiteKey:    s.SiteKey,
-		}
-	}
-	_, err := c.hostClient.AddSite(context.Background(), &gen.AddSiteRequest{Sites: pbSites})
-	return err
-}
-
 func (c *PluginContextClient) RegisterUrlListener(extensionId string, patterns []string) error {
 	_, err := c.hostClient.RegisterUrlListener(context.Background(), &gen.UrlListenerRequest{
 		ExtensionId: extensionId,
-		Patterns:       patterns,
+		Patterns:    patterns,
 	})
 	return err
 }

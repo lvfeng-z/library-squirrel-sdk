@@ -706,7 +706,6 @@ const (
 	HostService_DeleteValue_FullMethodName               = "/plugins.HostService/DeleteValue"
 	HostService_GetAllValues_FullMethodName              = "/plugins.HostService/GetAllValues"
 	HostService_GetWorkSetBySiteWorkSetId_FullMethodName = "/plugins.HostService/GetWorkSetBySiteWorkSetId"
-	HostService_AddSite_FullMethodName                   = "/plugins.HostService/AddSite"
 	HostService_RegisterUrlListener_FullMethodName       = "/plugins.HostService/RegisterUrlListener"
 	HostService_UnregisterUrlListener_FullMethodName     = "/plugins.HostService/UnregisterUrlListener"
 	HostService_CreateTask_FullMethodName                = "/plugins.HostService/CreateTask"
@@ -734,7 +733,6 @@ type HostServiceClient interface {
 	GetAllValues(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AllStorageValuesResponse, error)
 	// 业务查询
 	GetWorkSetBySiteWorkSetId(ctx context.Context, in *WorkSetQueryRequest, opts ...grpc.CallOption) (*WorkSetQueryResponse, error)
-	AddSite(ctx context.Context, in *AddSiteRequest, opts ...grpc.CallOption) (*Empty, error)
 	// 任务管理
 	RegisterUrlListener(ctx context.Context, in *UrlListenerRequest, opts ...grpc.CallOption) (*Empty, error)
 	UnregisterUrlListener(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error)
@@ -843,16 +841,6 @@ func (c *hostServiceClient) GetWorkSetBySiteWorkSetId(ctx context.Context, in *W
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WorkSetQueryResponse)
 	err := c.cc.Invoke(ctx, HostService_GetWorkSetBySiteWorkSetId_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) AddSite(ctx context.Context, in *AddSiteRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, HostService_AddSite_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -974,7 +962,6 @@ type HostServiceServer interface {
 	GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error)
 	// 业务查询
 	GetWorkSetBySiteWorkSetId(context.Context, *WorkSetQueryRequest) (*WorkSetQueryResponse, error)
-	AddSite(context.Context, *AddSiteRequest) (*Empty, error)
 	// 任务管理
 	RegisterUrlListener(context.Context, *UrlListenerRequest) (*Empty, error)
 	UnregisterUrlListener(context.Context, *UnregisterRequest) (*Empty, error)
@@ -1025,9 +1012,6 @@ func (UnimplementedHostServiceServer) GetAllValues(context.Context, *Empty) (*Al
 }
 func (UnimplementedHostServiceServer) GetWorkSetBySiteWorkSetId(context.Context, *WorkSetQueryRequest) (*WorkSetQueryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetWorkSetBySiteWorkSetId not implemented")
-}
-func (UnimplementedHostServiceServer) AddSite(context.Context, *AddSiteRequest) (*Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method AddSite not implemented")
 }
 func (UnimplementedHostServiceServer) RegisterUrlListener(context.Context, *UrlListenerRequest) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterUrlListener not implemented")
@@ -1239,24 +1223,6 @@ func _HostService_GetWorkSetBySiteWorkSetId_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_AddSite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddSiteRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).AddSite(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_AddSite_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).AddSite(ctx, req.(*AddSiteRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _HostService_RegisterUrlListener_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UrlListenerRequest)
 	if err := dec(in); err != nil {
@@ -1454,10 +1420,6 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWorkSetBySiteWorkSetId",
 			Handler:    _HostService_GetWorkSetBySiteWorkSetId_Handler,
-		},
-		{
-			MethodName: "AddSite",
-			Handler:    _HostService_AddSite_Handler,
 		},
 		{
 			MethodName: "RegisterUrlListener",

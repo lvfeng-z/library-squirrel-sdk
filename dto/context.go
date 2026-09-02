@@ -16,9 +16,6 @@ type PluginContext interface {
 	DeleteValue(key string) error
 	GetAllValues() (map[string]*StorageValue, error)
 
-	// 业务查询
-	AddSite(sites []*SiteDTO) error
-
 	// 任务
 	RegisterUrlListener(extensionId string, patterns []string) error
 	UnregisterUrlListener(extensionId string) error
