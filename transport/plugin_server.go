@@ -50,10 +50,17 @@ type taskHandlerServer struct {
 	handler dto.TaskHandler
 }
 
+// Create 处理插件任务创建请求的流式响应。协议语义：error 块承载插件业务失败原因
+// （用户可读文本），必为流的最后一块——Create 错误返回时仅发单个 error 块即结束流
+// （不发 mode 块）；正常返回时 mode 块在前，全部 task 块之后结果声明了 reason 时
+// 追加 error 块收尾。gRPC status 错误专属基础设施故障（进程崩溃/连接中断/传输异常），
+// 不承载插件业务错误。
 func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
 	result, err := s.handler.Create(req.Url)
 	if err != nil {
-		return status.Errorf(codes.Internal, "create failed: %v", err)
+		return stream.Send(&gen.CreateChunk{
+			Payload: &gen.CreateChunk_Error{Error: err.Error()},
+		})
 	}
 
 	if err := stream.Send(&gen.CreateChunk{
@@ -86,6 +93,12 @@ func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStr
 		}
 	}
 
+	// range 在 channel close 后退出，此处读取 reason 满足其「流消费完毕后调用」的时序约定
+	if reason := result.Reason(); reason != "" {
+		return stream.Send(&gen.CreateChunk{
+			Payload: &gen.CreateChunk_Error{Error: reason},
+		})
+	}
 	return nil
 }
 
