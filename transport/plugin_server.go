@@ -421,6 +421,9 @@ func storeSpecsToProto(specs []*dto.StoreSpec) *gen.StoreSpecs {
 		if sp.ResumeWriteOffset != nil {
 			meta.ResumeWriteOffset = sp.ResumeWriteOffset
 		}
+		if sp.ExpectedSha256 != nil {
+			meta.ExpectedSha256 = sp.ExpectedSha256
+		}
 		pb.Items = append(pb.Items, meta)
 	}
 	return pb

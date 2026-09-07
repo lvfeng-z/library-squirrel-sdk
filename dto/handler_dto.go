@@ -88,6 +88,7 @@ type StoreSpec struct {
 	Description       string        `json:"description,omitempty"`       // 资源描述(多 store 命名可选拼段;空则省略描述段)
 	Continuable       *bool         `json:"continuable,omitempty"`       // 是否支持续传(derived 恒为 false)
 	ResumeWriteOffset *int64        `json:"resumeWriteOffset,omitempty"` // 续传写入偏移(仅 Resume 返回的 spec);nil=信任主程序 stat 的 offset,非 nil=插件指定确切位置
+	ExpectedSha256    *string       `json:"expectedSha256,omitempty"`    // 来源侧声明的期望 SHA256(下载内容完整性校验);nil=来源未声明,主程序跳过校验
 }
 
 // TaskSiteAuthorDTO 任务处理器站点作者DTO（别名 gen.TaskSiteAuthorDTO，proto 单源）

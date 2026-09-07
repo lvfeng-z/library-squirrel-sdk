@@ -2716,6 +2716,7 @@ type StoreSpecMeta struct {
 	Continuable       *bool                  `protobuf:"varint,6,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
 	ResumeWriteOffset *int64                 `protobuf:"varint,7,opt,name=resumeWriteOffset,proto3,oneof" json:"resumeWriteOffset,omitempty"` // 续传写入偏移(仅 Resume);nil=信任主程序 offset
 	Description       string                 `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`                    // 资源描述(多 store 命名可选拼段;空则省略描述段)
+	ExpectedSha256    *string                `protobuf:"bytes,9,opt,name=expectedSha256,proto3,oneof" json:"expectedSha256,omitempty"`        // 来源侧声明的期望哈希;主程序照单消费,不以本地计算替代声明源
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -2802,6 +2803,13 @@ func (x *StoreSpecMeta) GetResumeWriteOffset() int64 {
 func (x *StoreSpecMeta) GetDescription() string {
 	if x != nil {
 		return x.Description
+	}
+	return ""
+}
+
+func (x *StoreSpecMeta) GetExpectedSha256() string {
+	if x != nil && x.ExpectedSha256 != nil {
+		return *x.ExpectedSha256
 	}
 	return ""
 }
@@ -4250,7 +4258,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x05frame\">\n" +
 	"\vPullRequest\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x1b\n" +
-	"\tmax_bytes\x18\x02 \x01(\x05R\bmaxBytes\"\xb3\x02\n" +
+	"\tmax_bytes\x18\x02 \x01(\x05R\bmaxBytes\"\xf3\x02\n" +
 	"\rStoreSpecMeta\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x1e\n" +
 	"\n" +
@@ -4261,9 +4269,11 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\vsuggestName\x18\x05 \x01(\tR\vsuggestName\x12%\n" +
 	"\vcontinuable\x18\x06 \x01(\bH\x00R\vcontinuable\x88\x01\x01\x121\n" +
 	"\x11resumeWriteOffset\x18\a \x01(\x03H\x01R\x11resumeWriteOffset\x88\x01\x01\x12 \n" +
-	"\vdescription\x18\b \x01(\tR\vdescriptionB\x0e\n" +
+	"\vdescription\x18\b \x01(\tR\vdescription\x12+\n" +
+	"\x0eexpectedSha256\x18\t \x01(\tH\x02R\x0eexpectedSha256\x88\x01\x01B\x0e\n" +
 	"\f_continuableB\x14\n" +
-	"\x12_resumeWriteOffset\":\n" +
+	"\x12_resumeWriteOffsetB\x11\n" +
+	"\x0f_expectedSha256\":\n" +
 	"\n" +
 	"StoreSpecs\x12,\n" +
 	"\x05items\x18\x01 \x03(\v2\x16.plugins.StoreSpecMetaR\x05items\"2\n" +

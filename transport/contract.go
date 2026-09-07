@@ -12,9 +12,11 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 3
+const ContractVersion = 4
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
 //   2 — GetValue/GetAllValues 返回带 schemaVersion：配置 schema 版本感知（E 节点）
 //   3 — 资源类型扩展：插件可经 manifest resourceTypes 段声明自定义 ResourceType；audio 作为内置资源类型
+//   4 — StoreSpecMeta 加 expectedSha256（来源侧声明期望哈希，下载完整性校验）。本次 bump 仅含该加法
+//       字段；实体读写 RPC（谱系 S 节点）未并入，落地时再 bump
