@@ -36,8 +36,13 @@ type TaskResParam = gen.TaskResParam
 // TaskResumeParam 续传参数(每条 downloaded store 独立偏移,按 role+store_seq 身份化)
 // 保留为 struct：含 OffsetForRole 便捷方法,别名后无法在 dto 包为 gen 类型定义方法。
 type TaskResumeParam struct {
-	Task          *TaskDTO             `json:"task"`
-	StreamOffsets []*StoreResumeOffset `json:"streamOffsets"` // 未完成 downloaded store 的续传偏移;同 role 多 store 各自独立(N-同 role 多 store 支持)
+	Task *TaskDTO `json:"task"`
+	// 主程序磁盘暂存中全部未提交 downloaded 轨的已落盘偏移(可能已达该轨完整大小——多轨并发
+	// 下小轨先写满、等待其余轨道一起提交是常态)。插件是站点与主程序间的兼容层,单轨完成状态
+	// 的确认归插件职责:对每条偏移与来源侧比对——已写满(来源现值==偏移)→返回 Size=偏移、立即
+	// EOF 流的 spec 或空过(主程序经 Start 重产);来源现值与偏移不符(内容变更)→返回以来源现值
+	// 为 Size 的完整流,主程序按声明大小截断整轨重下。详见 proto/plugin.proto 同名消息注释
+	StreamOffsets []*StoreResumeOffset `json:"streamOffsets"`
 }
 
 // OffsetForRole 按 role 查询续传偏移(单例场景便捷方法,取首个命中)。

@@ -2174,9 +2174,14 @@ func (x *TaskResParamMessage) GetExtensionId() string {
 
 // 续传参数(每条 downloaded store 独立偏移,按 role+store_seq 身份化)
 type TaskResumeParam struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Task          *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
-	StreamOffsets []*StoreResumeOffset   `protobuf:"bytes,2,rep,name=streamOffsets,proto3" json:"streamOffsets,omitempty"` // 未完成 downloaded store 的续传偏移;同 role 多 store 各自独立(N-同 role 多 store 支持)
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Task  *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	// 主程序磁盘暂存中全部未提交 downloaded 轨的已落盘偏移(可能已达该轨完整大小——多轨并发
+	// 下小轨先写满、等待其余轨道写满一起提交是常态)。插件是站点与主程序间的兼容层,单轨完成
+	// 状态的确认归插件职责:对每条偏移与来源侧比对,已写满(来源现值==偏移)→ 返回 Size=偏移、
+	// 立即 EOF 流的 spec 或不返回该轨(空过,主程序经 Start 重产);来源现值与偏移不符(内容变更)
+	// → 返回以来源现值为 Size 的完整流,主程序按声明大小截断整轨重下
+	StreamOffsets []*StoreResumeOffset `protobuf:"bytes,2,rep,name=streamOffsets,proto3" json:"streamOffsets,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
