@@ -19,7 +19,7 @@ message Task {
   optional string siteWorkId = 8;
   optional string url = 9;
   int32 status = 10;
-  optional int64 pendingResourceId = 11;
+  reserved 11; // 已移除 pendingResourceId(任务执行面暂存模式改造,资源定位改由主程序按 task_id 直查,插件零消费)
   optional bool continuable = 12;
   optional string pluginPublicId = 13;
   optional string pluginExtensionId = 14;
@@ -442,8 +442,9 @@ message GetPluginRootResponse {
 }
 
 // GetStoreRelPath 查询当前任务资源中指定 store 的真实落盘路径
-// 主程序据 task_id → 任务 PendingResourceID 定位资源(插件 Start 时资源尚未创建,PendingResourceID 不可用,
-// 故用 task_id;主程序在 downloadLoop 查询时事务已提交,PendingResourceID 已就位)
+// 主程序按 task_id 定位:运行中查执行面注册的暂存规划表(解析 store specs 得最终路径,文件物理在暂存
+// 但契约解耦);执行结束注销后按 resource.task_id 溯源列查已提交资源。插件 Start 时资源行尚未创建,
+// 故用 task_id 而非 resource_id
 message GetStoreRelPathRequest {
   int64 task_id = 1;   // 任务 ID
   string role = 2;     // store_type(image/document/videoTrack/...)

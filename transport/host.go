@@ -119,7 +119,7 @@ func (s *HostServiceServer) GetPluginRoot(ctx context.Context, req *gen.GetPlugi
 }
 
 // GetStoreRelPath 查询任务资源 store 的真实落盘路径。
-// 失败(任务无 PendingResourceID / resource_store 无此 role+seq / DB 错误)返回 error,
+// 失败(任务无可定位资源 / resource_store 无此 role+seq / DB 错误)返回 error,
 // 调用方(插件 document lazy 生成)据此失败该 store,不静默降级。
 func (s *HostServiceServer) GetStoreRelPath(ctx context.Context, req *gen.GetStoreRelPathRequest) (*gen.GetStoreRelPathResponse, error) {
 	relPath, err := s.deps.GetStoreRelPath(ctx, req.TaskId, req.Role, int(req.StoreSeq))

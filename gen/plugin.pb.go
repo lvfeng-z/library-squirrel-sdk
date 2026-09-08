@@ -69,7 +69,6 @@ type Task struct {
 	SiteWorkId        *string                `protobuf:"bytes,8,opt,name=siteWorkId,proto3,oneof" json:"siteWorkId,omitempty"`
 	Url               *string                `protobuf:"bytes,9,opt,name=url,proto3,oneof" json:"url,omitempty"`
 	Status            int32                  `protobuf:"varint,10,opt,name=status,proto3" json:"status,omitempty"`
-	PendingResourceId *int64                 `protobuf:"varint,11,opt,name=pendingResourceId,proto3,oneof" json:"pendingResourceId,omitempty"`
 	Continuable       *bool                  `protobuf:"varint,12,opt,name=continuable,proto3,oneof" json:"continuable,omitempty"`
 	PluginPublicId    *string                `protobuf:"bytes,13,opt,name=pluginPublicId,proto3,oneof" json:"pluginPublicId,omitempty"`
 	PluginExtensionId *string                `protobuf:"bytes,14,opt,name=pluginExtensionId,proto3,oneof" json:"pluginExtensionId,omitempty"`
@@ -178,13 +177,6 @@ func (x *Task) GetUrl() string {
 func (x *Task) GetStatus() int32 {
 	if x != nil {
 		return x.Status
-	}
-	return 0
-}
-
-func (x *Task) GetPendingResourceId() int64 {
-	if x != nil && x.PendingResourceId != nil {
-		return *x.PendingResourceId
 	}
 	return 0
 }
@@ -3593,8 +3585,9 @@ func (x *GetPluginRootResponse) GetPath() string {
 }
 
 // GetStoreRelPath 查询当前任务资源中指定 store 的真实落盘路径
-// 主程序据 task_id → 任务 PendingResourceID 定位资源(插件 Start 时资源尚未创建,PendingResourceID 不可用,
-// 故用 task_id;主程序在 downloadLoop 查询时事务已提交,PendingResourceID 已就位)
+// 主程序按 task_id 定位:运行中查执行面注册的暂存规划表(解析 store specs 得最终路径,文件物理在暂存
+// 但契约解耦);执行结束注销后按 resource.task_id 溯源列查已提交资源。插件 Start 时资源行尚未创建,
+// 故用 task_id 而非 resource_id
 type GetStoreRelPathRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TaskId        int64                  `protobuf:"varint,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`       // 任务 ID
@@ -3964,7 +3957,7 @@ var File_proto_plugin_proto protoreflect.FileDescriptor
 const file_proto_plugin_proto_rawDesc = "" +
 	"\n" +
 	"\x12proto/plugin.proto\x12\aplugins\"\a\n" +
-	"\x05Empty\"\xd3\x06\n" +
+	"\x05Empty\"\x90\x06\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1e\n" +
 	"\n" +
@@ -3982,32 +3975,30 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"siteWorkId\x88\x01\x01\x12\x15\n" +
 	"\x03url\x18\t \x01(\tH\x05R\x03url\x88\x01\x01\x12\x16\n" +
 	"\x06status\x18\n" +
-	" \x01(\x05R\x06status\x121\n" +
-	"\x11pendingResourceId\x18\v \x01(\x03H\x06R\x11pendingResourceId\x88\x01\x01\x12%\n" +
-	"\vcontinuable\x18\f \x01(\bH\aR\vcontinuable\x88\x01\x01\x12+\n" +
-	"\x0epluginPublicId\x18\r \x01(\tH\bR\x0epluginPublicId\x88\x01\x01\x121\n" +
-	"\x11pluginExtensionId\x18\x0e \x01(\tH\tR\x11pluginExtensionId\x88\x01\x01\x12#\n" +
+	" \x01(\x05R\x06status\x12%\n" +
+	"\vcontinuable\x18\f \x01(\bH\x06R\vcontinuable\x88\x01\x01\x12+\n" +
+	"\x0epluginPublicId\x18\r \x01(\tH\aR\x0epluginPublicId\x88\x01\x01\x121\n" +
+	"\x11pluginExtensionId\x18\x0e \x01(\tH\bR\x11pluginExtensionId\x88\x01\x01\x12#\n" +
 	"\n" +
-	"pluginData\x18\x0f \x01(\tH\n" +
-	"R\n" +
+	"pluginData\x18\x0f \x01(\tH\tR\n" +
 	"pluginData\x88\x01\x01\x12'\n" +
-	"\ferrorMessage\x18\x10 \x01(\tH\vR\ferrorMessage\x88\x01\x01\x12$\n" +
+	"\ferrorMessage\x18\x10 \x01(\tH\n" +
+	"R\ferrorMessage\x88\x01\x01\x12$\n" +
 	"\rinvolvedRoles\x18\x11 \x03(\tR\rinvolvedRoles\x12\"\n" +
 	"\fresourceType\x18\x12 \x01(\tR\fresourceType\x12\x1f\n" +
-	"\btaskType\x18\x13 \x01(\tH\fR\btaskType\x88\x01\x01B\v\n" +
+	"\btaskType\x18\x13 \x01(\tH\vR\btaskType\x88\x01\x01B\v\n" +
 	"\t_hasChildB\x06\n" +
 	"\x04_pidB\v\n" +
 	"\t_taskNameB\t\n" +
 	"\a_siteIdB\r\n" +
 	"\v_siteWorkIdB\x06\n" +
-	"\x04_urlB\x14\n" +
-	"\x12_pendingResourceIdB\x0e\n" +
+	"\x04_urlB\x0e\n" +
 	"\f_continuableB\x11\n" +
 	"\x0f_pluginPublicIdB\x14\n" +
 	"\x12_pluginExtensionIdB\r\n" +
 	"\v_pluginDataB\x0f\n" +
 	"\r_errorMessageB\v\n" +
-	"\t_taskType\"\x8e\x05\n" +
+	"\t_taskTypeJ\x04\b\v\x10\f\"\x8e\x05\n" +
 	"\x04Work\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1e\n" +
 	"\n" +

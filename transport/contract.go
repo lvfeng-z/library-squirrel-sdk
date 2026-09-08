@@ -18,5 +18,6 @@ const ContractVersion = 4
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
 //   2 — GetValue/GetAllValues 返回带 schemaVersion：配置 schema 版本感知（E 节点）
 //   3 — 资源类型扩展：插件可经 manifest resourceTypes 段声明自定义 ResourceType；audio 作为内置资源类型
-//   4 — StoreSpecMeta 加 expectedSha256（来源侧声明期望哈希，下载完整性校验）。本次 bump 仅含该加法
-//       字段；实体读写 RPC（谱系 S 节点）未并入，落地时再 bump
+//   4 — StoreSpecMeta 加 expectedSha256（来源侧声明期望哈希，下载完整性校验）；Task 删 pendingResourceId
+//       （主程序任务执行面暂存模式改造，资源定位改由主程序按 task_id 直查，插件零消费）。
+//       实体读写 RPC（谱系 S 节点）未并入，落地时再 bump
