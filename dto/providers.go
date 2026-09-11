@@ -16,11 +16,6 @@ type PluginRootProvider interface {
 	GetPluginRoot(ctx context.Context, isRelative bool) string
 }
 
-// StorePathQueryProvider 资源 store 路径查询(主程序据 task+role+store_seq 查真实落盘路径)
-type StorePathQueryProvider interface {
-	GetStoreRelPath(ctx context.Context, taskId int64, role string, storeSeq int) (string, error)
-}
-
 // TaskCreateProvider 任务创建
 type TaskCreateProvider interface {
 	CreateTask(ctx context.Context, url string) (*CreateTaskResult, error)

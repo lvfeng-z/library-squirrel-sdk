@@ -12,7 +12,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 4
+const ContractVersion = 5
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -21,3 +21,5 @@ const ContractVersion = 4
 //   4 — StoreSpecMeta 加 expectedSha256（来源侧声明期望哈希，下载完整性校验）；Task 删 pendingResourceId
 //       （主程序任务执行面暂存模式改造，资源定位改由主程序按 task_id 直查，插件零消费）。
 //       实体读写 RPC（谱系 S 节点）未并入，落地时再 bump
+//   5 — GetStoreRelPath RPC 整链退役（落盘身份键命名改造：最终路径由 SDK storepath 派生函数本地推导，
+//       插件不再向主程序查询落盘路径；主程序 minSupportedContractVersion 同步升 5，未声明版本插件拒载）
