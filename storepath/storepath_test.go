@@ -4,7 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"path"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -36,7 +38,7 @@ func TestWorkDirNamePlainIdForm(t *testing.T) {
 	}
 }
 
-// TestComposedRelPathForm 完整 relPath 形态：主程序侧 path.Join 组合目录段与文件段
+// TestComposedRelPathForm 完整 relPath 形态：主程序侧 path.Join 组合桶段+目录段+文件段
 func TestComposedRelPathForm(t *testing.T) {
 	dir, err := WorkDirName("bilibili", "BV1xx411c7mD_4538792")
 	if err != nil {
@@ -46,8 +48,8 @@ func TestComposedRelPathForm(t *testing.T) {
 	if err != nil {
 		t.Fatalf("StoreFileName 意外出错：%v", err)
 	}
-	rel := path.Join("store/resource", dir, file)
-	want := "store/resource/bilibili_BV1xx411c7mD_4538792/videoTrack_000.mp4"
+	rel := path.Join("store/resource", BucketSegment("bilibili", "BV1xx411c7mD_4538792"), dir, file)
+	want := "store/resource/16/bilibili_BV1xx411c7mD_4538792/videoTrack_000.mp4"
 	if rel != want {
 		t.Errorf("组合 relPath = %q；want %q", rel, want)
 	}
@@ -216,5 +218,60 @@ func TestStoreFileNameSeqExtRejected(t *testing.T) {
 		if _, err := StoreFileName("image", 0, ext); !errors.Is(err, ErrInvalidExt) {
 			t.Errorf("ext %q 应报 ErrInvalidExt，got %v", ext, err)
 		}
+	}
+}
+
+// TestBucketSegmentStable 同键恒同桶：同参数多次调用返回同值
+func TestBucketSegmentStable(t *testing.T) {
+	for _, k := range [][2]string{
+		{"pixiv", "128937464"},
+		{"bilibili", "BV1xx411c7mD_4538792"},
+		{"local", "work-42"},
+	} {
+		first := BucketSegment(k[0], k[1])
+		for i := 0; i < 3; i++ {
+			if got := BucketSegment(k[0], k[1]); got != first {
+				t.Errorf("BucketSegment(%q,%q) 多次调用返回不一致：%q vs %q", k[0], k[1], got, first)
+			}
+		}
+	}
+}
+
+// TestBucketSegmentHexForm 桶段格式恒 2 位小写 hex，且与独立复算的复合键
+// （siteKey + "_" + siteWorkId）sha256 前 2 位一致——锚定哈希输入构造口径
+func TestBucketSegmentHexForm(t *testing.T) {
+	re := regexp.MustCompile(`^[0-9a-f]{2}$`)
+	for _, k := range [][2]string{
+		{"pixiv", "128937464"},
+		{"bilibili", "BV1xx411c7mD_4538792"},
+		{"local", "work-42"},
+		{"e-hentai", "g/123456/abcdef"},
+	} {
+		got := BucketSegment(k[0], k[1])
+		if !re.MatchString(got) {
+			t.Errorf("BucketSegment(%q,%q) = %q，不符 2 位小写 hex 格式", k[0], k[1], got)
+		}
+		if want := expectHex(t, k[0]+"_"+k[1], 2); got != want {
+			t.Errorf("BucketSegment(%q,%q) = %q；want %q（复合键 sha256 前 2 位）", k[0], k[1], got, want)
+		}
+	}
+}
+
+// TestBucketSegmentDistribution 不同复合键的桶分布抽样：1000 个不同键的桶值
+// 集合出现多个不同值且每个符合格式（哈希分桶的均匀性不做精确断言）
+func TestBucketSegmentDistribution(t *testing.T) {
+	re := regexp.MustCompile(`^[0-9a-f]{2}$`)
+	seen := make(map[string]struct{})
+	for i := 0; i < 1000; i++ {
+		got := BucketSegment("pixiv", fmt.Sprintf("work-%d", i))
+		if !re.MatchString(got) {
+			t.Errorf("BucketSegment(work-%d) = %q，不符 2 位小写 hex 格式", i, got)
+		}
+		seen[got] = struct{}{}
+	}
+	// 1000 键实测覆盖 251 桶（256 桶满量程的 98%）；下限 100 只断言分桶真实
+	// 生效，不断言均匀性
+	if len(seen) < 100 {
+		t.Errorf("1000 个不同复合键仅落入 %d 个桶，分桶未生效", len(seen))
 	}
 }
