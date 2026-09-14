@@ -697,23 +697,22 @@ var SiteBrowserService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	HostService_RegisterTaskHandler_FullMethodName       = "/plugins.HostService/RegisterTaskHandler"
-	HostService_RegisterSiteBrowser_FullMethodName       = "/plugins.HostService/RegisterSiteBrowser"
-	HostService_UnregisterSiteBrowser_FullMethodName     = "/plugins.HostService/UnregisterSiteBrowser"
-	HostService_GetValue_FullMethodName                  = "/plugins.HostService/GetValue"
-	HostService_SetValue_FullMethodName                  = "/plugins.HostService/SetValue"
-	HostService_SetValueEncrypted_FullMethodName         = "/plugins.HostService/SetValueEncrypted"
-	HostService_DeleteValue_FullMethodName               = "/plugins.HostService/DeleteValue"
-	HostService_GetAllValues_FullMethodName              = "/plugins.HostService/GetAllValues"
-	HostService_GetWorkSetBySiteWorkSetId_FullMethodName = "/plugins.HostService/GetWorkSetBySiteWorkSetId"
-	HostService_RegisterUrlListener_FullMethodName       = "/plugins.HostService/RegisterUrlListener"
-	HostService_UnregisterUrlListener_FullMethodName     = "/plugins.HostService/UnregisterUrlListener"
-	HostService_CreateTask_FullMethodName                = "/plugins.HostService/CreateTask"
-	HostService_GetPluginRoot_FullMethodName             = "/plugins.HostService/GetPluginRoot"
-	HostService_Log_FullMethodName                       = "/plugins.HostService/Log"
-	HostService_PublishToFrontend_FullMethodName         = "/plugins.HostService/PublishToFrontend"
-	HostService_SubscribeFrontend_FullMethodName         = "/plugins.HostService/SubscribeFrontend"
-	HostService_UnsubscribeFrontend_FullMethodName       = "/plugins.HostService/UnsubscribeFrontend"
+	HostService_RegisterTaskHandler_FullMethodName   = "/plugins.HostService/RegisterTaskHandler"
+	HostService_RegisterSiteBrowser_FullMethodName   = "/plugins.HostService/RegisterSiteBrowser"
+	HostService_UnregisterSiteBrowser_FullMethodName = "/plugins.HostService/UnregisterSiteBrowser"
+	HostService_GetValue_FullMethodName              = "/plugins.HostService/GetValue"
+	HostService_SetValue_FullMethodName              = "/plugins.HostService/SetValue"
+	HostService_SetValueEncrypted_FullMethodName     = "/plugins.HostService/SetValueEncrypted"
+	HostService_DeleteValue_FullMethodName           = "/plugins.HostService/DeleteValue"
+	HostService_GetAllValues_FullMethodName          = "/plugins.HostService/GetAllValues"
+	HostService_RegisterUrlListener_FullMethodName   = "/plugins.HostService/RegisterUrlListener"
+	HostService_UnregisterUrlListener_FullMethodName = "/plugins.HostService/UnregisterUrlListener"
+	HostService_CreateTask_FullMethodName            = "/plugins.HostService/CreateTask"
+	HostService_GetPluginRoot_FullMethodName         = "/plugins.HostService/GetPluginRoot"
+	HostService_Log_FullMethodName                   = "/plugins.HostService/Log"
+	HostService_PublishToFrontend_FullMethodName     = "/plugins.HostService/PublishToFrontend"
+	HostService_SubscribeFrontend_FullMethodName     = "/plugins.HostService/SubscribeFrontend"
+	HostService_UnsubscribeFrontend_FullMethodName   = "/plugins.HostService/UnsubscribeFrontend"
 )
 
 // HostServiceClient is the client API for HostService service.
@@ -730,8 +729,6 @@ type HostServiceClient interface {
 	SetValueEncrypted(ctx context.Context, in *StorageEntryRequest, opts ...grpc.CallOption) (*Empty, error)
 	DeleteValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetAllValues(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AllStorageValuesResponse, error)
-	// 业务查询
-	GetWorkSetBySiteWorkSetId(ctx context.Context, in *WorkSetQueryRequest, opts ...grpc.CallOption) (*WorkSetQueryResponse, error)
 	// 任务管理
 	RegisterUrlListener(ctx context.Context, in *UrlListenerRequest, opts ...grpc.CallOption) (*Empty, error)
 	UnregisterUrlListener(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error)
@@ -828,16 +825,6 @@ func (c *hostServiceClient) GetAllValues(ctx context.Context, in *Empty, opts ..
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AllStorageValuesResponse)
 	err := c.cc.Invoke(ctx, HostService_GetAllValues_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) GetWorkSetBySiteWorkSetId(ctx context.Context, in *WorkSetQueryRequest, opts ...grpc.CallOption) (*WorkSetQueryResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(WorkSetQueryResponse)
-	err := c.cc.Invoke(ctx, HostService_GetWorkSetBySiteWorkSetId_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -947,8 +934,6 @@ type HostServiceServer interface {
 	SetValueEncrypted(context.Context, *StorageEntryRequest) (*Empty, error)
 	DeleteValue(context.Context, *StorageKeyRequest) (*Empty, error)
 	GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error)
-	// 业务查询
-	GetWorkSetBySiteWorkSetId(context.Context, *WorkSetQueryRequest) (*WorkSetQueryResponse, error)
 	// 任务管理
 	RegisterUrlListener(context.Context, *UrlListenerRequest) (*Empty, error)
 	UnregisterUrlListener(context.Context, *UnregisterRequest) (*Empty, error)
@@ -994,9 +979,6 @@ func (UnimplementedHostServiceServer) DeleteValue(context.Context, *StorageKeyRe
 }
 func (UnimplementedHostServiceServer) GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllValues not implemented")
-}
-func (UnimplementedHostServiceServer) GetWorkSetBySiteWorkSetId(context.Context, *WorkSetQueryRequest) (*WorkSetQueryResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetWorkSetBySiteWorkSetId not implemented")
 }
 func (UnimplementedHostServiceServer) RegisterUrlListener(context.Context, *UrlListenerRequest) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterUrlListener not implemented")
@@ -1187,24 +1169,6 @@ func _HostService_GetAllValues_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_GetWorkSetBySiteWorkSetId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkSetQueryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).GetWorkSetBySiteWorkSetId(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_GetWorkSetBySiteWorkSetId_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).GetWorkSetBySiteWorkSetId(ctx, req.(*WorkSetQueryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _HostService_RegisterUrlListener_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UrlListenerRequest)
 	if err := dec(in); err != nil {
@@ -1382,10 +1346,6 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_GetAllValues_Handler,
 		},
 		{
-			MethodName: "GetWorkSetBySiteWorkSetId",
-			Handler:    _HostService_GetWorkSetBySiteWorkSetId_Handler,
-		},
-		{
 			MethodName: "RegisterUrlListener",
 			Handler:    _HostService_RegisterUrlListener_Handler,
 		},
@@ -1421,5 +1381,905 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
+	Metadata: "proto/plugin.proto",
+}
+
+const (
+	LibraryQuery_GetWorkById_FullMethodName            = "/plugins.LibraryQuery/GetWorkById"
+	LibraryQuery_GetWorkBySiteKey_FullMethodName       = "/plugins.LibraryQuery/GetWorkBySiteKey"
+	LibraryQuery_QueryWorks_FullMethodName             = "/plugins.LibraryQuery/QueryWorks"
+	LibraryQuery_ListResourcesByWorkId_FullMethodName  = "/plugins.LibraryQuery/ListResourcesByWorkId"
+	LibraryQuery_GetLocalAuthorById_FullMethodName     = "/plugins.LibraryQuery/GetLocalAuthorById"
+	LibraryQuery_QueryLocalAuthors_FullMethodName      = "/plugins.LibraryQuery/QueryLocalAuthors"
+	LibraryQuery_GetSiteAuthorBySiteKey_FullMethodName = "/plugins.LibraryQuery/GetSiteAuthorBySiteKey"
+	LibraryQuery_QuerySiteAuthors_FullMethodName       = "/plugins.LibraryQuery/QuerySiteAuthors"
+	LibraryQuery_ListAuthorsByWorkId_FullMethodName    = "/plugins.LibraryQuery/ListAuthorsByWorkId"
+	LibraryQuery_GetLocalTagById_FullMethodName        = "/plugins.LibraryQuery/GetLocalTagById"
+	LibraryQuery_QueryLocalTags_FullMethodName         = "/plugins.LibraryQuery/QueryLocalTags"
+	LibraryQuery_GetSiteTagBySiteKey_FullMethodName    = "/plugins.LibraryQuery/GetSiteTagBySiteKey"
+	LibraryQuery_QuerySiteTags_FullMethodName          = "/plugins.LibraryQuery/QuerySiteTags"
+	LibraryQuery_ListTagsByWorkId_FullMethodName       = "/plugins.LibraryQuery/ListTagsByWorkId"
+	LibraryQuery_GetWorkSetById_FullMethodName         = "/plugins.LibraryQuery/GetWorkSetById"
+	LibraryQuery_GetWorkSetBySiteKey_FullMethodName    = "/plugins.LibraryQuery/GetWorkSetBySiteKey"
+	LibraryQuery_ListWorkSetsByWorkId_FullMethodName   = "/plugins.LibraryQuery/ListWorkSetsByWorkId"
+	LibraryQuery_ListParentWorkSets_FullMethodName     = "/plugins.LibraryQuery/ListParentWorkSets"
+	LibraryQuery_ListChildWorkSets_FullMethodName      = "/plugins.LibraryQuery/ListChildWorkSets"
+	LibraryQuery_ListSites_FullMethodName              = "/plugins.LibraryQuery/ListSites"
+	LibraryQuery_GetWorkDir_FullMethodName             = "/plugins.LibraryQuery/GetWorkDir"
+)
+
+// LibraryQueryClient is the client API for LibraryQuery service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ========== 5. 库查询服务（插件 → 主程序，通过 GRPCBroker）==========
+// Tier 1 只读查询面：插件查询已在库的作品及周边数据（任务历史不在本面，任务域查询语义未稳定）。
+//   - 软删/活行：默认只返回活数据——软删作品/store 不出现在任何查询结果，resource_store 关联按活行过滤。
+//   - 身份键优先：跨库语义寻址一律 (site_key, 站点侧 id) 复合键；消息内各 int64 id 为库内行 id，作会话内
+//     不透明句柄（与前端 bindings 暴露尺度一致）。
+//   - 分页载体：proto3 无泛型，无法定义泛型 PageResult；采用「请求侧共享 PageRequest 子消息 + 响应侧
+//     typed items 字段 + 共享 PageInfo 回执」等价落地。无界集合查询（Query* 族）强制分页，不提供全量倾倒；
+//     按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与站点
+//     注册表投影（ListSites：站点键只增不改，个位数级）不分页。
+//   - Get* 族未命中返回 gRPC NotFound；GetWorkDir 未配置返回 FailedPrecondition（显式拒绝语义，
+//     不返回空路径）。
+type LibraryQueryClient interface {
+	// 作品
+	GetWorkById(ctx context.Context, in *GetWorkByIdRequest, opts ...grpc.CallOption) (*WorkWithSite, error)
+	GetWorkBySiteKey(ctx context.Context, in *GetWorkBySiteKeyRequest, opts ...grpc.CallOption) (*WorkWithSite, error)
+	QueryWorks(ctx context.Context, in *QueryWorksRequest, opts ...grpc.CallOption) (*QueryWorksResponse, error)
+	// 资源与 store
+	ListResourcesByWorkId(ctx context.Context, in *ListResourcesByWorkIdRequest, opts ...grpc.CallOption) (*ListResourcesByWorkIdResponse, error)
+	// 作者（本地轨 / 站点轨 / 作品关联）
+	GetLocalAuthorById(ctx context.Context, in *GetLocalAuthorByIdRequest, opts ...grpc.CallOption) (*LocalAuthorDTO, error)
+	QueryLocalAuthors(ctx context.Context, in *QueryLocalAuthorsRequest, opts ...grpc.CallOption) (*QueryLocalAuthorsResponse, error)
+	GetSiteAuthorBySiteKey(ctx context.Context, in *GetSiteAuthorBySiteKeyRequest, opts ...grpc.CallOption) (*SiteAuthorInfo, error)
+	QuerySiteAuthors(ctx context.Context, in *QuerySiteAuthorsRequest, opts ...grpc.CallOption) (*QuerySiteAuthorsResponse, error)
+	ListAuthorsByWorkId(ctx context.Context, in *ListAuthorsByWorkIdRequest, opts ...grpc.CallOption) (*ListAuthorsByWorkIdResponse, error)
+	// 标签（与作者对称；作品关联含关联级 namespace 维度）
+	GetLocalTagById(ctx context.Context, in *GetLocalTagByIdRequest, opts ...grpc.CallOption) (*LocalTagDTO, error)
+	QueryLocalTags(ctx context.Context, in *QueryLocalTagsRequest, opts ...grpc.CallOption) (*QueryLocalTagsResponse, error)
+	GetSiteTagBySiteKey(ctx context.Context, in *GetSiteTagBySiteKeyRequest, opts ...grpc.CallOption) (*SiteTagInfo, error)
+	QuerySiteTags(ctx context.Context, in *QuerySiteTagsRequest, opts ...grpc.CallOption) (*QuerySiteTagsResponse, error)
+	ListTagsByWorkId(ctx context.Context, in *ListTagsByWorkIdRequest, opts ...grpc.CallOption) (*ListTagsByWorkIdResponse, error)
+	// 作品集
+	GetWorkSetById(ctx context.Context, in *GetWorkSetByIdRequest, opts ...grpc.CallOption) (*WorkSet, error)
+	GetWorkSetBySiteKey(ctx context.Context, in *GetWorkSetBySiteKeyRequest, opts ...grpc.CallOption) (*WorkSet, error)
+	ListWorkSetsByWorkId(ctx context.Context, in *ListWorkSetsByWorkIdRequest, opts ...grpc.CallOption) (*ListWorkSetsByWorkIdResponse, error)
+	ListParentWorkSets(ctx context.Context, in *ListParentWorkSetsRequest, opts ...grpc.CallOption) (*ListParentWorkSetsResponse, error)
+	ListChildWorkSets(ctx context.Context, in *ListChildWorkSetsRequest, opts ...grpc.CallOption) (*ListChildWorkSetsResponse, error)
+	// 站点（注册表投影，只读）
+	ListSites(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListSitesResponse, error)
+	// 工作目录
+	GetWorkDir(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetWorkDirResponse, error)
+}
+
+type libraryQueryClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewLibraryQueryClient(cc grpc.ClientConnInterface) LibraryQueryClient {
+	return &libraryQueryClient{cc}
+}
+
+func (c *libraryQueryClient) GetWorkById(ctx context.Context, in *GetWorkByIdRequest, opts ...grpc.CallOption) (*WorkWithSite, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkWithSite)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetWorkById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) GetWorkBySiteKey(ctx context.Context, in *GetWorkBySiteKeyRequest, opts ...grpc.CallOption) (*WorkWithSite, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkWithSite)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetWorkBySiteKey_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) QueryWorks(ctx context.Context, in *QueryWorksRequest, opts ...grpc.CallOption) (*QueryWorksResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryWorksResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_QueryWorks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) ListResourcesByWorkId(ctx context.Context, in *ListResourcesByWorkIdRequest, opts ...grpc.CallOption) (*ListResourcesByWorkIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListResourcesByWorkIdResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_ListResourcesByWorkId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) GetLocalAuthorById(ctx context.Context, in *GetLocalAuthorByIdRequest, opts ...grpc.CallOption) (*LocalAuthorDTO, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LocalAuthorDTO)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetLocalAuthorById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) QueryLocalAuthors(ctx context.Context, in *QueryLocalAuthorsRequest, opts ...grpc.CallOption) (*QueryLocalAuthorsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryLocalAuthorsResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_QueryLocalAuthors_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) GetSiteAuthorBySiteKey(ctx context.Context, in *GetSiteAuthorBySiteKeyRequest, opts ...grpc.CallOption) (*SiteAuthorInfo, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SiteAuthorInfo)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetSiteAuthorBySiteKey_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) QuerySiteAuthors(ctx context.Context, in *QuerySiteAuthorsRequest, opts ...grpc.CallOption) (*QuerySiteAuthorsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QuerySiteAuthorsResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_QuerySiteAuthors_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) ListAuthorsByWorkId(ctx context.Context, in *ListAuthorsByWorkIdRequest, opts ...grpc.CallOption) (*ListAuthorsByWorkIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAuthorsByWorkIdResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_ListAuthorsByWorkId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) GetLocalTagById(ctx context.Context, in *GetLocalTagByIdRequest, opts ...grpc.CallOption) (*LocalTagDTO, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LocalTagDTO)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetLocalTagById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) QueryLocalTags(ctx context.Context, in *QueryLocalTagsRequest, opts ...grpc.CallOption) (*QueryLocalTagsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryLocalTagsResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_QueryLocalTags_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) GetSiteTagBySiteKey(ctx context.Context, in *GetSiteTagBySiteKeyRequest, opts ...grpc.CallOption) (*SiteTagInfo, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SiteTagInfo)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetSiteTagBySiteKey_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) QuerySiteTags(ctx context.Context, in *QuerySiteTagsRequest, opts ...grpc.CallOption) (*QuerySiteTagsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QuerySiteTagsResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_QuerySiteTags_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) ListTagsByWorkId(ctx context.Context, in *ListTagsByWorkIdRequest, opts ...grpc.CallOption) (*ListTagsByWorkIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTagsByWorkIdResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_ListTagsByWorkId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) GetWorkSetById(ctx context.Context, in *GetWorkSetByIdRequest, opts ...grpc.CallOption) (*WorkSet, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkSet)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetWorkSetById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) GetWorkSetBySiteKey(ctx context.Context, in *GetWorkSetBySiteKeyRequest, opts ...grpc.CallOption) (*WorkSet, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkSet)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetWorkSetBySiteKey_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) ListWorkSetsByWorkId(ctx context.Context, in *ListWorkSetsByWorkIdRequest, opts ...grpc.CallOption) (*ListWorkSetsByWorkIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListWorkSetsByWorkIdResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_ListWorkSetsByWorkId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) ListParentWorkSets(ctx context.Context, in *ListParentWorkSetsRequest, opts ...grpc.CallOption) (*ListParentWorkSetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListParentWorkSetsResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_ListParentWorkSets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) ListChildWorkSets(ctx context.Context, in *ListChildWorkSetsRequest, opts ...grpc.CallOption) (*ListChildWorkSetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListChildWorkSetsResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_ListChildWorkSets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) ListSites(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListSitesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSitesResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_ListSites_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *libraryQueryClient) GetWorkDir(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetWorkDirResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetWorkDirResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_GetWorkDir_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// LibraryQueryServer is the server API for LibraryQuery service.
+// All implementations must embed UnimplementedLibraryQueryServer
+// for forward compatibility.
+//
+// ========== 5. 库查询服务（插件 → 主程序，通过 GRPCBroker）==========
+// Tier 1 只读查询面：插件查询已在库的作品及周边数据（任务历史不在本面，任务域查询语义未稳定）。
+//   - 软删/活行：默认只返回活数据——软删作品/store 不出现在任何查询结果，resource_store 关联按活行过滤。
+//   - 身份键优先：跨库语义寻址一律 (site_key, 站点侧 id) 复合键；消息内各 int64 id 为库内行 id，作会话内
+//     不透明句柄（与前端 bindings 暴露尺度一致）。
+//   - 分页载体：proto3 无泛型，无法定义泛型 PageResult；采用「请求侧共享 PageRequest 子消息 + 响应侧
+//     typed items 字段 + 共享 PageInfo 回执」等价落地。无界集合查询（Query* 族）强制分页，不提供全量倾倒；
+//     按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与站点
+//     注册表投影（ListSites：站点键只增不改，个位数级）不分页。
+//   - Get* 族未命中返回 gRPC NotFound；GetWorkDir 未配置返回 FailedPrecondition（显式拒绝语义，
+//     不返回空路径）。
+type LibraryQueryServer interface {
+	// 作品
+	GetWorkById(context.Context, *GetWorkByIdRequest) (*WorkWithSite, error)
+	GetWorkBySiteKey(context.Context, *GetWorkBySiteKeyRequest) (*WorkWithSite, error)
+	QueryWorks(context.Context, *QueryWorksRequest) (*QueryWorksResponse, error)
+	// 资源与 store
+	ListResourcesByWorkId(context.Context, *ListResourcesByWorkIdRequest) (*ListResourcesByWorkIdResponse, error)
+	// 作者（本地轨 / 站点轨 / 作品关联）
+	GetLocalAuthorById(context.Context, *GetLocalAuthorByIdRequest) (*LocalAuthorDTO, error)
+	QueryLocalAuthors(context.Context, *QueryLocalAuthorsRequest) (*QueryLocalAuthorsResponse, error)
+	GetSiteAuthorBySiteKey(context.Context, *GetSiteAuthorBySiteKeyRequest) (*SiteAuthorInfo, error)
+	QuerySiteAuthors(context.Context, *QuerySiteAuthorsRequest) (*QuerySiteAuthorsResponse, error)
+	ListAuthorsByWorkId(context.Context, *ListAuthorsByWorkIdRequest) (*ListAuthorsByWorkIdResponse, error)
+	// 标签（与作者对称；作品关联含关联级 namespace 维度）
+	GetLocalTagById(context.Context, *GetLocalTagByIdRequest) (*LocalTagDTO, error)
+	QueryLocalTags(context.Context, *QueryLocalTagsRequest) (*QueryLocalTagsResponse, error)
+	GetSiteTagBySiteKey(context.Context, *GetSiteTagBySiteKeyRequest) (*SiteTagInfo, error)
+	QuerySiteTags(context.Context, *QuerySiteTagsRequest) (*QuerySiteTagsResponse, error)
+	ListTagsByWorkId(context.Context, *ListTagsByWorkIdRequest) (*ListTagsByWorkIdResponse, error)
+	// 作品集
+	GetWorkSetById(context.Context, *GetWorkSetByIdRequest) (*WorkSet, error)
+	GetWorkSetBySiteKey(context.Context, *GetWorkSetBySiteKeyRequest) (*WorkSet, error)
+	ListWorkSetsByWorkId(context.Context, *ListWorkSetsByWorkIdRequest) (*ListWorkSetsByWorkIdResponse, error)
+	ListParentWorkSets(context.Context, *ListParentWorkSetsRequest) (*ListParentWorkSetsResponse, error)
+	ListChildWorkSets(context.Context, *ListChildWorkSetsRequest) (*ListChildWorkSetsResponse, error)
+	// 站点（注册表投影，只读）
+	ListSites(context.Context, *Empty) (*ListSitesResponse, error)
+	// 工作目录
+	GetWorkDir(context.Context, *Empty) (*GetWorkDirResponse, error)
+	mustEmbedUnimplementedLibraryQueryServer()
+}
+
+// UnimplementedLibraryQueryServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedLibraryQueryServer struct{}
+
+func (UnimplementedLibraryQueryServer) GetWorkById(context.Context, *GetWorkByIdRequest) (*WorkWithSite, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWorkById not implemented")
+}
+func (UnimplementedLibraryQueryServer) GetWorkBySiteKey(context.Context, *GetWorkBySiteKeyRequest) (*WorkWithSite, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWorkBySiteKey not implemented")
+}
+func (UnimplementedLibraryQueryServer) QueryWorks(context.Context, *QueryWorksRequest) (*QueryWorksResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method QueryWorks not implemented")
+}
+func (UnimplementedLibraryQueryServer) ListResourcesByWorkId(context.Context, *ListResourcesByWorkIdRequest) (*ListResourcesByWorkIdResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListResourcesByWorkId not implemented")
+}
+func (UnimplementedLibraryQueryServer) GetLocalAuthorById(context.Context, *GetLocalAuthorByIdRequest) (*LocalAuthorDTO, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLocalAuthorById not implemented")
+}
+func (UnimplementedLibraryQueryServer) QueryLocalAuthors(context.Context, *QueryLocalAuthorsRequest) (*QueryLocalAuthorsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method QueryLocalAuthors not implemented")
+}
+func (UnimplementedLibraryQueryServer) GetSiteAuthorBySiteKey(context.Context, *GetSiteAuthorBySiteKeyRequest) (*SiteAuthorInfo, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSiteAuthorBySiteKey not implemented")
+}
+func (UnimplementedLibraryQueryServer) QuerySiteAuthors(context.Context, *QuerySiteAuthorsRequest) (*QuerySiteAuthorsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method QuerySiteAuthors not implemented")
+}
+func (UnimplementedLibraryQueryServer) ListAuthorsByWorkId(context.Context, *ListAuthorsByWorkIdRequest) (*ListAuthorsByWorkIdResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAuthorsByWorkId not implemented")
+}
+func (UnimplementedLibraryQueryServer) GetLocalTagById(context.Context, *GetLocalTagByIdRequest) (*LocalTagDTO, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLocalTagById not implemented")
+}
+func (UnimplementedLibraryQueryServer) QueryLocalTags(context.Context, *QueryLocalTagsRequest) (*QueryLocalTagsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method QueryLocalTags not implemented")
+}
+func (UnimplementedLibraryQueryServer) GetSiteTagBySiteKey(context.Context, *GetSiteTagBySiteKeyRequest) (*SiteTagInfo, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSiteTagBySiteKey not implemented")
+}
+func (UnimplementedLibraryQueryServer) QuerySiteTags(context.Context, *QuerySiteTagsRequest) (*QuerySiteTagsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method QuerySiteTags not implemented")
+}
+func (UnimplementedLibraryQueryServer) ListTagsByWorkId(context.Context, *ListTagsByWorkIdRequest) (*ListTagsByWorkIdResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListTagsByWorkId not implemented")
+}
+func (UnimplementedLibraryQueryServer) GetWorkSetById(context.Context, *GetWorkSetByIdRequest) (*WorkSet, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWorkSetById not implemented")
+}
+func (UnimplementedLibraryQueryServer) GetWorkSetBySiteKey(context.Context, *GetWorkSetBySiteKeyRequest) (*WorkSet, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWorkSetBySiteKey not implemented")
+}
+func (UnimplementedLibraryQueryServer) ListWorkSetsByWorkId(context.Context, *ListWorkSetsByWorkIdRequest) (*ListWorkSetsByWorkIdResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListWorkSetsByWorkId not implemented")
+}
+func (UnimplementedLibraryQueryServer) ListParentWorkSets(context.Context, *ListParentWorkSetsRequest) (*ListParentWorkSetsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListParentWorkSets not implemented")
+}
+func (UnimplementedLibraryQueryServer) ListChildWorkSets(context.Context, *ListChildWorkSetsRequest) (*ListChildWorkSetsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListChildWorkSets not implemented")
+}
+func (UnimplementedLibraryQueryServer) ListSites(context.Context, *Empty) (*ListSitesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSites not implemented")
+}
+func (UnimplementedLibraryQueryServer) GetWorkDir(context.Context, *Empty) (*GetWorkDirResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWorkDir not implemented")
+}
+func (UnimplementedLibraryQueryServer) mustEmbedUnimplementedLibraryQueryServer() {}
+func (UnimplementedLibraryQueryServer) testEmbeddedByValue()                      {}
+
+// UnsafeLibraryQueryServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to LibraryQueryServer will
+// result in compilation errors.
+type UnsafeLibraryQueryServer interface {
+	mustEmbedUnimplementedLibraryQueryServer()
+}
+
+func RegisterLibraryQueryServer(s grpc.ServiceRegistrar, srv LibraryQueryServer) {
+	// If the following call panics, it indicates UnimplementedLibraryQueryServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&LibraryQuery_ServiceDesc, srv)
+}
+
+func _LibraryQuery_GetWorkById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetWorkById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetWorkById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetWorkById(ctx, req.(*GetWorkByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_GetWorkBySiteKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkBySiteKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetWorkBySiteKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetWorkBySiteKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetWorkBySiteKey(ctx, req.(*GetWorkBySiteKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_QueryWorks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWorksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).QueryWorks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_QueryWorks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).QueryWorks(ctx, req.(*QueryWorksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_ListResourcesByWorkId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListResourcesByWorkIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).ListResourcesByWorkId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_ListResourcesByWorkId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).ListResourcesByWorkId(ctx, req.(*ListResourcesByWorkIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_GetLocalAuthorById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLocalAuthorByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetLocalAuthorById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetLocalAuthorById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetLocalAuthorById(ctx, req.(*GetLocalAuthorByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_QueryLocalAuthors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLocalAuthorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).QueryLocalAuthors(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_QueryLocalAuthors_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).QueryLocalAuthors(ctx, req.(*QueryLocalAuthorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_GetSiteAuthorBySiteKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSiteAuthorBySiteKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetSiteAuthorBySiteKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetSiteAuthorBySiteKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetSiteAuthorBySiteKey(ctx, req.(*GetSiteAuthorBySiteKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_QuerySiteAuthors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySiteAuthorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).QuerySiteAuthors(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_QuerySiteAuthors_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).QuerySiteAuthors(ctx, req.(*QuerySiteAuthorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_ListAuthorsByWorkId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAuthorsByWorkIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).ListAuthorsByWorkId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_ListAuthorsByWorkId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).ListAuthorsByWorkId(ctx, req.(*ListAuthorsByWorkIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_GetLocalTagById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLocalTagByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetLocalTagById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetLocalTagById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetLocalTagById(ctx, req.(*GetLocalTagByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_QueryLocalTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLocalTagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).QueryLocalTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_QueryLocalTags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).QueryLocalTags(ctx, req.(*QueryLocalTagsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_GetSiteTagBySiteKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSiteTagBySiteKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetSiteTagBySiteKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetSiteTagBySiteKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetSiteTagBySiteKey(ctx, req.(*GetSiteTagBySiteKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_QuerySiteTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySiteTagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).QuerySiteTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_QuerySiteTags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).QuerySiteTags(ctx, req.(*QuerySiteTagsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_ListTagsByWorkId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTagsByWorkIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).ListTagsByWorkId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_ListTagsByWorkId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).ListTagsByWorkId(ctx, req.(*ListTagsByWorkIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_GetWorkSetById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkSetByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetWorkSetById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetWorkSetById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetWorkSetById(ctx, req.(*GetWorkSetByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_GetWorkSetBySiteKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkSetBySiteKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetWorkSetBySiteKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetWorkSetBySiteKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetWorkSetBySiteKey(ctx, req.(*GetWorkSetBySiteKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_ListWorkSetsByWorkId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListWorkSetsByWorkIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).ListWorkSetsByWorkId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_ListWorkSetsByWorkId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).ListWorkSetsByWorkId(ctx, req.(*ListWorkSetsByWorkIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_ListParentWorkSets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListParentWorkSetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).ListParentWorkSets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_ListParentWorkSets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).ListParentWorkSets(ctx, req.(*ListParentWorkSetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_ListChildWorkSets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListChildWorkSetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).ListChildWorkSets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_ListChildWorkSets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).ListChildWorkSets(ctx, req.(*ListChildWorkSetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_ListSites_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).ListSites(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_ListSites_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).ListSites(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LibraryQuery_GetWorkDir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).GetWorkDir(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_GetWorkDir_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).GetWorkDir(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// LibraryQuery_ServiceDesc is the grpc.ServiceDesc for LibraryQuery service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var LibraryQuery_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "plugins.LibraryQuery",
+	HandlerType: (*LibraryQueryServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetWorkById",
+			Handler:    _LibraryQuery_GetWorkById_Handler,
+		},
+		{
+			MethodName: "GetWorkBySiteKey",
+			Handler:    _LibraryQuery_GetWorkBySiteKey_Handler,
+		},
+		{
+			MethodName: "QueryWorks",
+			Handler:    _LibraryQuery_QueryWorks_Handler,
+		},
+		{
+			MethodName: "ListResourcesByWorkId",
+			Handler:    _LibraryQuery_ListResourcesByWorkId_Handler,
+		},
+		{
+			MethodName: "GetLocalAuthorById",
+			Handler:    _LibraryQuery_GetLocalAuthorById_Handler,
+		},
+		{
+			MethodName: "QueryLocalAuthors",
+			Handler:    _LibraryQuery_QueryLocalAuthors_Handler,
+		},
+		{
+			MethodName: "GetSiteAuthorBySiteKey",
+			Handler:    _LibraryQuery_GetSiteAuthorBySiteKey_Handler,
+		},
+		{
+			MethodName: "QuerySiteAuthors",
+			Handler:    _LibraryQuery_QuerySiteAuthors_Handler,
+		},
+		{
+			MethodName: "ListAuthorsByWorkId",
+			Handler:    _LibraryQuery_ListAuthorsByWorkId_Handler,
+		},
+		{
+			MethodName: "GetLocalTagById",
+			Handler:    _LibraryQuery_GetLocalTagById_Handler,
+		},
+		{
+			MethodName: "QueryLocalTags",
+			Handler:    _LibraryQuery_QueryLocalTags_Handler,
+		},
+		{
+			MethodName: "GetSiteTagBySiteKey",
+			Handler:    _LibraryQuery_GetSiteTagBySiteKey_Handler,
+		},
+		{
+			MethodName: "QuerySiteTags",
+			Handler:    _LibraryQuery_QuerySiteTags_Handler,
+		},
+		{
+			MethodName: "ListTagsByWorkId",
+			Handler:    _LibraryQuery_ListTagsByWorkId_Handler,
+		},
+		{
+			MethodName: "GetWorkSetById",
+			Handler:    _LibraryQuery_GetWorkSetById_Handler,
+		},
+		{
+			MethodName: "GetWorkSetBySiteKey",
+			Handler:    _LibraryQuery_GetWorkSetBySiteKey_Handler,
+		},
+		{
+			MethodName: "ListWorkSetsByWorkId",
+			Handler:    _LibraryQuery_ListWorkSetsByWorkId_Handler,
+		},
+		{
+			MethodName: "ListParentWorkSets",
+			Handler:    _LibraryQuery_ListParentWorkSets_Handler,
+		},
+		{
+			MethodName: "ListChildWorkSets",
+			Handler:    _LibraryQuery_ListChildWorkSets_Handler,
+		},
+		{
+			MethodName: "ListSites",
+			Handler:    _LibraryQuery_ListSites_Handler,
+		},
+		{
+			MethodName: "GetWorkDir",
+			Handler:    _LibraryQuery_GetWorkDir_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/plugin.proto",
 }

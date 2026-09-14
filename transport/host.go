@@ -11,13 +11,14 @@ import (
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
 )
 
-// HostDeps 主程序侧提供给 HostService 的依赖
+// HostDeps 主程序侧提供给 HostService / LibraryQuery 的依赖
 type HostDeps struct {
 	dto.StorageProvider
 	dto.PluginRootProvider
 	dto.TaskCreateProvider
 	dto.UrlListenerRegistry
 	dto.FrontendEventProvider
+	dto.LibraryQueryProvider
 	LogFunc                 func(level int32, template string, args []string, loggerName string)
 	OnRegisterTaskHandler   func(extensionId, name, description string) error
 	OnRegisterSiteBrowser   func(extensionId, name, description string) error
@@ -35,9 +36,14 @@ func NewHostServiceServer(deps HostDeps) *HostServiceServer {
 	return &HostServiceServer{deps: deps}
 }
 
-// RegisterHostService 将 HostService 注册到 gRPC server
+// RegisterHostService 将 HostService 与 LibraryQuery 注册到 gRPC server
+// （GRPCBroker 反向连接上服务插件的服务面）
 func RegisterHostService(s *grpc.Server, deps HostDeps) {
 	gen.RegisterHostServiceServer(s, NewHostServiceServer(deps))
+	// 未注入 LibraryQueryProvider 时不注册 LibraryQuery：插件查询调用得 gRPC Unimplemented
+	if deps.LibraryQueryProvider != nil {
+		gen.RegisterLibraryQueryServer(s, &libraryQueryServer{provider: deps.LibraryQueryProvider})
+	}
 }
 
 func (s *HostServiceServer) RegisterTaskHandler(ctx context.Context, req *gen.RegisterExtensionRequest) (*gen.Empty, error) {

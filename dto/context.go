@@ -29,6 +29,39 @@ type PluginContext interface {
 	// 路径
 	GetPluginRoot(isRelative bool) string
 
+	// 库查询（Tier 1 只读）：查询主程序库内已在的作品及周边数据，调用打到宿主 LibraryQuery service。
+	// 默认只返回活数据；Get* 未命中返回 gRPC NotFound，GetWorkDir 未配置返回 FailedPrecondition；
+	// StoreInfo.file_path 为库内相对路径（relPath 域，分隔符恒正斜杠，拼 OS 路径由插件自理）。
+	// Get*/List* 以身份锚点为显式参数；Query*（无界集合，强制分页）以过滤契约消息为参数。
+	// 作品
+	GetWorkById(workId int64) (*WorkWithSite, error)
+	GetWorkBySiteKey(siteKey string, siteWorkId string) (*WorkWithSite, error)
+	QueryWorks(req *QueryWorksRequest) (*QueryWorksResponse, error)
+	// 资源与 store
+	ListResourcesByWorkId(workId int64) (*ListResourcesByWorkIdResponse, error)
+	// 作者（本地轨 / 站点轨 / 作品关联）
+	GetLocalAuthorById(localAuthorId int64) (*LocalAuthorDTO, error)
+	QueryLocalAuthors(req *QueryLocalAuthorsRequest) (*QueryLocalAuthorsResponse, error)
+	GetSiteAuthorBySiteKey(siteKey string, siteAuthorId string) (*SiteAuthorInfo, error)
+	QuerySiteAuthors(req *QuerySiteAuthorsRequest) (*QuerySiteAuthorsResponse, error)
+	ListAuthorsByWorkId(workId int64) (*ListAuthorsByWorkIdResponse, error)
+	// 标签（与作者对称；作品关联含关联级 namespace 维度）
+	GetLocalTagById(localTagId int64) (*LocalTagDTO, error)
+	QueryLocalTags(req *QueryLocalTagsRequest) (*QueryLocalTagsResponse, error)
+	GetSiteTagBySiteKey(siteKey string, siteTagId string) (*SiteTagInfo, error)
+	QuerySiteTags(req *QuerySiteTagsRequest) (*QuerySiteTagsResponse, error)
+	ListTagsByWorkId(workId int64) (*ListTagsByWorkIdResponse, error)
+	// 作品集
+	GetWorkSetById(workSetId int64) (*WorkSetDTO, error)
+	GetWorkSetBySiteKey(siteKey string, siteWorkSetId string) (*WorkSetDTO, error)
+	ListWorkSetsByWorkId(workId int64) (*ListWorkSetsByWorkIdResponse, error)
+	ListParentWorkSets(workSetId int64) (*ListParentWorkSetsResponse, error)
+	ListChildWorkSets(workSetId int64) (*ListChildWorkSetsResponse, error)
+	// 站点（注册表投影，只读）
+	ListSites() (*ListSitesResponse, error)
+	// 工作目录（绝对路径；未配置返回 FailedPrecondition）
+	GetWorkDir() (*GetWorkDirResponse, error)
+
 	// 窗口
 	GetMainWindowHandle() uintptr
 

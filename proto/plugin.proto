@@ -357,9 +357,6 @@ service HostService {
   rpc DeleteValue(StorageKeyRequest) returns (Empty);
   rpc GetAllValues(Empty) returns (AllStorageValuesResponse);
 
-  // 业务查询
-  rpc GetWorkSetBySiteWorkSetId(WorkSetQueryRequest) returns (WorkSetQueryResponse);
-
   // 任务管理
   rpc RegisterUrlListener(UrlListenerRequest) returns (Empty);
   rpc UnregisterUrlListener(UnregisterRequest) returns (Empty);
@@ -411,15 +408,6 @@ message AllStorageValuesResponse {
   map<string, StorageValue> values = 1;   // 全量：key → 带版本的值
 }
 
-message WorkSetQueryRequest {
-  string siteWorkSetId = 1;
-  string siteName = 2;
-}
-
-message WorkSetQueryResponse {
-  WorkSet workSet = 1;
-}
-
 message UrlListenerRequest {
   string extensionId = 1;
   repeated string patterns = 2;
@@ -468,4 +456,281 @@ message FrontendMessage {
 
 message UnsubscribeFrontendRequest {
   string topic = 1;
+}
+
+// ========== 5. 库查询服务（插件 → 主程序，通过 GRPCBroker）==========
+// Tier 1 只读查询面：插件查询已在库的作品及周边数据（任务历史不在本面，任务域查询语义未稳定）。
+// - 软删/活行：默认只返回活数据——软删作品/store 不出现在任何查询结果，resource_store 关联按活行过滤。
+// - 身份键优先：跨库语义寻址一律 (site_key, 站点侧 id) 复合键；消息内各 int64 id 为库内行 id，作会话内
+//   不透明句柄（与前端 bindings 暴露尺度一致）。
+// - 分页载体：proto3 无泛型，无法定义泛型 PageResult；采用「请求侧共享 PageRequest 子消息 + 响应侧
+//   typed items 字段 + 共享 PageInfo 回执」等价落地。无界集合查询（Query* 族）强制分页，不提供全量倾倒；
+//   按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与站点
+//   注册表投影（ListSites：站点键只增不改，个位数级）不分页。
+// - Get* 族未命中返回 gRPC NotFound；GetWorkDir 未配置返回 FailedPrecondition（显式拒绝语义，
+//   不返回空路径）。
+service LibraryQuery {
+  // 作品
+  rpc GetWorkById(GetWorkByIdRequest) returns (WorkWithSite);
+  rpc GetWorkBySiteKey(GetWorkBySiteKeyRequest) returns (WorkWithSite);
+  rpc QueryWorks(QueryWorksRequest) returns (QueryWorksResponse);
+
+  // 资源与 store
+  rpc ListResourcesByWorkId(ListResourcesByWorkIdRequest) returns (ListResourcesByWorkIdResponse);
+
+  // 作者（本地轨 / 站点轨 / 作品关联）
+  rpc GetLocalAuthorById(GetLocalAuthorByIdRequest) returns (LocalAuthorDTO);
+  rpc QueryLocalAuthors(QueryLocalAuthorsRequest) returns (QueryLocalAuthorsResponse);
+  rpc GetSiteAuthorBySiteKey(GetSiteAuthorBySiteKeyRequest) returns (SiteAuthorInfo);
+  rpc QuerySiteAuthors(QuerySiteAuthorsRequest) returns (QuerySiteAuthorsResponse);
+  rpc ListAuthorsByWorkId(ListAuthorsByWorkIdRequest) returns (ListAuthorsByWorkIdResponse);
+
+  // 标签（与作者对称；作品关联含关联级 namespace 维度）
+  rpc GetLocalTagById(GetLocalTagByIdRequest) returns (LocalTagDTO);
+  rpc QueryLocalTags(QueryLocalTagsRequest) returns (QueryLocalTagsResponse);
+  rpc GetSiteTagBySiteKey(GetSiteTagBySiteKeyRequest) returns (SiteTagInfo);
+  rpc QuerySiteTags(QuerySiteTagsRequest) returns (QuerySiteTagsResponse);
+  rpc ListTagsByWorkId(ListTagsByWorkIdRequest) returns (ListTagsByWorkIdResponse);
+
+  // 作品集
+  rpc GetWorkSetById(GetWorkSetByIdRequest) returns (WorkSet);
+  rpc GetWorkSetBySiteKey(GetWorkSetBySiteKeyRequest) returns (WorkSet);
+  rpc ListWorkSetsByWorkId(ListWorkSetsByWorkIdRequest) returns (ListWorkSetsByWorkIdResponse);
+  rpc ListParentWorkSets(ListParentWorkSetsRequest) returns (ListParentWorkSetsResponse);
+  rpc ListChildWorkSets(ListChildWorkSetsRequest) returns (ListChildWorkSetsResponse);
+
+  // 站点（注册表投影，只读）
+  rpc ListSites(Empty) returns (ListSitesResponse);
+
+  // 工作目录
+  rpc GetWorkDir(Empty) returns (GetWorkDirResponse);
+}
+
+// PageRequest 无界集合查询（Query* 族）的公共分页参数
+message PageRequest {
+  int32 page = 1;      // 页码，从 1 起（与主程序仓储分页一致）；<=0 按 1 处理
+  int32 page_size = 2; // 每页条数；<=0 按服务端默认值处理；上限指导值见插件开发指南（宿主数据库单连接，重查询需节制）
+}
+
+// PageInfo 分页回执：过滤后总数 + 实际生效的页码/页大小
+message PageInfo {
+  int64 total = 1;     // 过滤后总条数（不含分页截断）
+  int32 page = 2;      // 实际生效页码
+  int32 page_size = 3; // 实际生效页大小
+}
+
+message GetWorkByIdRequest {
+  int64 work_id = 1; // 库内作品行 id
+}
+
+message GetWorkBySiteKeyRequest {
+  string site_key = 1;     // 站点身份键（identity 注册表分配的品牌 slug）
+  string site_work_id = 2; // 站点侧作品 id
+}
+
+// WorkWithSite 作品 + 归属站点并排组合：Work 只带库内 site_id，复合身份键 (site_key, site_work_id) 经 SiteDTO 补全
+message WorkWithSite {
+  Work work = 1;
+  SiteDTO site = 2;
+}
+
+message QueryWorksRequest {
+  string site_key = 1;         // 站点身份键过滤（精确）；空=全部站点
+  string name_keyword = 2;     // 作品名模糊匹配（site_work_name）；空=不过滤
+  string author_keyword = 3;   // 作者名过滤（本地或站点作者名命中即匹配）；空=不过滤
+  string tag_keyword = 4;      // 标签名过滤（本地或站点标签名命中即匹配）；空=不过滤
+  int64 create_time_start = 5; // 入库时间范围下界（毫秒时间戳，含）；0=不限
+  int64 create_time_end = 6;   // 入库时间范围上界（毫秒时间戳，含）；0=不限
+  PageRequest page = 7;
+}
+
+message QueryWorksResponse {
+  repeated WorkWithSite items = 1;
+  PageInfo page = 2;
+}
+
+message ListResourcesByWorkIdRequest {
+  int64 work_id = 1;
+}
+
+message ListResourcesByWorkIdResponse {
+  repeated ResourceInfo items = 1;
+}
+
+// ResourceInfo 资源摘要（含活行 store 摘要列表）
+message ResourceInfo {
+  int64 id = 1;
+  int64 task_id = 2;                // 产生本资源的任务 id（溯源）；0=非任务产（本地导入等）
+  optional string suggest_name = 3; // 资源建议名（多 store 命名可选拼段的基名）；空=未命名
+  string resource_type = 4;         // 资源类型（内置 image/video/article/document/audio/unknown 或插件自定义类型）
+  int32 resource_complete = 5;      // 资源完整度百分比（0-100）
+  repeated StoreInfo stores = 6;    // 活行 store 摘要（软删/失效关联不出现）
+  int64 create_time = 7;
+  int64 update_time = 8;
+}
+
+// StoreInfo 单个活行 store 的文件摘要
+message StoreInfo {
+  string role = 1;               // store_type 业务角色（image/document/thumbnail/videoTrack/audioTrack/videoMain/audioMain）
+  int32 store_seq = 2;           // 同 role 内序号（单例为 0）
+  optional string file_path = 3; // 库内相对路径（relPath 域，分隔符恒为正斜杠，与库内存储一致；拼 OS 路径由消费方自理）；行未落文件时缺省
+  optional string format = 4;    // 文件扩展名（不含点）；无扩展名时缺省
+  optional int64 size = 5;       // 文件字节数（磁盘实况）；文件缺失/不可读时缺省
+  optional int32 width = 6;      // 图像像素宽；非图像资源缺省
+  optional int32 height = 7;     // 图像像素高；非图像资源缺省
+  int64 completed_at = 8;        // 落盘完成时刻（毫秒时间戳；0=未完成）
+}
+
+message GetLocalAuthorByIdRequest {
+  int64 local_author_id = 1;
+}
+
+message QueryLocalAuthorsRequest {
+  string name_keyword = 1; // 本地作者名模糊匹配；空=不过滤
+  PageRequest page = 2;
+}
+
+message QueryLocalAuthorsResponse {
+  repeated LocalAuthorDTO items = 1;
+  PageInfo page = 2;
+}
+
+message GetSiteAuthorBySiteKeyRequest {
+  string site_key = 1;
+  string site_author_id = 2; // 站点侧作者 id
+}
+
+// SiteAuthorInfo 站点作者查询结果：字段面对齐任务声明期 TaskSiteAuthorDTO，另携库内行 id 与身份键锚点
+message SiteAuthorInfo {
+  int64 id = 1;                        // 库内 site_author 行 id
+  string site_key = 2;                 // 归属站点身份键
+  string site_author_id = 3;           // 站点侧作者 id
+  string author_name = 4;
+  string homepage = 5;
+  string fixed_author_name = 6;
+  string introduce = 7;
+  optional int64 local_author_id = 8;  // 用户桥接的本地作者 id（跨站聚合锚点）；未桥接时缺省
+}
+
+message QuerySiteAuthorsRequest {
+  string site_key = 1;     // 站点身份键过滤（精确）；空=全部站点
+  string name_keyword = 2; // 作者名模糊匹配；空=不过滤
+  PageRequest page = 3;
+}
+
+message QuerySiteAuthorsResponse {
+  repeated SiteAuthorInfo items = 1;
+  PageInfo page = 2;
+}
+
+message ListAuthorsByWorkIdRequest {
+  int64 work_id = 1;
+}
+
+message ListAuthorsByWorkIdResponse {
+  repeated LocalAuthorDTO local_authors = 1; // 本地轨（用户策展关联）
+  repeated SiteAuthorInfo site_authors = 2;  // 站点轨（站点来源关联）
+}
+
+message GetLocalTagByIdRequest {
+  int64 local_tag_id = 1;
+}
+
+message QueryLocalTagsRequest {
+  string name_keyword = 1; // 本地标签名模糊匹配；空=不过滤
+  PageRequest page = 2;
+}
+
+message QueryLocalTagsResponse {
+  repeated LocalTagDTO items = 1;
+  PageInfo page = 2;
+}
+
+message GetSiteTagBySiteKeyRequest {
+  string site_key = 1;
+  string site_tag_id = 2; // 站点侧标签 id
+}
+
+// SiteTagInfo 站点标签查询结果：字段面对齐任务声明期 TaskSiteTagDTO，另携库内行 id 与身份键锚点
+message SiteTagInfo {
+  int64 id = 1;                   // 库内 site_tag 行 id
+  string site_key = 2;            // 归属站点身份键
+  string site_tag_id = 3;         // 站点侧标签 id
+  string tag_name = 4;
+  string description = 5;
+  string namespace = 6;           // 站点侧 namespace（language/character/parody/female/male/misc/general 等）；空=站点无 namespace
+  optional int64 local_tag_id = 7; // 用户桥接的本地标签 id；未桥接时缺省
+}
+
+message QuerySiteTagsRequest {
+  string site_key = 1;     // 站点身份键过滤（精确）；空=全部站点
+  string name_keyword = 2; // 标签名模糊匹配；空=不过滤
+  PageRequest page = 3;
+}
+
+message QuerySiteTagsResponse {
+  repeated SiteTagInfo items = 1;
+  PageInfo page = 2;
+}
+
+message ListTagsByWorkIdRequest {
+  int64 work_id = 1;
+}
+
+// WorkLocalTagEntry 作品的本地标签关联条目（标签 + 关联级 namespace）
+message WorkLocalTagEntry {
+  LocalTagDTO tag = 1;
+  string namespace = 2; // 关联级 namespace（用户自设）；空=无
+}
+
+// WorkSiteTagEntry 作品的站点标签关联条目（标签 + 关联级 namespace）
+message WorkSiteTagEntry {
+  SiteTagInfo tag = 1;
+  string namespace = 2; // 关联级 namespace（所指 site_tag.namespace 在本关联上的镜像）；空=无
+}
+
+message ListTagsByWorkIdResponse {
+  repeated WorkLocalTagEntry local_tags = 1;
+  repeated WorkSiteTagEntry site_tags = 2;
+}
+
+message GetWorkSetByIdRequest {
+  int64 work_set_id = 1; // 库内作品集行 id
+}
+
+message GetWorkSetBySiteKeyRequest {
+  string site_key = 1;
+  string site_work_set_id = 2; // 站点侧作品集 id
+}
+
+message ListWorkSetsByWorkIdRequest {
+  int64 work_id = 1;
+}
+
+message ListWorkSetsByWorkIdResponse {
+  repeated WorkSet items = 1;
+}
+
+message ListParentWorkSetsRequest {
+  int64 work_set_id = 1; // 库内作品集行 id（可由 GetWorkSetBySiteKey / ListWorkSetsByWorkId 结果取得）
+}
+
+message ListParentWorkSetsResponse {
+  repeated WorkSet items = 1;
+}
+
+message ListChildWorkSetsRequest {
+  int64 work_set_id = 1;
+}
+
+message ListChildWorkSetsResponse {
+  repeated WorkSet items = 1;
+}
+
+message ListSitesResponse {
+  repeated SiteDTO items = 1; // 注册表投影全集
+}
+
+message GetWorkDirResponse {
+  string path = 1; // 资源库根目录绝对路径（OS 原生分隔符，absPath 域）。未配置时本 RPC 返回 FailedPrecondition 错误（显式拒绝，不返回空路径）
 }

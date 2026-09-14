@@ -26,9 +26,13 @@ func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
 		onShutdown: p.OnShutdown,
 		broker:     broker,
 	})
-	gen.RegisterTaskHandlerServiceServer(s, &taskHandlerServer{
-		handler: p.Handler,
-	})
+	// 未提供 TaskHandler 时不注册 TaskHandlerService：gRPC 对未注册服务的调用返回
+	// codes.Unimplemented，工具型插件（仅库查询/前端扩展等宿主能力）无需注册假任务处理器
+	if p.Handler != nil {
+		gen.RegisterTaskHandlerServiceServer(s, &taskHandlerServer{
+			handler: p.Handler,
+		})
+	}
 	if p.Browser != nil {
 		gen.RegisterSiteBrowserServiceServer(s, &siteBrowserServer{
 			browser: p.Browser,

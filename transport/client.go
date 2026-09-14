@@ -9,9 +9,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-// PluginContextClient 插件侧的 PluginContext 实现，通过 gRPC 调用主程序的 HostService
+// PluginContextClient 插件侧的 PluginContext 实现，通过 gRPC 调用主程序的 HostService 与 LibraryQuery
 type PluginContextClient struct {
 	hostClient     gen.HostServiceClient
+	queryClient    gen.LibraryQueryClient
 	logger         dto.Logger
 	mainWindowHWND uintptr
 	subCancelFuncs map[string]context.CancelFunc
@@ -21,6 +22,7 @@ type PluginContextClient struct {
 func NewPluginContextClient(conn *grpc.ClientConn) *PluginContextClient {
 	return &PluginContextClient{
 		hostClient:     gen.NewHostServiceClient(conn),
+		queryClient:    gen.NewLibraryQueryClient(conn),
 		logger:         NewGRPCLogger(gen.NewHostServiceClient(conn)),
 		subCancelFuncs: make(map[string]context.CancelFunc),
 	}

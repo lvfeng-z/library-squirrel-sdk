@@ -12,7 +12,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 5
+const ContractVersion = 6
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -23,3 +23,7 @@ const ContractVersion = 5
 //       实体读写 RPC（谱系 S 节点）未并入，落地时再 bump
 //   5 — GetStoreRelPath RPC 整链退役（落盘身份键命名改造：最终路径由 SDK storepath 派生函数本地推导，
 //       插件不再向主程序查询落盘路径；主程序 minSupportedContractVersion 同步升 5，未声明版本插件拒载）
+//   6 — 新增 LibraryQuery 服务（Tier 1 库查询契约：作品/资源与 store/作者/标签/作品集/站点/工作目录
+//       只读查询，身份键复合寻址、无界集合强制分页、默认只返回活数据）；删除 HostService 死声明
+//       GetWorkSetBySiteWorkSetId（无桥接无调用的废弃 RPC，查询能力吸收为 LibraryQuery.GetWorkSetBySiteKey，
+//       按 (site_key, site_work_set_id) 复合键寻址——删 RPC 属破坏性变更故升版）

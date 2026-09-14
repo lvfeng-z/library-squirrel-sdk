@@ -3249,102 +3249,6 @@ func (x *AllStorageValuesResponse) GetValues() map[string]*StorageValue {
 	return nil
 }
 
-type WorkSetQueryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SiteWorkSetId string                 `protobuf:"bytes,1,opt,name=siteWorkSetId,proto3" json:"siteWorkSetId,omitempty"`
-	SiteName      string                 `protobuf:"bytes,2,opt,name=siteName,proto3" json:"siteName,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *WorkSetQueryRequest) Reset() {
-	*x = WorkSetQueryRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[46]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *WorkSetQueryRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*WorkSetQueryRequest) ProtoMessage() {}
-
-func (x *WorkSetQueryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[46]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use WorkSetQueryRequest.ProtoReflect.Descriptor instead.
-func (*WorkSetQueryRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{46}
-}
-
-func (x *WorkSetQueryRequest) GetSiteWorkSetId() string {
-	if x != nil {
-		return x.SiteWorkSetId
-	}
-	return ""
-}
-
-func (x *WorkSetQueryRequest) GetSiteName() string {
-	if x != nil {
-		return x.SiteName
-	}
-	return ""
-}
-
-type WorkSetQueryResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	WorkSet       *WorkSet               `protobuf:"bytes,1,opt,name=workSet,proto3" json:"workSet,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *WorkSetQueryResponse) Reset() {
-	*x = WorkSetQueryResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[47]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *WorkSetQueryResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*WorkSetQueryResponse) ProtoMessage() {}
-
-func (x *WorkSetQueryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[47]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use WorkSetQueryResponse.ProtoReflect.Descriptor instead.
-func (*WorkSetQueryResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{47}
-}
-
-func (x *WorkSetQueryResponse) GetWorkSet() *WorkSet {
-	if x != nil {
-		return x.WorkSet
-	}
-	return nil
-}
-
 type UrlListenerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ExtensionId   string                 `protobuf:"bytes,1,opt,name=extensionId,proto3" json:"extensionId,omitempty"`
@@ -3355,7 +3259,7 @@ type UrlListenerRequest struct {
 
 func (x *UrlListenerRequest) Reset() {
 	*x = UrlListenerRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[48]
+	mi := &file_proto_plugin_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3367,7 +3271,7 @@ func (x *UrlListenerRequest) String() string {
 func (*UrlListenerRequest) ProtoMessage() {}
 
 func (x *UrlListenerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[48]
+	mi := &file_proto_plugin_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3380,7 +3284,7 @@ func (x *UrlListenerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UrlListenerRequest.ProtoReflect.Descriptor instead.
 func (*UrlListenerRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{48}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *UrlListenerRequest) GetExtensionId() string {
@@ -3406,7 +3310,7 @@ type CreateTaskRequest struct {
 
 func (x *CreateTaskRequest) Reset() {
 	*x = CreateTaskRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[49]
+	mi := &file_proto_plugin_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3418,7 +3322,7 @@ func (x *CreateTaskRequest) String() string {
 func (*CreateTaskRequest) ProtoMessage() {}
 
 func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[49]
+	mi := &file_proto_plugin_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3431,7 +3335,7 @@ func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTaskRequest.ProtoReflect.Descriptor instead.
 func (*CreateTaskRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{49}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *CreateTaskRequest) GetUrl() string {
@@ -3452,7 +3356,7 @@ type CreateTaskResponse struct {
 
 func (x *CreateTaskResponse) Reset() {
 	*x = CreateTaskResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[50]
+	mi := &file_proto_plugin_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3464,7 +3368,7 @@ func (x *CreateTaskResponse) String() string {
 func (*CreateTaskResponse) ProtoMessage() {}
 
 func (x *CreateTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[50]
+	mi := &file_proto_plugin_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3477,7 +3381,7 @@ func (x *CreateTaskResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTaskResponse.ProtoReflect.Descriptor instead.
 func (*CreateTaskResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{50}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *CreateTaskResponse) GetSucceed() bool {
@@ -3510,7 +3414,7 @@ type GetPluginRootRequest struct {
 
 func (x *GetPluginRootRequest) Reset() {
 	*x = GetPluginRootRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[51]
+	mi := &file_proto_plugin_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3522,7 +3426,7 @@ func (x *GetPluginRootRequest) String() string {
 func (*GetPluginRootRequest) ProtoMessage() {}
 
 func (x *GetPluginRootRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[51]
+	mi := &file_proto_plugin_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3535,7 +3439,7 @@ func (x *GetPluginRootRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPluginRootRequest.ProtoReflect.Descriptor instead.
 func (*GetPluginRootRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{51}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *GetPluginRootRequest) GetIsRelative() bool {
@@ -3554,7 +3458,7 @@ type GetPluginRootResponse struct {
 
 func (x *GetPluginRootResponse) Reset() {
 	*x = GetPluginRootResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[52]
+	mi := &file_proto_plugin_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3566,7 +3470,7 @@ func (x *GetPluginRootResponse) String() string {
 func (*GetPluginRootResponse) ProtoMessage() {}
 
 func (x *GetPluginRootResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[52]
+	mi := &file_proto_plugin_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3579,7 +3483,7 @@ func (x *GetPluginRootResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPluginRootResponse.ProtoReflect.Descriptor instead.
 func (*GetPluginRootResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{52}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *GetPluginRootResponse) GetPath() string {
@@ -3601,7 +3505,7 @@ type LogRequest struct {
 
 func (x *LogRequest) Reset() {
 	*x = LogRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[53]
+	mi := &file_proto_plugin_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3613,7 +3517,7 @@ func (x *LogRequest) String() string {
 func (*LogRequest) ProtoMessage() {}
 
 func (x *LogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[53]
+	mi := &file_proto_plugin_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3626,7 +3530,7 @@ func (x *LogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogRequest.ProtoReflect.Descriptor instead.
 func (*LogRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{53}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *LogRequest) GetLevel() int32 {
@@ -3667,7 +3571,7 @@ type PublishToFrontendRequest struct {
 
 func (x *PublishToFrontendRequest) Reset() {
 	*x = PublishToFrontendRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[54]
+	mi := &file_proto_plugin_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3679,7 +3583,7 @@ func (x *PublishToFrontendRequest) String() string {
 func (*PublishToFrontendRequest) ProtoMessage() {}
 
 func (x *PublishToFrontendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[54]
+	mi := &file_proto_plugin_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3692,7 +3596,7 @@ func (x *PublishToFrontendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishToFrontendRequest.ProtoReflect.Descriptor instead.
 func (*PublishToFrontendRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{54}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *PublishToFrontendRequest) GetTopic() string {
@@ -3718,7 +3622,7 @@ type SubscribeFrontendRequest struct {
 
 func (x *SubscribeFrontendRequest) Reset() {
 	*x = SubscribeFrontendRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[55]
+	mi := &file_proto_plugin_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3730,7 +3634,7 @@ func (x *SubscribeFrontendRequest) String() string {
 func (*SubscribeFrontendRequest) ProtoMessage() {}
 
 func (x *SubscribeFrontendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[55]
+	mi := &file_proto_plugin_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3743,7 +3647,7 @@ func (x *SubscribeFrontendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeFrontendRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeFrontendRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{55}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *SubscribeFrontendRequest) GetTopic() string {
@@ -3763,7 +3667,7 @@ type FrontendMessage struct {
 
 func (x *FrontendMessage) Reset() {
 	*x = FrontendMessage{}
-	mi := &file_proto_plugin_proto_msgTypes[56]
+	mi := &file_proto_plugin_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3775,7 +3679,7 @@ func (x *FrontendMessage) String() string {
 func (*FrontendMessage) ProtoMessage() {}
 
 func (x *FrontendMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[56]
+	mi := &file_proto_plugin_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3788,7 +3692,7 @@ func (x *FrontendMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FrontendMessage.ProtoReflect.Descriptor instead.
 func (*FrontendMessage) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{56}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *FrontendMessage) GetTopic() string {
@@ -3814,7 +3718,7 @@ type UnsubscribeFrontendRequest struct {
 
 func (x *UnsubscribeFrontendRequest) Reset() {
 	*x = UnsubscribeFrontendRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[57]
+	mi := &file_proto_plugin_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3826,7 +3730,7 @@ func (x *UnsubscribeFrontendRequest) String() string {
 func (*UnsubscribeFrontendRequest) ProtoMessage() {}
 
 func (x *UnsubscribeFrontendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[57]
+	mi := &file_proto_plugin_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3839,12 +3743,2273 @@ func (x *UnsubscribeFrontendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnsubscribeFrontendRequest.ProtoReflect.Descriptor instead.
 func (*UnsubscribeFrontendRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{57}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *UnsubscribeFrontendRequest) GetTopic() string {
 	if x != nil {
 		return x.Topic
+	}
+	return ""
+}
+
+// PageRequest 无界集合查询（Query* 族）的公共分页参数
+type PageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`                         // 页码，从 1 起（与主程序仓储分页一致）；<=0 按 1 处理
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"` // 每页条数；<=0 按服务端默认值处理；上限指导值见插件开发指南（宿主数据库单连接，重查询需节制）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PageRequest) Reset() {
+	*x = PageRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[56]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PageRequest) ProtoMessage() {}
+
+func (x *PageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[56]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PageRequest.ProtoReflect.Descriptor instead.
+func (*PageRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{56}
+}
+
+func (x *PageRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *PageRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// PageInfo 分页回执：过滤后总数 + 实际生效的页码/页大小
+type PageInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Total         int64                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`                       // 过滤后总条数（不含分页截断）
+	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`                         // 实际生效页码
+	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"` // 实际生效页大小
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PageInfo) Reset() {
+	*x = PageInfo{}
+	mi := &file_proto_plugin_proto_msgTypes[57]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PageInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PageInfo) ProtoMessage() {}
+
+func (x *PageInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[57]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PageInfo.ProtoReflect.Descriptor instead.
+func (*PageInfo) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{57}
+}
+
+func (x *PageInfo) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *PageInfo) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *PageInfo) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type GetWorkByIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkId        int64                  `protobuf:"varint,1,opt,name=work_id,json=workId,proto3" json:"work_id,omitempty"` // 库内作品行 id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWorkByIdRequest) Reset() {
+	*x = GetWorkByIdRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[58]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWorkByIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWorkByIdRequest) ProtoMessage() {}
+
+func (x *GetWorkByIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[58]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWorkByIdRequest.ProtoReflect.Descriptor instead.
+func (*GetWorkByIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{58}
+}
+
+func (x *GetWorkByIdRequest) GetWorkId() int64 {
+	if x != nil {
+		return x.WorkId
+	}
+	return 0
+}
+
+type GetWorkBySiteKeyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SiteKey       string                 `protobuf:"bytes,1,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`            // 站点身份键（identity 注册表分配的品牌 slug）
+	SiteWorkId    string                 `protobuf:"bytes,2,opt,name=site_work_id,json=siteWorkId,proto3" json:"site_work_id,omitempty"` // 站点侧作品 id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWorkBySiteKeyRequest) Reset() {
+	*x = GetWorkBySiteKeyRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[59]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWorkBySiteKeyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWorkBySiteKeyRequest) ProtoMessage() {}
+
+func (x *GetWorkBySiteKeyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[59]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWorkBySiteKeyRequest.ProtoReflect.Descriptor instead.
+func (*GetWorkBySiteKeyRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{59}
+}
+
+func (x *GetWorkBySiteKeyRequest) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *GetWorkBySiteKeyRequest) GetSiteWorkId() string {
+	if x != nil {
+		return x.SiteWorkId
+	}
+	return ""
+}
+
+// WorkWithSite 作品 + 归属站点并排组合：Work 只带库内 site_id，复合身份键 (site_key, site_work_id) 经 SiteDTO 补全
+type WorkWithSite struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Work          *Work                  `protobuf:"bytes,1,opt,name=work,proto3" json:"work,omitempty"`
+	Site          *SiteDTO               `protobuf:"bytes,2,opt,name=site,proto3" json:"site,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkWithSite) Reset() {
+	*x = WorkWithSite{}
+	mi := &file_proto_plugin_proto_msgTypes[60]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkWithSite) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkWithSite) ProtoMessage() {}
+
+func (x *WorkWithSite) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[60]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkWithSite.ProtoReflect.Descriptor instead.
+func (*WorkWithSite) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{60}
+}
+
+func (x *WorkWithSite) GetWork() *Work {
+	if x != nil {
+		return x.Work
+	}
+	return nil
+}
+
+func (x *WorkWithSite) GetSite() *SiteDTO {
+	if x != nil {
+		return x.Site
+	}
+	return nil
+}
+
+type QueryWorksRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	SiteKey         string                 `protobuf:"bytes,1,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`                            // 站点身份键过滤（精确）；空=全部站点
+	NameKeyword     string                 `protobuf:"bytes,2,opt,name=name_keyword,json=nameKeyword,proto3" json:"name_keyword,omitempty"`                // 作品名模糊匹配（site_work_name）；空=不过滤
+	AuthorKeyword   string                 `protobuf:"bytes,3,opt,name=author_keyword,json=authorKeyword,proto3" json:"author_keyword,omitempty"`          // 作者名过滤（本地或站点作者名命中即匹配）；空=不过滤
+	TagKeyword      string                 `protobuf:"bytes,4,opt,name=tag_keyword,json=tagKeyword,proto3" json:"tag_keyword,omitempty"`                   // 标签名过滤（本地或站点标签名命中即匹配）；空=不过滤
+	CreateTimeStart int64                  `protobuf:"varint,5,opt,name=create_time_start,json=createTimeStart,proto3" json:"create_time_start,omitempty"` // 入库时间范围下界（毫秒时间戳，含）；0=不限
+	CreateTimeEnd   int64                  `protobuf:"varint,6,opt,name=create_time_end,json=createTimeEnd,proto3" json:"create_time_end,omitempty"`       // 入库时间范围上界（毫秒时间戳，含）；0=不限
+	Page            *PageRequest           `protobuf:"bytes,7,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *QueryWorksRequest) Reset() {
+	*x = QueryWorksRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[61]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryWorksRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryWorksRequest) ProtoMessage() {}
+
+func (x *QueryWorksRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[61]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryWorksRequest.ProtoReflect.Descriptor instead.
+func (*QueryWorksRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{61}
+}
+
+func (x *QueryWorksRequest) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *QueryWorksRequest) GetNameKeyword() string {
+	if x != nil {
+		return x.NameKeyword
+	}
+	return ""
+}
+
+func (x *QueryWorksRequest) GetAuthorKeyword() string {
+	if x != nil {
+		return x.AuthorKeyword
+	}
+	return ""
+}
+
+func (x *QueryWorksRequest) GetTagKeyword() string {
+	if x != nil {
+		return x.TagKeyword
+	}
+	return ""
+}
+
+func (x *QueryWorksRequest) GetCreateTimeStart() int64 {
+	if x != nil {
+		return x.CreateTimeStart
+	}
+	return 0
+}
+
+func (x *QueryWorksRequest) GetCreateTimeEnd() int64 {
+	if x != nil {
+		return x.CreateTimeEnd
+	}
+	return 0
+}
+
+func (x *QueryWorksRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type QueryWorksResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*WorkWithSite        `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Page          *PageInfo              `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QueryWorksResponse) Reset() {
+	*x = QueryWorksResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[62]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryWorksResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryWorksResponse) ProtoMessage() {}
+
+func (x *QueryWorksResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[62]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryWorksResponse.ProtoReflect.Descriptor instead.
+func (*QueryWorksResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *QueryWorksResponse) GetItems() []*WorkWithSite {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *QueryWorksResponse) GetPage() *PageInfo {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type ListResourcesByWorkIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkId        int64                  `protobuf:"varint,1,opt,name=work_id,json=workId,proto3" json:"work_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListResourcesByWorkIdRequest) Reset() {
+	*x = ListResourcesByWorkIdRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[63]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListResourcesByWorkIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListResourcesByWorkIdRequest) ProtoMessage() {}
+
+func (x *ListResourcesByWorkIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[63]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListResourcesByWorkIdRequest.ProtoReflect.Descriptor instead.
+func (*ListResourcesByWorkIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{63}
+}
+
+func (x *ListResourcesByWorkIdRequest) GetWorkId() int64 {
+	if x != nil {
+		return x.WorkId
+	}
+	return 0
+}
+
+type ListResourcesByWorkIdResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*ResourceInfo        `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListResourcesByWorkIdResponse) Reset() {
+	*x = ListResourcesByWorkIdResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[64]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListResourcesByWorkIdResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListResourcesByWorkIdResponse) ProtoMessage() {}
+
+func (x *ListResourcesByWorkIdResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[64]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListResourcesByWorkIdResponse.ProtoReflect.Descriptor instead.
+func (*ListResourcesByWorkIdResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{64}
+}
+
+func (x *ListResourcesByWorkIdResponse) GetItems() []*ResourceInfo {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+// ResourceInfo 资源摘要（含活行 store 摘要列表）
+type ResourceInfo struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	TaskId           int64                  `protobuf:"varint,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`                               // 产生本资源的任务 id（溯源）；0=非任务产（本地导入等）
+	SuggestName      *string                `protobuf:"bytes,3,opt,name=suggest_name,json=suggestName,proto3,oneof" json:"suggest_name,omitempty"`           // 资源建议名（多 store 命名可选拼段的基名）；空=未命名
+	ResourceType     string                 `protobuf:"bytes,4,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`              // 资源类型（内置 image/video/article/document/audio/unknown 或插件自定义类型）
+	ResourceComplete int32                  `protobuf:"varint,5,opt,name=resource_complete,json=resourceComplete,proto3" json:"resource_complete,omitempty"` // 资源完整度百分比（0-100）
+	Stores           []*StoreInfo           `protobuf:"bytes,6,rep,name=stores,proto3" json:"stores,omitempty"`                                              // 活行 store 摘要（软删/失效关联不出现）
+	CreateTime       int64                  `protobuf:"varint,7,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	UpdateTime       int64                  `protobuf:"varint,8,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ResourceInfo) Reset() {
+	*x = ResourceInfo{}
+	mi := &file_proto_plugin_proto_msgTypes[65]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResourceInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResourceInfo) ProtoMessage() {}
+
+func (x *ResourceInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[65]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResourceInfo.ProtoReflect.Descriptor instead.
+func (*ResourceInfo) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{65}
+}
+
+func (x *ResourceInfo) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *ResourceInfo) GetTaskId() int64 {
+	if x != nil {
+		return x.TaskId
+	}
+	return 0
+}
+
+func (x *ResourceInfo) GetSuggestName() string {
+	if x != nil && x.SuggestName != nil {
+		return *x.SuggestName
+	}
+	return ""
+}
+
+func (x *ResourceInfo) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *ResourceInfo) GetResourceComplete() int32 {
+	if x != nil {
+		return x.ResourceComplete
+	}
+	return 0
+}
+
+func (x *ResourceInfo) GetStores() []*StoreInfo {
+	if x != nil {
+		return x.Stores
+	}
+	return nil
+}
+
+func (x *ResourceInfo) GetCreateTime() int64 {
+	if x != nil {
+		return x.CreateTime
+	}
+	return 0
+}
+
+func (x *ResourceInfo) GetUpdateTime() int64 {
+	if x != nil {
+		return x.UpdateTime
+	}
+	return 0
+}
+
+// StoreInfo 单个活行 store 的文件摘要
+type StoreInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`                                   // store_type 业务角色（image/document/thumbnail/videoTrack/audioTrack/videoMain/audioMain）
+	StoreSeq      int32                  `protobuf:"varint,2,opt,name=store_seq,json=storeSeq,proto3" json:"store_seq,omitempty"`          // 同 role 内序号（单例为 0）
+	FilePath      *string                `protobuf:"bytes,3,opt,name=file_path,json=filePath,proto3,oneof" json:"file_path,omitempty"`     // 库内相对路径（relPath 域，分隔符恒为正斜杠，与库内存储一致；拼 OS 路径由消费方自理）；行未落文件时缺省
+	Format        *string                `protobuf:"bytes,4,opt,name=format,proto3,oneof" json:"format,omitempty"`                         // 文件扩展名（不含点）；无扩展名时缺省
+	Size          *int64                 `protobuf:"varint,5,opt,name=size,proto3,oneof" json:"size,omitempty"`                            // 文件字节数（磁盘实况）；文件缺失/不可读时缺省
+	Width         *int32                 `protobuf:"varint,6,opt,name=width,proto3,oneof" json:"width,omitempty"`                          // 图像像素宽；非图像资源缺省
+	Height        *int32                 `protobuf:"varint,7,opt,name=height,proto3,oneof" json:"height,omitempty"`                        // 图像像素高；非图像资源缺省
+	CompletedAt   int64                  `protobuf:"varint,8,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"` // 落盘完成时刻（毫秒时间戳；0=未完成）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StoreInfo) Reset() {
+	*x = StoreInfo{}
+	mi := &file_proto_plugin_proto_msgTypes[66]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StoreInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StoreInfo) ProtoMessage() {}
+
+func (x *StoreInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[66]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StoreInfo.ProtoReflect.Descriptor instead.
+func (*StoreInfo) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{66}
+}
+
+func (x *StoreInfo) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+func (x *StoreInfo) GetStoreSeq() int32 {
+	if x != nil {
+		return x.StoreSeq
+	}
+	return 0
+}
+
+func (x *StoreInfo) GetFilePath() string {
+	if x != nil && x.FilePath != nil {
+		return *x.FilePath
+	}
+	return ""
+}
+
+func (x *StoreInfo) GetFormat() string {
+	if x != nil && x.Format != nil {
+		return *x.Format
+	}
+	return ""
+}
+
+func (x *StoreInfo) GetSize() int64 {
+	if x != nil && x.Size != nil {
+		return *x.Size
+	}
+	return 0
+}
+
+func (x *StoreInfo) GetWidth() int32 {
+	if x != nil && x.Width != nil {
+		return *x.Width
+	}
+	return 0
+}
+
+func (x *StoreInfo) GetHeight() int32 {
+	if x != nil && x.Height != nil {
+		return *x.Height
+	}
+	return 0
+}
+
+func (x *StoreInfo) GetCompletedAt() int64 {
+	if x != nil {
+		return x.CompletedAt
+	}
+	return 0
+}
+
+type GetLocalAuthorByIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LocalAuthorId int64                  `protobuf:"varint,1,opt,name=local_author_id,json=localAuthorId,proto3" json:"local_author_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLocalAuthorByIdRequest) Reset() {
+	*x = GetLocalAuthorByIdRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[67]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLocalAuthorByIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLocalAuthorByIdRequest) ProtoMessage() {}
+
+func (x *GetLocalAuthorByIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[67]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLocalAuthorByIdRequest.ProtoReflect.Descriptor instead.
+func (*GetLocalAuthorByIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{67}
+}
+
+func (x *GetLocalAuthorByIdRequest) GetLocalAuthorId() int64 {
+	if x != nil {
+		return x.LocalAuthorId
+	}
+	return 0
+}
+
+type QueryLocalAuthorsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NameKeyword   string                 `protobuf:"bytes,1,opt,name=name_keyword,json=nameKeyword,proto3" json:"name_keyword,omitempty"` // 本地作者名模糊匹配；空=不过滤
+	Page          *PageRequest           `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QueryLocalAuthorsRequest) Reset() {
+	*x = QueryLocalAuthorsRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[68]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryLocalAuthorsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryLocalAuthorsRequest) ProtoMessage() {}
+
+func (x *QueryLocalAuthorsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[68]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryLocalAuthorsRequest.ProtoReflect.Descriptor instead.
+func (*QueryLocalAuthorsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{68}
+}
+
+func (x *QueryLocalAuthorsRequest) GetNameKeyword() string {
+	if x != nil {
+		return x.NameKeyword
+	}
+	return ""
+}
+
+func (x *QueryLocalAuthorsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type QueryLocalAuthorsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*LocalAuthorDTO      `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Page          *PageInfo              `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QueryLocalAuthorsResponse) Reset() {
+	*x = QueryLocalAuthorsResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[69]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryLocalAuthorsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryLocalAuthorsResponse) ProtoMessage() {}
+
+func (x *QueryLocalAuthorsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[69]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryLocalAuthorsResponse.ProtoReflect.Descriptor instead.
+func (*QueryLocalAuthorsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{69}
+}
+
+func (x *QueryLocalAuthorsResponse) GetItems() []*LocalAuthorDTO {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *QueryLocalAuthorsResponse) GetPage() *PageInfo {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type GetSiteAuthorBySiteKeyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SiteKey       string                 `protobuf:"bytes,1,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`
+	SiteAuthorId  string                 `protobuf:"bytes,2,opt,name=site_author_id,json=siteAuthorId,proto3" json:"site_author_id,omitempty"` // 站点侧作者 id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSiteAuthorBySiteKeyRequest) Reset() {
+	*x = GetSiteAuthorBySiteKeyRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[70]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSiteAuthorBySiteKeyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSiteAuthorBySiteKeyRequest) ProtoMessage() {}
+
+func (x *GetSiteAuthorBySiteKeyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[70]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSiteAuthorBySiteKeyRequest.ProtoReflect.Descriptor instead.
+func (*GetSiteAuthorBySiteKeyRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{70}
+}
+
+func (x *GetSiteAuthorBySiteKeyRequest) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *GetSiteAuthorBySiteKeyRequest) GetSiteAuthorId() string {
+	if x != nil {
+		return x.SiteAuthorId
+	}
+	return ""
+}
+
+// SiteAuthorInfo 站点作者查询结果：字段面对齐任务声明期 TaskSiteAuthorDTO，另携库内行 id 与身份键锚点
+type SiteAuthorInfo struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                          // 库内 site_author 行 id
+	SiteKey         string                 `protobuf:"bytes,2,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`                  // 归属站点身份键
+	SiteAuthorId    string                 `protobuf:"bytes,3,opt,name=site_author_id,json=siteAuthorId,proto3" json:"site_author_id,omitempty"` // 站点侧作者 id
+	AuthorName      string                 `protobuf:"bytes,4,opt,name=author_name,json=authorName,proto3" json:"author_name,omitempty"`
+	Homepage        string                 `protobuf:"bytes,5,opt,name=homepage,proto3" json:"homepage,omitempty"`
+	FixedAuthorName string                 `protobuf:"bytes,6,opt,name=fixed_author_name,json=fixedAuthorName,proto3" json:"fixed_author_name,omitempty"`
+	Introduce       string                 `protobuf:"bytes,7,opt,name=introduce,proto3" json:"introduce,omitempty"`
+	LocalAuthorId   *int64                 `protobuf:"varint,8,opt,name=local_author_id,json=localAuthorId,proto3,oneof" json:"local_author_id,omitempty"` // 用户桥接的本地作者 id（跨站聚合锚点）；未桥接时缺省
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *SiteAuthorInfo) Reset() {
+	*x = SiteAuthorInfo{}
+	mi := &file_proto_plugin_proto_msgTypes[71]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SiteAuthorInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SiteAuthorInfo) ProtoMessage() {}
+
+func (x *SiteAuthorInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[71]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SiteAuthorInfo.ProtoReflect.Descriptor instead.
+func (*SiteAuthorInfo) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{71}
+}
+
+func (x *SiteAuthorInfo) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SiteAuthorInfo) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *SiteAuthorInfo) GetSiteAuthorId() string {
+	if x != nil {
+		return x.SiteAuthorId
+	}
+	return ""
+}
+
+func (x *SiteAuthorInfo) GetAuthorName() string {
+	if x != nil {
+		return x.AuthorName
+	}
+	return ""
+}
+
+func (x *SiteAuthorInfo) GetHomepage() string {
+	if x != nil {
+		return x.Homepage
+	}
+	return ""
+}
+
+func (x *SiteAuthorInfo) GetFixedAuthorName() string {
+	if x != nil {
+		return x.FixedAuthorName
+	}
+	return ""
+}
+
+func (x *SiteAuthorInfo) GetIntroduce() string {
+	if x != nil {
+		return x.Introduce
+	}
+	return ""
+}
+
+func (x *SiteAuthorInfo) GetLocalAuthorId() int64 {
+	if x != nil && x.LocalAuthorId != nil {
+		return *x.LocalAuthorId
+	}
+	return 0
+}
+
+type QuerySiteAuthorsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SiteKey       string                 `protobuf:"bytes,1,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`             // 站点身份键过滤（精确）；空=全部站点
+	NameKeyword   string                 `protobuf:"bytes,2,opt,name=name_keyword,json=nameKeyword,proto3" json:"name_keyword,omitempty"` // 作者名模糊匹配；空=不过滤
+	Page          *PageRequest           `protobuf:"bytes,3,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QuerySiteAuthorsRequest) Reset() {
+	*x = QuerySiteAuthorsRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[72]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QuerySiteAuthorsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QuerySiteAuthorsRequest) ProtoMessage() {}
+
+func (x *QuerySiteAuthorsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[72]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QuerySiteAuthorsRequest.ProtoReflect.Descriptor instead.
+func (*QuerySiteAuthorsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{72}
+}
+
+func (x *QuerySiteAuthorsRequest) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *QuerySiteAuthorsRequest) GetNameKeyword() string {
+	if x != nil {
+		return x.NameKeyword
+	}
+	return ""
+}
+
+func (x *QuerySiteAuthorsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type QuerySiteAuthorsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*SiteAuthorInfo      `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Page          *PageInfo              `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QuerySiteAuthorsResponse) Reset() {
+	*x = QuerySiteAuthorsResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[73]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QuerySiteAuthorsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QuerySiteAuthorsResponse) ProtoMessage() {}
+
+func (x *QuerySiteAuthorsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[73]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QuerySiteAuthorsResponse.ProtoReflect.Descriptor instead.
+func (*QuerySiteAuthorsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{73}
+}
+
+func (x *QuerySiteAuthorsResponse) GetItems() []*SiteAuthorInfo {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *QuerySiteAuthorsResponse) GetPage() *PageInfo {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type ListAuthorsByWorkIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkId        int64                  `protobuf:"varint,1,opt,name=work_id,json=workId,proto3" json:"work_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAuthorsByWorkIdRequest) Reset() {
+	*x = ListAuthorsByWorkIdRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[74]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAuthorsByWorkIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAuthorsByWorkIdRequest) ProtoMessage() {}
+
+func (x *ListAuthorsByWorkIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[74]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAuthorsByWorkIdRequest.ProtoReflect.Descriptor instead.
+func (*ListAuthorsByWorkIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{74}
+}
+
+func (x *ListAuthorsByWorkIdRequest) GetWorkId() int64 {
+	if x != nil {
+		return x.WorkId
+	}
+	return 0
+}
+
+type ListAuthorsByWorkIdResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LocalAuthors  []*LocalAuthorDTO      `protobuf:"bytes,1,rep,name=local_authors,json=localAuthors,proto3" json:"local_authors,omitempty"` // 本地轨（用户策展关联）
+	SiteAuthors   []*SiteAuthorInfo      `protobuf:"bytes,2,rep,name=site_authors,json=siteAuthors,proto3" json:"site_authors,omitempty"`    // 站点轨（站点来源关联）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAuthorsByWorkIdResponse) Reset() {
+	*x = ListAuthorsByWorkIdResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[75]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAuthorsByWorkIdResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAuthorsByWorkIdResponse) ProtoMessage() {}
+
+func (x *ListAuthorsByWorkIdResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[75]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAuthorsByWorkIdResponse.ProtoReflect.Descriptor instead.
+func (*ListAuthorsByWorkIdResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{75}
+}
+
+func (x *ListAuthorsByWorkIdResponse) GetLocalAuthors() []*LocalAuthorDTO {
+	if x != nil {
+		return x.LocalAuthors
+	}
+	return nil
+}
+
+func (x *ListAuthorsByWorkIdResponse) GetSiteAuthors() []*SiteAuthorInfo {
+	if x != nil {
+		return x.SiteAuthors
+	}
+	return nil
+}
+
+type GetLocalTagByIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LocalTagId    int64                  `protobuf:"varint,1,opt,name=local_tag_id,json=localTagId,proto3" json:"local_tag_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLocalTagByIdRequest) Reset() {
+	*x = GetLocalTagByIdRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[76]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLocalTagByIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLocalTagByIdRequest) ProtoMessage() {}
+
+func (x *GetLocalTagByIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[76]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLocalTagByIdRequest.ProtoReflect.Descriptor instead.
+func (*GetLocalTagByIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{76}
+}
+
+func (x *GetLocalTagByIdRequest) GetLocalTagId() int64 {
+	if x != nil {
+		return x.LocalTagId
+	}
+	return 0
+}
+
+type QueryLocalTagsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NameKeyword   string                 `protobuf:"bytes,1,opt,name=name_keyword,json=nameKeyword,proto3" json:"name_keyword,omitempty"` // 本地标签名模糊匹配；空=不过滤
+	Page          *PageRequest           `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QueryLocalTagsRequest) Reset() {
+	*x = QueryLocalTagsRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[77]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryLocalTagsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryLocalTagsRequest) ProtoMessage() {}
+
+func (x *QueryLocalTagsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[77]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryLocalTagsRequest.ProtoReflect.Descriptor instead.
+func (*QueryLocalTagsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{77}
+}
+
+func (x *QueryLocalTagsRequest) GetNameKeyword() string {
+	if x != nil {
+		return x.NameKeyword
+	}
+	return ""
+}
+
+func (x *QueryLocalTagsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type QueryLocalTagsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*LocalTagDTO         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Page          *PageInfo              `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QueryLocalTagsResponse) Reset() {
+	*x = QueryLocalTagsResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[78]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryLocalTagsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryLocalTagsResponse) ProtoMessage() {}
+
+func (x *QueryLocalTagsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[78]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryLocalTagsResponse.ProtoReflect.Descriptor instead.
+func (*QueryLocalTagsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{78}
+}
+
+func (x *QueryLocalTagsResponse) GetItems() []*LocalTagDTO {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *QueryLocalTagsResponse) GetPage() *PageInfo {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type GetSiteTagBySiteKeyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SiteKey       string                 `protobuf:"bytes,1,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`
+	SiteTagId     string                 `protobuf:"bytes,2,opt,name=site_tag_id,json=siteTagId,proto3" json:"site_tag_id,omitempty"` // 站点侧标签 id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSiteTagBySiteKeyRequest) Reset() {
+	*x = GetSiteTagBySiteKeyRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[79]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSiteTagBySiteKeyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSiteTagBySiteKeyRequest) ProtoMessage() {}
+
+func (x *GetSiteTagBySiteKeyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[79]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSiteTagBySiteKeyRequest.ProtoReflect.Descriptor instead.
+func (*GetSiteTagBySiteKeyRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{79}
+}
+
+func (x *GetSiteTagBySiteKeyRequest) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *GetSiteTagBySiteKeyRequest) GetSiteTagId() string {
+	if x != nil {
+		return x.SiteTagId
+	}
+	return ""
+}
+
+// SiteTagInfo 站点标签查询结果：字段面对齐任务声明期 TaskSiteTagDTO，另携库内行 id 与身份键锚点
+type SiteTagInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                 // 库内 site_tag 行 id
+	SiteKey       string                 `protobuf:"bytes,2,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`         // 归属站点身份键
+	SiteTagId     string                 `protobuf:"bytes,3,opt,name=site_tag_id,json=siteTagId,proto3" json:"site_tag_id,omitempty"` // 站点侧标签 id
+	TagName       string                 `protobuf:"bytes,4,opt,name=tag_name,json=tagName,proto3" json:"tag_name,omitempty"`
+	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Namespace     string                 `protobuf:"bytes,6,opt,name=namespace,proto3" json:"namespace,omitempty"`                              // 站点侧 namespace（language/character/parody/female/male/misc/general 等）；空=站点无 namespace
+	LocalTagId    *int64                 `protobuf:"varint,7,opt,name=local_tag_id,json=localTagId,proto3,oneof" json:"local_tag_id,omitempty"` // 用户桥接的本地标签 id；未桥接时缺省
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SiteTagInfo) Reset() {
+	*x = SiteTagInfo{}
+	mi := &file_proto_plugin_proto_msgTypes[80]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SiteTagInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SiteTagInfo) ProtoMessage() {}
+
+func (x *SiteTagInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[80]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SiteTagInfo.ProtoReflect.Descriptor instead.
+func (*SiteTagInfo) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{80}
+}
+
+func (x *SiteTagInfo) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SiteTagInfo) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *SiteTagInfo) GetSiteTagId() string {
+	if x != nil {
+		return x.SiteTagId
+	}
+	return ""
+}
+
+func (x *SiteTagInfo) GetTagName() string {
+	if x != nil {
+		return x.TagName
+	}
+	return ""
+}
+
+func (x *SiteTagInfo) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *SiteTagInfo) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *SiteTagInfo) GetLocalTagId() int64 {
+	if x != nil && x.LocalTagId != nil {
+		return *x.LocalTagId
+	}
+	return 0
+}
+
+type QuerySiteTagsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SiteKey       string                 `protobuf:"bytes,1,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`             // 站点身份键过滤（精确）；空=全部站点
+	NameKeyword   string                 `protobuf:"bytes,2,opt,name=name_keyword,json=nameKeyword,proto3" json:"name_keyword,omitempty"` // 标签名模糊匹配；空=不过滤
+	Page          *PageRequest           `protobuf:"bytes,3,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QuerySiteTagsRequest) Reset() {
+	*x = QuerySiteTagsRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[81]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QuerySiteTagsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QuerySiteTagsRequest) ProtoMessage() {}
+
+func (x *QuerySiteTagsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[81]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QuerySiteTagsRequest.ProtoReflect.Descriptor instead.
+func (*QuerySiteTagsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{81}
+}
+
+func (x *QuerySiteTagsRequest) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *QuerySiteTagsRequest) GetNameKeyword() string {
+	if x != nil {
+		return x.NameKeyword
+	}
+	return ""
+}
+
+func (x *QuerySiteTagsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type QuerySiteTagsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*SiteTagInfo         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Page          *PageInfo              `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QuerySiteTagsResponse) Reset() {
+	*x = QuerySiteTagsResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[82]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QuerySiteTagsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QuerySiteTagsResponse) ProtoMessage() {}
+
+func (x *QuerySiteTagsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[82]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QuerySiteTagsResponse.ProtoReflect.Descriptor instead.
+func (*QuerySiteTagsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{82}
+}
+
+func (x *QuerySiteTagsResponse) GetItems() []*SiteTagInfo {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *QuerySiteTagsResponse) GetPage() *PageInfo {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type ListTagsByWorkIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkId        int64                  `protobuf:"varint,1,opt,name=work_id,json=workId,proto3" json:"work_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTagsByWorkIdRequest) Reset() {
+	*x = ListTagsByWorkIdRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[83]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTagsByWorkIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTagsByWorkIdRequest) ProtoMessage() {}
+
+func (x *ListTagsByWorkIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[83]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTagsByWorkIdRequest.ProtoReflect.Descriptor instead.
+func (*ListTagsByWorkIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{83}
+}
+
+func (x *ListTagsByWorkIdRequest) GetWorkId() int64 {
+	if x != nil {
+		return x.WorkId
+	}
+	return 0
+}
+
+// WorkLocalTagEntry 作品的本地标签关联条目（标签 + 关联级 namespace）
+type WorkLocalTagEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tag           *LocalTagDTO           `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	Namespace     string                 `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"` // 关联级 namespace（用户自设）；空=无
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkLocalTagEntry) Reset() {
+	*x = WorkLocalTagEntry{}
+	mi := &file_proto_plugin_proto_msgTypes[84]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkLocalTagEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkLocalTagEntry) ProtoMessage() {}
+
+func (x *WorkLocalTagEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[84]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkLocalTagEntry.ProtoReflect.Descriptor instead.
+func (*WorkLocalTagEntry) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{84}
+}
+
+func (x *WorkLocalTagEntry) GetTag() *LocalTagDTO {
+	if x != nil {
+		return x.Tag
+	}
+	return nil
+}
+
+func (x *WorkLocalTagEntry) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+// WorkSiteTagEntry 作品的站点标签关联条目（标签 + 关联级 namespace）
+type WorkSiteTagEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tag           *SiteTagInfo           `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	Namespace     string                 `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"` // 关联级 namespace（所指 site_tag.namespace 在本关联上的镜像）；空=无
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkSiteTagEntry) Reset() {
+	*x = WorkSiteTagEntry{}
+	mi := &file_proto_plugin_proto_msgTypes[85]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkSiteTagEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkSiteTagEntry) ProtoMessage() {}
+
+func (x *WorkSiteTagEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[85]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkSiteTagEntry.ProtoReflect.Descriptor instead.
+func (*WorkSiteTagEntry) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{85}
+}
+
+func (x *WorkSiteTagEntry) GetTag() *SiteTagInfo {
+	if x != nil {
+		return x.Tag
+	}
+	return nil
+}
+
+func (x *WorkSiteTagEntry) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+type ListTagsByWorkIdResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LocalTags     []*WorkLocalTagEntry   `protobuf:"bytes,1,rep,name=local_tags,json=localTags,proto3" json:"local_tags,omitempty"`
+	SiteTags      []*WorkSiteTagEntry    `protobuf:"bytes,2,rep,name=site_tags,json=siteTags,proto3" json:"site_tags,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTagsByWorkIdResponse) Reset() {
+	*x = ListTagsByWorkIdResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[86]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTagsByWorkIdResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTagsByWorkIdResponse) ProtoMessage() {}
+
+func (x *ListTagsByWorkIdResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[86]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTagsByWorkIdResponse.ProtoReflect.Descriptor instead.
+func (*ListTagsByWorkIdResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{86}
+}
+
+func (x *ListTagsByWorkIdResponse) GetLocalTags() []*WorkLocalTagEntry {
+	if x != nil {
+		return x.LocalTags
+	}
+	return nil
+}
+
+func (x *ListTagsByWorkIdResponse) GetSiteTags() []*WorkSiteTagEntry {
+	if x != nil {
+		return x.SiteTags
+	}
+	return nil
+}
+
+type GetWorkSetByIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkSetId     int64                  `protobuf:"varint,1,opt,name=work_set_id,json=workSetId,proto3" json:"work_set_id,omitempty"` // 库内作品集行 id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWorkSetByIdRequest) Reset() {
+	*x = GetWorkSetByIdRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[87]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWorkSetByIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWorkSetByIdRequest) ProtoMessage() {}
+
+func (x *GetWorkSetByIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[87]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWorkSetByIdRequest.ProtoReflect.Descriptor instead.
+func (*GetWorkSetByIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{87}
+}
+
+func (x *GetWorkSetByIdRequest) GetWorkSetId() int64 {
+	if x != nil {
+		return x.WorkSetId
+	}
+	return 0
+}
+
+type GetWorkSetBySiteKeyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SiteKey       string                 `protobuf:"bytes,1,opt,name=site_key,json=siteKey,proto3" json:"site_key,omitempty"`
+	SiteWorkSetId string                 `protobuf:"bytes,2,opt,name=site_work_set_id,json=siteWorkSetId,proto3" json:"site_work_set_id,omitempty"` // 站点侧作品集 id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWorkSetBySiteKeyRequest) Reset() {
+	*x = GetWorkSetBySiteKeyRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[88]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWorkSetBySiteKeyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWorkSetBySiteKeyRequest) ProtoMessage() {}
+
+func (x *GetWorkSetBySiteKeyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[88]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWorkSetBySiteKeyRequest.ProtoReflect.Descriptor instead.
+func (*GetWorkSetBySiteKeyRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{88}
+}
+
+func (x *GetWorkSetBySiteKeyRequest) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
+func (x *GetWorkSetBySiteKeyRequest) GetSiteWorkSetId() string {
+	if x != nil {
+		return x.SiteWorkSetId
+	}
+	return ""
+}
+
+type ListWorkSetsByWorkIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkId        int64                  `protobuf:"varint,1,opt,name=work_id,json=workId,proto3" json:"work_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListWorkSetsByWorkIdRequest) Reset() {
+	*x = ListWorkSetsByWorkIdRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[89]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListWorkSetsByWorkIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListWorkSetsByWorkIdRequest) ProtoMessage() {}
+
+func (x *ListWorkSetsByWorkIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[89]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListWorkSetsByWorkIdRequest.ProtoReflect.Descriptor instead.
+func (*ListWorkSetsByWorkIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{89}
+}
+
+func (x *ListWorkSetsByWorkIdRequest) GetWorkId() int64 {
+	if x != nil {
+		return x.WorkId
+	}
+	return 0
+}
+
+type ListWorkSetsByWorkIdResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*WorkSet             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListWorkSetsByWorkIdResponse) Reset() {
+	*x = ListWorkSetsByWorkIdResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[90]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListWorkSetsByWorkIdResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListWorkSetsByWorkIdResponse) ProtoMessage() {}
+
+func (x *ListWorkSetsByWorkIdResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[90]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListWorkSetsByWorkIdResponse.ProtoReflect.Descriptor instead.
+func (*ListWorkSetsByWorkIdResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{90}
+}
+
+func (x *ListWorkSetsByWorkIdResponse) GetItems() []*WorkSet {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type ListParentWorkSetsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkSetId     int64                  `protobuf:"varint,1,opt,name=work_set_id,json=workSetId,proto3" json:"work_set_id,omitempty"` // 库内作品集行 id（可由 GetWorkSetBySiteKey / ListWorkSetsByWorkId 结果取得）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListParentWorkSetsRequest) Reset() {
+	*x = ListParentWorkSetsRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[91]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListParentWorkSetsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListParentWorkSetsRequest) ProtoMessage() {}
+
+func (x *ListParentWorkSetsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[91]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListParentWorkSetsRequest.ProtoReflect.Descriptor instead.
+func (*ListParentWorkSetsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{91}
+}
+
+func (x *ListParentWorkSetsRequest) GetWorkSetId() int64 {
+	if x != nil {
+		return x.WorkSetId
+	}
+	return 0
+}
+
+type ListParentWorkSetsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*WorkSet             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListParentWorkSetsResponse) Reset() {
+	*x = ListParentWorkSetsResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[92]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListParentWorkSetsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListParentWorkSetsResponse) ProtoMessage() {}
+
+func (x *ListParentWorkSetsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[92]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListParentWorkSetsResponse.ProtoReflect.Descriptor instead.
+func (*ListParentWorkSetsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{92}
+}
+
+func (x *ListParentWorkSetsResponse) GetItems() []*WorkSet {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type ListChildWorkSetsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkSetId     int64                  `protobuf:"varint,1,opt,name=work_set_id,json=workSetId,proto3" json:"work_set_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListChildWorkSetsRequest) Reset() {
+	*x = ListChildWorkSetsRequest{}
+	mi := &file_proto_plugin_proto_msgTypes[93]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListChildWorkSetsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListChildWorkSetsRequest) ProtoMessage() {}
+
+func (x *ListChildWorkSetsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[93]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListChildWorkSetsRequest.ProtoReflect.Descriptor instead.
+func (*ListChildWorkSetsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{93}
+}
+
+func (x *ListChildWorkSetsRequest) GetWorkSetId() int64 {
+	if x != nil {
+		return x.WorkSetId
+	}
+	return 0
+}
+
+type ListChildWorkSetsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*WorkSet             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListChildWorkSetsResponse) Reset() {
+	*x = ListChildWorkSetsResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[94]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListChildWorkSetsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListChildWorkSetsResponse) ProtoMessage() {}
+
+func (x *ListChildWorkSetsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[94]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListChildWorkSetsResponse.ProtoReflect.Descriptor instead.
+func (*ListChildWorkSetsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{94}
+}
+
+func (x *ListChildWorkSetsResponse) GetItems() []*WorkSet {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type ListSitesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*SiteDTO             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"` // 注册表投影全集
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSitesResponse) Reset() {
+	*x = ListSitesResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[95]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSitesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSitesResponse) ProtoMessage() {}
+
+func (x *ListSitesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[95]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSitesResponse.ProtoReflect.Descriptor instead.
+func (*ListSitesResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{95}
+}
+
+func (x *ListSitesResponse) GetItems() []*SiteDTO {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type GetWorkDirResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"` // 资源库根目录绝对路径（OS 原生分隔符，absPath 域）。未配置时本 RPC 返回 FailedPrecondition 错误（显式拒绝，不返回空路径）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWorkDirResponse) Reset() {
+	*x = GetWorkDirResponse{}
+	mi := &file_proto_plugin_proto_msgTypes[96]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWorkDirResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWorkDirResponse) ProtoMessage() {}
+
+func (x *GetWorkDirResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[96]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWorkDirResponse.ProtoReflect.Descriptor instead.
+func (*GetWorkDirResponse) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{96}
+}
+
+func (x *GetWorkDirResponse) GetPath() string {
+	if x != nil {
+		return x.Path
 	}
 	return ""
 }
@@ -4188,12 +6353,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x06values\x18\x01 \x03(\v2-.plugins.AllStorageValuesResponse.ValuesEntryR\x06values\x1aP\n" +
 	"\vValuesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12+\n" +
-	"\x05value\x18\x02 \x01(\v2\x15.plugins.StorageValueR\x05value:\x028\x01\"W\n" +
-	"\x13WorkSetQueryRequest\x12$\n" +
-	"\rsiteWorkSetId\x18\x01 \x01(\tR\rsiteWorkSetId\x12\x1a\n" +
-	"\bsiteName\x18\x02 \x01(\tR\bsiteName\"B\n" +
-	"\x14WorkSetQueryResponse\x12*\n" +
-	"\aworkSet\x18\x01 \x01(\v2\x10.plugins.WorkSetR\aworkSet\"R\n" +
+	"\x05value\x18\x02 \x01(\v2\x15.plugins.StorageValueR\x05value:\x028\x01\"R\n" +
 	"\x12UrlListenerRequest\x12 \n" +
 	"\vextensionId\x18\x01 \x01(\tR\vextensionId\x12\x1a\n" +
 	"\bpatterns\x18\x02 \x03(\tR\bpatterns\"%\n" +
@@ -4226,7 +6386,162 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x05topic\x18\x01 \x01(\tR\x05topic\x12\x12\n" +
 	"\x04data\x18\x02 \x01(\fR\x04data\"2\n" +
 	"\x1aUnsubscribeFrontendRequest\x12\x14\n" +
-	"\x05topic\x18\x01 \x01(\tR\x05topic2~\n" +
+	"\x05topic\x18\x01 \x01(\tR\x05topic\">\n" +
+	"\vPageRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"Q\n" +
+	"\bPageInfo\x12\x14\n" +
+	"\x05total\x18\x01 \x01(\x03R\x05total\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"-\n" +
+	"\x12GetWorkByIdRequest\x12\x17\n" +
+	"\awork_id\x18\x01 \x01(\x03R\x06workId\"V\n" +
+	"\x17GetWorkBySiteKeyRequest\x12\x19\n" +
+	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12 \n" +
+	"\fsite_work_id\x18\x02 \x01(\tR\n" +
+	"siteWorkId\"W\n" +
+	"\fWorkWithSite\x12!\n" +
+	"\x04work\x18\x01 \x01(\v2\r.plugins.WorkR\x04work\x12$\n" +
+	"\x04site\x18\x02 \x01(\v2\x10.plugins.SiteDTOR\x04site\"\x97\x02\n" +
+	"\x11QueryWorksRequest\x12\x19\n" +
+	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12!\n" +
+	"\fname_keyword\x18\x02 \x01(\tR\vnameKeyword\x12%\n" +
+	"\x0eauthor_keyword\x18\x03 \x01(\tR\rauthorKeyword\x12\x1f\n" +
+	"\vtag_keyword\x18\x04 \x01(\tR\n" +
+	"tagKeyword\x12*\n" +
+	"\x11create_time_start\x18\x05 \x01(\x03R\x0fcreateTimeStart\x12&\n" +
+	"\x0fcreate_time_end\x18\x06 \x01(\x03R\rcreateTimeEnd\x12(\n" +
+	"\x04page\x18\a \x01(\v2\x14.plugins.PageRequestR\x04page\"h\n" +
+	"\x12QueryWorksResponse\x12+\n" +
+	"\x05items\x18\x01 \x03(\v2\x15.plugins.WorkWithSiteR\x05items\x12%\n" +
+	"\x04page\x18\x02 \x01(\v2\x11.plugins.PageInfoR\x04page\"7\n" +
+	"\x1cListResourcesByWorkIdRequest\x12\x17\n" +
+	"\awork_id\x18\x01 \x01(\x03R\x06workId\"L\n" +
+	"\x1dListResourcesByWorkIdResponse\x12+\n" +
+	"\x05items\x18\x01 \x03(\v2\x15.plugins.ResourceInfoR\x05items\"\xb0\x02\n" +
+	"\fResourceInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
+	"\atask_id\x18\x02 \x01(\x03R\x06taskId\x12&\n" +
+	"\fsuggest_name\x18\x03 \x01(\tH\x00R\vsuggestName\x88\x01\x01\x12#\n" +
+	"\rresource_type\x18\x04 \x01(\tR\fresourceType\x12+\n" +
+	"\x11resource_complete\x18\x05 \x01(\x05R\x10resourceComplete\x12*\n" +
+	"\x06stores\x18\x06 \x03(\v2\x12.plugins.StoreInfoR\x06stores\x12\x1f\n" +
+	"\vcreate_time\x18\a \x01(\x03R\n" +
+	"createTime\x12\x1f\n" +
+	"\vupdate_time\x18\b \x01(\x03R\n" +
+	"updateTimeB\x0f\n" +
+	"\r_suggest_name\"\xa6\x02\n" +
+	"\tStoreInfo\x12\x12\n" +
+	"\x04role\x18\x01 \x01(\tR\x04role\x12\x1b\n" +
+	"\tstore_seq\x18\x02 \x01(\x05R\bstoreSeq\x12 \n" +
+	"\tfile_path\x18\x03 \x01(\tH\x00R\bfilePath\x88\x01\x01\x12\x1b\n" +
+	"\x06format\x18\x04 \x01(\tH\x01R\x06format\x88\x01\x01\x12\x17\n" +
+	"\x04size\x18\x05 \x01(\x03H\x02R\x04size\x88\x01\x01\x12\x19\n" +
+	"\x05width\x18\x06 \x01(\x05H\x03R\x05width\x88\x01\x01\x12\x1b\n" +
+	"\x06height\x18\a \x01(\x05H\x04R\x06height\x88\x01\x01\x12!\n" +
+	"\fcompleted_at\x18\b \x01(\x03R\vcompletedAtB\f\n" +
+	"\n" +
+	"_file_pathB\t\n" +
+	"\a_formatB\a\n" +
+	"\x05_sizeB\b\n" +
+	"\x06_widthB\t\n" +
+	"\a_height\"C\n" +
+	"\x19GetLocalAuthorByIdRequest\x12&\n" +
+	"\x0flocal_author_id\x18\x01 \x01(\x03R\rlocalAuthorId\"g\n" +
+	"\x18QueryLocalAuthorsRequest\x12!\n" +
+	"\fname_keyword\x18\x01 \x01(\tR\vnameKeyword\x12(\n" +
+	"\x04page\x18\x02 \x01(\v2\x14.plugins.PageRequestR\x04page\"q\n" +
+	"\x19QueryLocalAuthorsResponse\x12-\n" +
+	"\x05items\x18\x01 \x03(\v2\x17.plugins.LocalAuthorDTOR\x05items\x12%\n" +
+	"\x04page\x18\x02 \x01(\v2\x11.plugins.PageInfoR\x04page\"`\n" +
+	"\x1dGetSiteAuthorBySiteKeyRequest\x12\x19\n" +
+	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12$\n" +
+	"\x0esite_author_id\x18\x02 \x01(\tR\fsiteAuthorId\"\xa9\x02\n" +
+	"\x0eSiteAuthorInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
+	"\bsite_key\x18\x02 \x01(\tR\asiteKey\x12$\n" +
+	"\x0esite_author_id\x18\x03 \x01(\tR\fsiteAuthorId\x12\x1f\n" +
+	"\vauthor_name\x18\x04 \x01(\tR\n" +
+	"authorName\x12\x1a\n" +
+	"\bhomepage\x18\x05 \x01(\tR\bhomepage\x12*\n" +
+	"\x11fixed_author_name\x18\x06 \x01(\tR\x0ffixedAuthorName\x12\x1c\n" +
+	"\tintroduce\x18\a \x01(\tR\tintroduce\x12+\n" +
+	"\x0flocal_author_id\x18\b \x01(\x03H\x00R\rlocalAuthorId\x88\x01\x01B\x12\n" +
+	"\x10_local_author_id\"\x81\x01\n" +
+	"\x17QuerySiteAuthorsRequest\x12\x19\n" +
+	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12!\n" +
+	"\fname_keyword\x18\x02 \x01(\tR\vnameKeyword\x12(\n" +
+	"\x04page\x18\x03 \x01(\v2\x14.plugins.PageRequestR\x04page\"p\n" +
+	"\x18QuerySiteAuthorsResponse\x12-\n" +
+	"\x05items\x18\x01 \x03(\v2\x17.plugins.SiteAuthorInfoR\x05items\x12%\n" +
+	"\x04page\x18\x02 \x01(\v2\x11.plugins.PageInfoR\x04page\"5\n" +
+	"\x1aListAuthorsByWorkIdRequest\x12\x17\n" +
+	"\awork_id\x18\x01 \x01(\x03R\x06workId\"\x97\x01\n" +
+	"\x1bListAuthorsByWorkIdResponse\x12<\n" +
+	"\rlocal_authors\x18\x01 \x03(\v2\x17.plugins.LocalAuthorDTOR\flocalAuthors\x12:\n" +
+	"\fsite_authors\x18\x02 \x03(\v2\x17.plugins.SiteAuthorInfoR\vsiteAuthors\":\n" +
+	"\x16GetLocalTagByIdRequest\x12 \n" +
+	"\flocal_tag_id\x18\x01 \x01(\x03R\n" +
+	"localTagId\"d\n" +
+	"\x15QueryLocalTagsRequest\x12!\n" +
+	"\fname_keyword\x18\x01 \x01(\tR\vnameKeyword\x12(\n" +
+	"\x04page\x18\x02 \x01(\v2\x14.plugins.PageRequestR\x04page\"k\n" +
+	"\x16QueryLocalTagsResponse\x12*\n" +
+	"\x05items\x18\x01 \x03(\v2\x14.plugins.LocalTagDTOR\x05items\x12%\n" +
+	"\x04page\x18\x02 \x01(\v2\x11.plugins.PageInfoR\x04page\"W\n" +
+	"\x1aGetSiteTagBySiteKeyRequest\x12\x19\n" +
+	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12\x1e\n" +
+	"\vsite_tag_id\x18\x02 \x01(\tR\tsiteTagId\"\xeb\x01\n" +
+	"\vSiteTagInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
+	"\bsite_key\x18\x02 \x01(\tR\asiteKey\x12\x1e\n" +
+	"\vsite_tag_id\x18\x03 \x01(\tR\tsiteTagId\x12\x19\n" +
+	"\btag_name\x18\x04 \x01(\tR\atagName\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1c\n" +
+	"\tnamespace\x18\x06 \x01(\tR\tnamespace\x12%\n" +
+	"\flocal_tag_id\x18\a \x01(\x03H\x00R\n" +
+	"localTagId\x88\x01\x01B\x0f\n" +
+	"\r_local_tag_id\"~\n" +
+	"\x14QuerySiteTagsRequest\x12\x19\n" +
+	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12!\n" +
+	"\fname_keyword\x18\x02 \x01(\tR\vnameKeyword\x12(\n" +
+	"\x04page\x18\x03 \x01(\v2\x14.plugins.PageRequestR\x04page\"j\n" +
+	"\x15QuerySiteTagsResponse\x12*\n" +
+	"\x05items\x18\x01 \x03(\v2\x14.plugins.SiteTagInfoR\x05items\x12%\n" +
+	"\x04page\x18\x02 \x01(\v2\x11.plugins.PageInfoR\x04page\"2\n" +
+	"\x17ListTagsByWorkIdRequest\x12\x17\n" +
+	"\awork_id\x18\x01 \x01(\x03R\x06workId\"Y\n" +
+	"\x11WorkLocalTagEntry\x12&\n" +
+	"\x03tag\x18\x01 \x01(\v2\x14.plugins.LocalTagDTOR\x03tag\x12\x1c\n" +
+	"\tnamespace\x18\x02 \x01(\tR\tnamespace\"X\n" +
+	"\x10WorkSiteTagEntry\x12&\n" +
+	"\x03tag\x18\x01 \x01(\v2\x14.plugins.SiteTagInfoR\x03tag\x12\x1c\n" +
+	"\tnamespace\x18\x02 \x01(\tR\tnamespace\"\x8d\x01\n" +
+	"\x18ListTagsByWorkIdResponse\x129\n" +
+	"\n" +
+	"local_tags\x18\x01 \x03(\v2\x1a.plugins.WorkLocalTagEntryR\tlocalTags\x126\n" +
+	"\tsite_tags\x18\x02 \x03(\v2\x19.plugins.WorkSiteTagEntryR\bsiteTags\"7\n" +
+	"\x15GetWorkSetByIdRequest\x12\x1e\n" +
+	"\vwork_set_id\x18\x01 \x01(\x03R\tworkSetId\"`\n" +
+	"\x1aGetWorkSetBySiteKeyRequest\x12\x19\n" +
+	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12'\n" +
+	"\x10site_work_set_id\x18\x02 \x01(\tR\rsiteWorkSetId\"6\n" +
+	"\x1bListWorkSetsByWorkIdRequest\x12\x17\n" +
+	"\awork_id\x18\x01 \x01(\x03R\x06workId\"F\n" +
+	"\x1cListWorkSetsByWorkIdResponse\x12&\n" +
+	"\x05items\x18\x01 \x03(\v2\x10.plugins.WorkSetR\x05items\";\n" +
+	"\x19ListParentWorkSetsRequest\x12\x1e\n" +
+	"\vwork_set_id\x18\x01 \x01(\x03R\tworkSetId\"D\n" +
+	"\x1aListParentWorkSetsResponse\x12&\n" +
+	"\x05items\x18\x01 \x03(\v2\x10.plugins.WorkSetR\x05items\":\n" +
+	"\x18ListChildWorkSetsRequest\x12\x1e\n" +
+	"\vwork_set_id\x18\x01 \x01(\x03R\tworkSetId\"C\n" +
+	"\x19ListChildWorkSetsResponse\x12&\n" +
+	"\x05items\x18\x01 \x03(\v2\x10.plugins.WorkSetR\x05items\";\n" +
+	"\x11ListSitesResponse\x12&\n" +
+	"\x05items\x18\x01 \x03(\v2\x10.plugins.SiteDTOR\x05items\"(\n" +
+	"\x12GetWorkDirResponse\x12\x12\n" +
+	"\x04path\x18\x01 \x01(\tR\x04path2~\n" +
 	"\x0fPluginLifecycle\x12?\n" +
 	"\bActivate\x12\x18.plugins.ActivateRequest\x1a\x19.plugins.ActivateResponse\x12*\n" +
 	"\bShutdown\x12\x0e.plugins.Empty\x1a\x0e.plugins.Empty2\xf1\x04\n" +
@@ -4242,7 +6557,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x15QueryWorkSetRelations\x12%.plugins.QueryWorkSetRelationsRequest\x1a&.plugins.QueryWorkSetRelationsResponse2w\n" +
 	"\x12SiteBrowserService\x12/\n" +
 	"\x04Open\x12\x17.plugins.BrowserRequest\x1a\x0e.plugins.Empty\x120\n" +
-	"\x05Close\x12\x17.plugins.BrowserRequest\x1a\x0e.plugins.Empty2\xb6\t\n" +
+	"\x05Close\x12\x17.plugins.BrowserRequest\x1a\x0e.plugins.Empty2\xdc\b\n" +
 	"\vHostService\x12H\n" +
 	"\x13RegisterTaskHandler\x12!.plugins.RegisterExtensionRequest\x1a\x0e.plugins.Empty\x12H\n" +
 	"\x13RegisterSiteBrowser\x12!.plugins.RegisterExtensionRequest\x1a\x0e.plugins.Empty\x12C\n" +
@@ -4251,8 +6566,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\bSetValue\x12\x1c.plugins.StorageEntryRequest\x1a\x0e.plugins.Empty\x12A\n" +
 	"\x11SetValueEncrypted\x12\x1c.plugins.StorageEntryRequest\x1a\x0e.plugins.Empty\x129\n" +
 	"\vDeleteValue\x12\x1a.plugins.StorageKeyRequest\x1a\x0e.plugins.Empty\x12A\n" +
-	"\fGetAllValues\x12\x0e.plugins.Empty\x1a!.plugins.AllStorageValuesResponse\x12X\n" +
-	"\x19GetWorkSetBySiteWorkSetId\x12\x1c.plugins.WorkSetQueryRequest\x1a\x1d.plugins.WorkSetQueryResponse\x12B\n" +
+	"\fGetAllValues\x12\x0e.plugins.Empty\x1a!.plugins.AllStorageValuesResponse\x12B\n" +
 	"\x13RegisterUrlListener\x12\x1b.plugins.UrlListenerRequest\x1a\x0e.plugins.Empty\x12C\n" +
 	"\x15UnregisterUrlListener\x12\x1a.plugins.UnregisterRequest\x1a\x0e.plugins.Empty\x12E\n" +
 	"\n" +
@@ -4261,7 +6575,31 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x03Log\x12\x13.plugins.LogRequest\x1a\x0e.plugins.Empty\x12F\n" +
 	"\x11PublishToFrontend\x12!.plugins.PublishToFrontendRequest\x1a\x0e.plugins.Empty\x12R\n" +
 	"\x11SubscribeFrontend\x12!.plugins.SubscribeFrontendRequest\x1a\x18.plugins.FrontendMessage0\x01\x12J\n" +
-	"\x13UnsubscribeFrontend\x12#.plugins.UnsubscribeFrontendRequest\x1a\x0e.plugins.EmptyB2Z0github.com/lvfeng-z/library-squirrel-sdk/gen;genb\x06proto3"
+	"\x13UnsubscribeFrontend\x12#.plugins.UnsubscribeFrontendRequest\x1a\x0e.plugins.Empty2\xd0\r\n" +
+	"\fLibraryQuery\x12A\n" +
+	"\vGetWorkById\x12\x1b.plugins.GetWorkByIdRequest\x1a\x15.plugins.WorkWithSite\x12K\n" +
+	"\x10GetWorkBySiteKey\x12 .plugins.GetWorkBySiteKeyRequest\x1a\x15.plugins.WorkWithSite\x12E\n" +
+	"\n" +
+	"QueryWorks\x12\x1a.plugins.QueryWorksRequest\x1a\x1b.plugins.QueryWorksResponse\x12f\n" +
+	"\x15ListResourcesByWorkId\x12%.plugins.ListResourcesByWorkIdRequest\x1a&.plugins.ListResourcesByWorkIdResponse\x12Q\n" +
+	"\x12GetLocalAuthorById\x12\".plugins.GetLocalAuthorByIdRequest\x1a\x17.plugins.LocalAuthorDTO\x12Z\n" +
+	"\x11QueryLocalAuthors\x12!.plugins.QueryLocalAuthorsRequest\x1a\".plugins.QueryLocalAuthorsResponse\x12Y\n" +
+	"\x16GetSiteAuthorBySiteKey\x12&.plugins.GetSiteAuthorBySiteKeyRequest\x1a\x17.plugins.SiteAuthorInfo\x12W\n" +
+	"\x10QuerySiteAuthors\x12 .plugins.QuerySiteAuthorsRequest\x1a!.plugins.QuerySiteAuthorsResponse\x12`\n" +
+	"\x13ListAuthorsByWorkId\x12#.plugins.ListAuthorsByWorkIdRequest\x1a$.plugins.ListAuthorsByWorkIdResponse\x12H\n" +
+	"\x0fGetLocalTagById\x12\x1f.plugins.GetLocalTagByIdRequest\x1a\x14.plugins.LocalTagDTO\x12Q\n" +
+	"\x0eQueryLocalTags\x12\x1e.plugins.QueryLocalTagsRequest\x1a\x1f.plugins.QueryLocalTagsResponse\x12P\n" +
+	"\x13GetSiteTagBySiteKey\x12#.plugins.GetSiteTagBySiteKeyRequest\x1a\x14.plugins.SiteTagInfo\x12N\n" +
+	"\rQuerySiteTags\x12\x1d.plugins.QuerySiteTagsRequest\x1a\x1e.plugins.QuerySiteTagsResponse\x12W\n" +
+	"\x10ListTagsByWorkId\x12 .plugins.ListTagsByWorkIdRequest\x1a!.plugins.ListTagsByWorkIdResponse\x12B\n" +
+	"\x0eGetWorkSetById\x12\x1e.plugins.GetWorkSetByIdRequest\x1a\x10.plugins.WorkSet\x12L\n" +
+	"\x13GetWorkSetBySiteKey\x12#.plugins.GetWorkSetBySiteKeyRequest\x1a\x10.plugins.WorkSet\x12c\n" +
+	"\x14ListWorkSetsByWorkId\x12$.plugins.ListWorkSetsByWorkIdRequest\x1a%.plugins.ListWorkSetsByWorkIdResponse\x12]\n" +
+	"\x12ListParentWorkSets\x12\".plugins.ListParentWorkSetsRequest\x1a#.plugins.ListParentWorkSetsResponse\x12Z\n" +
+	"\x11ListChildWorkSets\x12!.plugins.ListChildWorkSetsRequest\x1a\".plugins.ListChildWorkSetsResponse\x127\n" +
+	"\tListSites\x12\x0e.plugins.Empty\x1a\x1a.plugins.ListSitesResponse\x129\n" +
+	"\n" +
+	"GetWorkDir\x12\x0e.plugins.Empty\x1a\x1b.plugins.GetWorkDirResponseB2Z0github.com/lvfeng-z/library-squirrel-sdk/gen;genb\x06proto3"
 
 var (
 	file_proto_plugin_proto_rawDescOnce sync.Once
@@ -4275,7 +6613,7 @@ func file_proto_plugin_proto_rawDescGZIP() []byte {
 	return file_proto_plugin_proto_rawDescData
 }
 
-var file_proto_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 59)
+var file_proto_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 98)
 var file_proto_plugin_proto_goTypes = []any{
 	(*Empty)(nil),                         // 0: plugins.Empty
 	(*Task)(nil),                          // 1: plugins.Task
@@ -4323,116 +6661,223 @@ var file_proto_plugin_proto_goTypes = []any{
 	(*StorageValueResponse)(nil),          // 43: plugins.StorageValueResponse
 	(*StorageEntryRequest)(nil),           // 44: plugins.StorageEntryRequest
 	(*AllStorageValuesResponse)(nil),      // 45: plugins.AllStorageValuesResponse
-	(*WorkSetQueryRequest)(nil),           // 46: plugins.WorkSetQueryRequest
-	(*WorkSetQueryResponse)(nil),          // 47: plugins.WorkSetQueryResponse
-	(*UrlListenerRequest)(nil),            // 48: plugins.UrlListenerRequest
-	(*CreateTaskRequest)(nil),             // 49: plugins.CreateTaskRequest
-	(*CreateTaskResponse)(nil),            // 50: plugins.CreateTaskResponse
-	(*GetPluginRootRequest)(nil),          // 51: plugins.GetPluginRootRequest
-	(*GetPluginRootResponse)(nil),         // 52: plugins.GetPluginRootResponse
-	(*LogRequest)(nil),                    // 53: plugins.LogRequest
-	(*PublishToFrontendRequest)(nil),      // 54: plugins.PublishToFrontendRequest
-	(*SubscribeFrontendRequest)(nil),      // 55: plugins.SubscribeFrontendRequest
-	(*FrontendMessage)(nil),               // 56: plugins.FrontendMessage
-	(*UnsubscribeFrontendRequest)(nil),    // 57: plugins.UnsubscribeFrontendRequest
-	nil,                                   // 58: plugins.AllStorageValuesResponse.ValuesEntry
+	(*UrlListenerRequest)(nil),            // 46: plugins.UrlListenerRequest
+	(*CreateTaskRequest)(nil),             // 47: plugins.CreateTaskRequest
+	(*CreateTaskResponse)(nil),            // 48: plugins.CreateTaskResponse
+	(*GetPluginRootRequest)(nil),          // 49: plugins.GetPluginRootRequest
+	(*GetPluginRootResponse)(nil),         // 50: plugins.GetPluginRootResponse
+	(*LogRequest)(nil),                    // 51: plugins.LogRequest
+	(*PublishToFrontendRequest)(nil),      // 52: plugins.PublishToFrontendRequest
+	(*SubscribeFrontendRequest)(nil),      // 53: plugins.SubscribeFrontendRequest
+	(*FrontendMessage)(nil),               // 54: plugins.FrontendMessage
+	(*UnsubscribeFrontendRequest)(nil),    // 55: plugins.UnsubscribeFrontendRequest
+	(*PageRequest)(nil),                   // 56: plugins.PageRequest
+	(*PageInfo)(nil),                      // 57: plugins.PageInfo
+	(*GetWorkByIdRequest)(nil),            // 58: plugins.GetWorkByIdRequest
+	(*GetWorkBySiteKeyRequest)(nil),       // 59: plugins.GetWorkBySiteKeyRequest
+	(*WorkWithSite)(nil),                  // 60: plugins.WorkWithSite
+	(*QueryWorksRequest)(nil),             // 61: plugins.QueryWorksRequest
+	(*QueryWorksResponse)(nil),            // 62: plugins.QueryWorksResponse
+	(*ListResourcesByWorkIdRequest)(nil),  // 63: plugins.ListResourcesByWorkIdRequest
+	(*ListResourcesByWorkIdResponse)(nil), // 64: plugins.ListResourcesByWorkIdResponse
+	(*ResourceInfo)(nil),                  // 65: plugins.ResourceInfo
+	(*StoreInfo)(nil),                     // 66: plugins.StoreInfo
+	(*GetLocalAuthorByIdRequest)(nil),     // 67: plugins.GetLocalAuthorByIdRequest
+	(*QueryLocalAuthorsRequest)(nil),      // 68: plugins.QueryLocalAuthorsRequest
+	(*QueryLocalAuthorsResponse)(nil),     // 69: plugins.QueryLocalAuthorsResponse
+	(*GetSiteAuthorBySiteKeyRequest)(nil), // 70: plugins.GetSiteAuthorBySiteKeyRequest
+	(*SiteAuthorInfo)(nil),                // 71: plugins.SiteAuthorInfo
+	(*QuerySiteAuthorsRequest)(nil),       // 72: plugins.QuerySiteAuthorsRequest
+	(*QuerySiteAuthorsResponse)(nil),      // 73: plugins.QuerySiteAuthorsResponse
+	(*ListAuthorsByWorkIdRequest)(nil),    // 74: plugins.ListAuthorsByWorkIdRequest
+	(*ListAuthorsByWorkIdResponse)(nil),   // 75: plugins.ListAuthorsByWorkIdResponse
+	(*GetLocalTagByIdRequest)(nil),        // 76: plugins.GetLocalTagByIdRequest
+	(*QueryLocalTagsRequest)(nil),         // 77: plugins.QueryLocalTagsRequest
+	(*QueryLocalTagsResponse)(nil),        // 78: plugins.QueryLocalTagsResponse
+	(*GetSiteTagBySiteKeyRequest)(nil),    // 79: plugins.GetSiteTagBySiteKeyRequest
+	(*SiteTagInfo)(nil),                   // 80: plugins.SiteTagInfo
+	(*QuerySiteTagsRequest)(nil),          // 81: plugins.QuerySiteTagsRequest
+	(*QuerySiteTagsResponse)(nil),         // 82: plugins.QuerySiteTagsResponse
+	(*ListTagsByWorkIdRequest)(nil),       // 83: plugins.ListTagsByWorkIdRequest
+	(*WorkLocalTagEntry)(nil),             // 84: plugins.WorkLocalTagEntry
+	(*WorkSiteTagEntry)(nil),              // 85: plugins.WorkSiteTagEntry
+	(*ListTagsByWorkIdResponse)(nil),      // 86: plugins.ListTagsByWorkIdResponse
+	(*GetWorkSetByIdRequest)(nil),         // 87: plugins.GetWorkSetByIdRequest
+	(*GetWorkSetBySiteKeyRequest)(nil),    // 88: plugins.GetWorkSetBySiteKeyRequest
+	(*ListWorkSetsByWorkIdRequest)(nil),   // 89: plugins.ListWorkSetsByWorkIdRequest
+	(*ListWorkSetsByWorkIdResponse)(nil),  // 90: plugins.ListWorkSetsByWorkIdResponse
+	(*ListParentWorkSetsRequest)(nil),     // 91: plugins.ListParentWorkSetsRequest
+	(*ListParentWorkSetsResponse)(nil),    // 92: plugins.ListParentWorkSetsResponse
+	(*ListChildWorkSetsRequest)(nil),      // 93: plugins.ListChildWorkSetsRequest
+	(*ListChildWorkSetsResponse)(nil),     // 94: plugins.ListChildWorkSetsResponse
+	(*ListSitesResponse)(nil),             // 95: plugins.ListSitesResponse
+	(*GetWorkDirResponse)(nil),            // 96: plugins.GetWorkDirResponse
+	nil,                                   // 97: plugins.AllStorageValuesResponse.ValuesEntry
 }
 var file_proto_plugin_proto_depIdxs = []int32{
-	10, // 0: plugins.TaskCreateResponse.children:type_name -> plugins.TaskCreateChildResponse
-	2,  // 1: plugins.WorkResponse.work:type_name -> plugins.Work
-	4,  // 2: plugins.WorkResponse.site:type_name -> plugins.SiteDTO
-	5,  // 3: plugins.WorkResponse.localAuthors:type_name -> plugins.LocalAuthorDTO
-	6,  // 4: plugins.WorkResponse.localTags:type_name -> plugins.LocalTagDTO
-	7,  // 5: plugins.WorkResponse.siteAuthors:type_name -> plugins.TaskSiteAuthorDTO
-	8,  // 6: plugins.WorkResponse.siteTags:type_name -> plugins.TaskSiteTagDTO
-	9,  // 7: plugins.WorkResponse.workSets:type_name -> plugins.TaskWorkSetDTO
-	1,  // 8: plugins.TaskResParam.task:type_name -> plugins.Task
-	18, // 9: plugins.QueryWorkSetOrderResponse.entries:type_name -> plugins.WorkOrderEntry
-	21, // 10: plugins.QueryWorkSetRelationsResponse.parents:type_name -> plugins.WorkSetRelationEntry
-	24, // 11: plugins.CreateChunk.mode:type_name -> plugins.CreateMode
-	11, // 12: plugins.CreateChunk.task:type_name -> plugins.TaskCreateResponse
-	1,  // 13: plugins.CreateWorkInfoRequest.task:type_name -> plugins.Task
-	1,  // 14: plugins.StartRequest.task:type_name -> plugins.Task
-	1,  // 15: plugins.RetryRequest.task:type_name -> plugins.Task
-	13, // 16: plugins.TaskResParamMessage.param:type_name -> plugins.TaskResParam
-	1,  // 17: plugins.TaskResumeParam.task:type_name -> plugins.Task
-	30, // 18: plugins.TaskResumeParam.streamOffsets:type_name -> plugins.StoreResumeOffset
-	29, // 19: plugins.TaskResumeParamMessage.param:type_name -> plugins.TaskResumeParam
-	12, // 20: plugins.StreamChunk.workResponse:type_name -> plugins.WorkResponse
-	37, // 21: plugins.StreamChunk.specs:type_name -> plugins.StoreSpecs
-	26, // 22: plugins.StartFrame.start:type_name -> plugins.StartRequest
-	35, // 23: plugins.StartFrame.pull:type_name -> plugins.PullRequest
-	31, // 24: plugins.ResumeFrame.resume:type_name -> plugins.TaskResumeParamMessage
-	35, // 25: plugins.ResumeFrame.pull:type_name -> plugins.PullRequest
-	36, // 26: plugins.StoreSpecs.items:type_name -> plugins.StoreSpecMeta
-	58, // 27: plugins.AllStorageValuesResponse.values:type_name -> plugins.AllStorageValuesResponse.ValuesEntry
-	3,  // 28: plugins.WorkSetQueryResponse.workSet:type_name -> plugins.WorkSet
-	42, // 29: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
-	14, // 30: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
-	0,  // 31: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
-	22, // 32: plugins.TaskHandlerService.Create:input_type -> plugins.CreateRequest
-	25, // 33: plugins.TaskHandlerService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
-	33, // 34: plugins.TaskHandlerService.Start:input_type -> plugins.StartFrame
-	27, // 35: plugins.TaskHandlerService.Retry:input_type -> plugins.RetryRequest
-	28, // 36: plugins.TaskHandlerService.Pause:input_type -> plugins.TaskResParamMessage
-	28, // 37: plugins.TaskHandlerService.Stop:input_type -> plugins.TaskResParamMessage
-	34, // 38: plugins.TaskHandlerService.Resume:input_type -> plugins.ResumeFrame
-	16, // 39: plugins.TaskHandlerService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
-	19, // 40: plugins.TaskHandlerService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
-	38, // 41: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
-	38, // 42: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
-	39, // 43: plugins.HostService.RegisterTaskHandler:input_type -> plugins.RegisterExtensionRequest
-	39, // 44: plugins.HostService.RegisterSiteBrowser:input_type -> plugins.RegisterExtensionRequest
-	40, // 45: plugins.HostService.UnregisterSiteBrowser:input_type -> plugins.UnregisterRequest
-	41, // 46: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
-	44, // 47: plugins.HostService.SetValue:input_type -> plugins.StorageEntryRequest
-	44, // 48: plugins.HostService.SetValueEncrypted:input_type -> plugins.StorageEntryRequest
-	41, // 49: plugins.HostService.DeleteValue:input_type -> plugins.StorageKeyRequest
-	0,  // 50: plugins.HostService.GetAllValues:input_type -> plugins.Empty
-	46, // 51: plugins.HostService.GetWorkSetBySiteWorkSetId:input_type -> plugins.WorkSetQueryRequest
-	48, // 52: plugins.HostService.RegisterUrlListener:input_type -> plugins.UrlListenerRequest
-	40, // 53: plugins.HostService.UnregisterUrlListener:input_type -> plugins.UnregisterRequest
-	49, // 54: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
-	51, // 55: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
-	53, // 56: plugins.HostService.Log:input_type -> plugins.LogRequest
-	54, // 57: plugins.HostService.PublishToFrontend:input_type -> plugins.PublishToFrontendRequest
-	55, // 58: plugins.HostService.SubscribeFrontend:input_type -> plugins.SubscribeFrontendRequest
-	57, // 59: plugins.HostService.UnsubscribeFrontend:input_type -> plugins.UnsubscribeFrontendRequest
-	15, // 60: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
-	0,  // 61: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
-	23, // 62: plugins.TaskHandlerService.Create:output_type -> plugins.CreateChunk
-	12, // 63: plugins.TaskHandlerService.CreateWorkInfo:output_type -> plugins.WorkResponse
-	32, // 64: plugins.TaskHandlerService.Start:output_type -> plugins.StreamChunk
-	12, // 65: plugins.TaskHandlerService.Retry:output_type -> plugins.WorkResponse
-	0,  // 66: plugins.TaskHandlerService.Pause:output_type -> plugins.Empty
-	0,  // 67: plugins.TaskHandlerService.Stop:output_type -> plugins.Empty
-	32, // 68: plugins.TaskHandlerService.Resume:output_type -> plugins.StreamChunk
-	17, // 69: plugins.TaskHandlerService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
-	20, // 70: plugins.TaskHandlerService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
-	0,  // 71: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
-	0,  // 72: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
-	0,  // 73: plugins.HostService.RegisterTaskHandler:output_type -> plugins.Empty
-	0,  // 74: plugins.HostService.RegisterSiteBrowser:output_type -> plugins.Empty
-	0,  // 75: plugins.HostService.UnregisterSiteBrowser:output_type -> plugins.Empty
-	43, // 76: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse
-	0,  // 77: plugins.HostService.SetValue:output_type -> plugins.Empty
-	0,  // 78: plugins.HostService.SetValueEncrypted:output_type -> plugins.Empty
-	0,  // 79: plugins.HostService.DeleteValue:output_type -> plugins.Empty
-	45, // 80: plugins.HostService.GetAllValues:output_type -> plugins.AllStorageValuesResponse
-	47, // 81: plugins.HostService.GetWorkSetBySiteWorkSetId:output_type -> plugins.WorkSetQueryResponse
-	0,  // 82: plugins.HostService.RegisterUrlListener:output_type -> plugins.Empty
-	0,  // 83: plugins.HostService.UnregisterUrlListener:output_type -> plugins.Empty
-	50, // 84: plugins.HostService.CreateTask:output_type -> plugins.CreateTaskResponse
-	52, // 85: plugins.HostService.GetPluginRoot:output_type -> plugins.GetPluginRootResponse
-	0,  // 86: plugins.HostService.Log:output_type -> plugins.Empty
-	0,  // 87: plugins.HostService.PublishToFrontend:output_type -> plugins.Empty
-	56, // 88: plugins.HostService.SubscribeFrontend:output_type -> plugins.FrontendMessage
-	0,  // 89: plugins.HostService.UnsubscribeFrontend:output_type -> plugins.Empty
-	60, // [60:90] is the sub-list for method output_type
-	30, // [30:60] is the sub-list for method input_type
-	30, // [30:30] is the sub-list for extension type_name
-	30, // [30:30] is the sub-list for extension extendee
-	0,  // [0:30] is the sub-list for field type_name
+	10,  // 0: plugins.TaskCreateResponse.children:type_name -> plugins.TaskCreateChildResponse
+	2,   // 1: plugins.WorkResponse.work:type_name -> plugins.Work
+	4,   // 2: plugins.WorkResponse.site:type_name -> plugins.SiteDTO
+	5,   // 3: plugins.WorkResponse.localAuthors:type_name -> plugins.LocalAuthorDTO
+	6,   // 4: plugins.WorkResponse.localTags:type_name -> plugins.LocalTagDTO
+	7,   // 5: plugins.WorkResponse.siteAuthors:type_name -> plugins.TaskSiteAuthorDTO
+	8,   // 6: plugins.WorkResponse.siteTags:type_name -> plugins.TaskSiteTagDTO
+	9,   // 7: plugins.WorkResponse.workSets:type_name -> plugins.TaskWorkSetDTO
+	1,   // 8: plugins.TaskResParam.task:type_name -> plugins.Task
+	18,  // 9: plugins.QueryWorkSetOrderResponse.entries:type_name -> plugins.WorkOrderEntry
+	21,  // 10: plugins.QueryWorkSetRelationsResponse.parents:type_name -> plugins.WorkSetRelationEntry
+	24,  // 11: plugins.CreateChunk.mode:type_name -> plugins.CreateMode
+	11,  // 12: plugins.CreateChunk.task:type_name -> plugins.TaskCreateResponse
+	1,   // 13: plugins.CreateWorkInfoRequest.task:type_name -> plugins.Task
+	1,   // 14: plugins.StartRequest.task:type_name -> plugins.Task
+	1,   // 15: plugins.RetryRequest.task:type_name -> plugins.Task
+	13,  // 16: plugins.TaskResParamMessage.param:type_name -> plugins.TaskResParam
+	1,   // 17: plugins.TaskResumeParam.task:type_name -> plugins.Task
+	30,  // 18: plugins.TaskResumeParam.streamOffsets:type_name -> plugins.StoreResumeOffset
+	29,  // 19: plugins.TaskResumeParamMessage.param:type_name -> plugins.TaskResumeParam
+	12,  // 20: plugins.StreamChunk.workResponse:type_name -> plugins.WorkResponse
+	37,  // 21: plugins.StreamChunk.specs:type_name -> plugins.StoreSpecs
+	26,  // 22: plugins.StartFrame.start:type_name -> plugins.StartRequest
+	35,  // 23: plugins.StartFrame.pull:type_name -> plugins.PullRequest
+	31,  // 24: plugins.ResumeFrame.resume:type_name -> plugins.TaskResumeParamMessage
+	35,  // 25: plugins.ResumeFrame.pull:type_name -> plugins.PullRequest
+	36,  // 26: plugins.StoreSpecs.items:type_name -> plugins.StoreSpecMeta
+	97,  // 27: plugins.AllStorageValuesResponse.values:type_name -> plugins.AllStorageValuesResponse.ValuesEntry
+	2,   // 28: plugins.WorkWithSite.work:type_name -> plugins.Work
+	4,   // 29: plugins.WorkWithSite.site:type_name -> plugins.SiteDTO
+	56,  // 30: plugins.QueryWorksRequest.page:type_name -> plugins.PageRequest
+	60,  // 31: plugins.QueryWorksResponse.items:type_name -> plugins.WorkWithSite
+	57,  // 32: plugins.QueryWorksResponse.page:type_name -> plugins.PageInfo
+	65,  // 33: plugins.ListResourcesByWorkIdResponse.items:type_name -> plugins.ResourceInfo
+	66,  // 34: plugins.ResourceInfo.stores:type_name -> plugins.StoreInfo
+	56,  // 35: plugins.QueryLocalAuthorsRequest.page:type_name -> plugins.PageRequest
+	5,   // 36: plugins.QueryLocalAuthorsResponse.items:type_name -> plugins.LocalAuthorDTO
+	57,  // 37: plugins.QueryLocalAuthorsResponse.page:type_name -> plugins.PageInfo
+	56,  // 38: plugins.QuerySiteAuthorsRequest.page:type_name -> plugins.PageRequest
+	71,  // 39: plugins.QuerySiteAuthorsResponse.items:type_name -> plugins.SiteAuthorInfo
+	57,  // 40: plugins.QuerySiteAuthorsResponse.page:type_name -> plugins.PageInfo
+	5,   // 41: plugins.ListAuthorsByWorkIdResponse.local_authors:type_name -> plugins.LocalAuthorDTO
+	71,  // 42: plugins.ListAuthorsByWorkIdResponse.site_authors:type_name -> plugins.SiteAuthorInfo
+	56,  // 43: plugins.QueryLocalTagsRequest.page:type_name -> plugins.PageRequest
+	6,   // 44: plugins.QueryLocalTagsResponse.items:type_name -> plugins.LocalTagDTO
+	57,  // 45: plugins.QueryLocalTagsResponse.page:type_name -> plugins.PageInfo
+	56,  // 46: plugins.QuerySiteTagsRequest.page:type_name -> plugins.PageRequest
+	80,  // 47: plugins.QuerySiteTagsResponse.items:type_name -> plugins.SiteTagInfo
+	57,  // 48: plugins.QuerySiteTagsResponse.page:type_name -> plugins.PageInfo
+	6,   // 49: plugins.WorkLocalTagEntry.tag:type_name -> plugins.LocalTagDTO
+	80,  // 50: plugins.WorkSiteTagEntry.tag:type_name -> plugins.SiteTagInfo
+	84,  // 51: plugins.ListTagsByWorkIdResponse.local_tags:type_name -> plugins.WorkLocalTagEntry
+	85,  // 52: plugins.ListTagsByWorkIdResponse.site_tags:type_name -> plugins.WorkSiteTagEntry
+	3,   // 53: plugins.ListWorkSetsByWorkIdResponse.items:type_name -> plugins.WorkSet
+	3,   // 54: plugins.ListParentWorkSetsResponse.items:type_name -> plugins.WorkSet
+	3,   // 55: plugins.ListChildWorkSetsResponse.items:type_name -> plugins.WorkSet
+	4,   // 56: plugins.ListSitesResponse.items:type_name -> plugins.SiteDTO
+	42,  // 57: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
+	14,  // 58: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
+	0,   // 59: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
+	22,  // 60: plugins.TaskHandlerService.Create:input_type -> plugins.CreateRequest
+	25,  // 61: plugins.TaskHandlerService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
+	33,  // 62: plugins.TaskHandlerService.Start:input_type -> plugins.StartFrame
+	27,  // 63: plugins.TaskHandlerService.Retry:input_type -> plugins.RetryRequest
+	28,  // 64: plugins.TaskHandlerService.Pause:input_type -> plugins.TaskResParamMessage
+	28,  // 65: plugins.TaskHandlerService.Stop:input_type -> plugins.TaskResParamMessage
+	34,  // 66: plugins.TaskHandlerService.Resume:input_type -> plugins.ResumeFrame
+	16,  // 67: plugins.TaskHandlerService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
+	19,  // 68: plugins.TaskHandlerService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
+	38,  // 69: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
+	38,  // 70: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
+	39,  // 71: plugins.HostService.RegisterTaskHandler:input_type -> plugins.RegisterExtensionRequest
+	39,  // 72: plugins.HostService.RegisterSiteBrowser:input_type -> plugins.RegisterExtensionRequest
+	40,  // 73: plugins.HostService.UnregisterSiteBrowser:input_type -> plugins.UnregisterRequest
+	41,  // 74: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
+	44,  // 75: plugins.HostService.SetValue:input_type -> plugins.StorageEntryRequest
+	44,  // 76: plugins.HostService.SetValueEncrypted:input_type -> plugins.StorageEntryRequest
+	41,  // 77: plugins.HostService.DeleteValue:input_type -> plugins.StorageKeyRequest
+	0,   // 78: plugins.HostService.GetAllValues:input_type -> plugins.Empty
+	46,  // 79: plugins.HostService.RegisterUrlListener:input_type -> plugins.UrlListenerRequest
+	40,  // 80: plugins.HostService.UnregisterUrlListener:input_type -> plugins.UnregisterRequest
+	47,  // 81: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
+	49,  // 82: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
+	51,  // 83: plugins.HostService.Log:input_type -> plugins.LogRequest
+	52,  // 84: plugins.HostService.PublishToFrontend:input_type -> plugins.PublishToFrontendRequest
+	53,  // 85: plugins.HostService.SubscribeFrontend:input_type -> plugins.SubscribeFrontendRequest
+	55,  // 86: plugins.HostService.UnsubscribeFrontend:input_type -> plugins.UnsubscribeFrontendRequest
+	58,  // 87: plugins.LibraryQuery.GetWorkById:input_type -> plugins.GetWorkByIdRequest
+	59,  // 88: plugins.LibraryQuery.GetWorkBySiteKey:input_type -> plugins.GetWorkBySiteKeyRequest
+	61,  // 89: plugins.LibraryQuery.QueryWorks:input_type -> plugins.QueryWorksRequest
+	63,  // 90: plugins.LibraryQuery.ListResourcesByWorkId:input_type -> plugins.ListResourcesByWorkIdRequest
+	67,  // 91: plugins.LibraryQuery.GetLocalAuthorById:input_type -> plugins.GetLocalAuthorByIdRequest
+	68,  // 92: plugins.LibraryQuery.QueryLocalAuthors:input_type -> plugins.QueryLocalAuthorsRequest
+	70,  // 93: plugins.LibraryQuery.GetSiteAuthorBySiteKey:input_type -> plugins.GetSiteAuthorBySiteKeyRequest
+	72,  // 94: plugins.LibraryQuery.QuerySiteAuthors:input_type -> plugins.QuerySiteAuthorsRequest
+	74,  // 95: plugins.LibraryQuery.ListAuthorsByWorkId:input_type -> plugins.ListAuthorsByWorkIdRequest
+	76,  // 96: plugins.LibraryQuery.GetLocalTagById:input_type -> plugins.GetLocalTagByIdRequest
+	77,  // 97: plugins.LibraryQuery.QueryLocalTags:input_type -> plugins.QueryLocalTagsRequest
+	79,  // 98: plugins.LibraryQuery.GetSiteTagBySiteKey:input_type -> plugins.GetSiteTagBySiteKeyRequest
+	81,  // 99: plugins.LibraryQuery.QuerySiteTags:input_type -> plugins.QuerySiteTagsRequest
+	83,  // 100: plugins.LibraryQuery.ListTagsByWorkId:input_type -> plugins.ListTagsByWorkIdRequest
+	87,  // 101: plugins.LibraryQuery.GetWorkSetById:input_type -> plugins.GetWorkSetByIdRequest
+	88,  // 102: plugins.LibraryQuery.GetWorkSetBySiteKey:input_type -> plugins.GetWorkSetBySiteKeyRequest
+	89,  // 103: plugins.LibraryQuery.ListWorkSetsByWorkId:input_type -> plugins.ListWorkSetsByWorkIdRequest
+	91,  // 104: plugins.LibraryQuery.ListParentWorkSets:input_type -> plugins.ListParentWorkSetsRequest
+	93,  // 105: plugins.LibraryQuery.ListChildWorkSets:input_type -> plugins.ListChildWorkSetsRequest
+	0,   // 106: plugins.LibraryQuery.ListSites:input_type -> plugins.Empty
+	0,   // 107: plugins.LibraryQuery.GetWorkDir:input_type -> plugins.Empty
+	15,  // 108: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
+	0,   // 109: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
+	23,  // 110: plugins.TaskHandlerService.Create:output_type -> plugins.CreateChunk
+	12,  // 111: plugins.TaskHandlerService.CreateWorkInfo:output_type -> plugins.WorkResponse
+	32,  // 112: plugins.TaskHandlerService.Start:output_type -> plugins.StreamChunk
+	12,  // 113: plugins.TaskHandlerService.Retry:output_type -> plugins.WorkResponse
+	0,   // 114: plugins.TaskHandlerService.Pause:output_type -> plugins.Empty
+	0,   // 115: plugins.TaskHandlerService.Stop:output_type -> plugins.Empty
+	32,  // 116: plugins.TaskHandlerService.Resume:output_type -> plugins.StreamChunk
+	17,  // 117: plugins.TaskHandlerService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
+	20,  // 118: plugins.TaskHandlerService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
+	0,   // 119: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
+	0,   // 120: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
+	0,   // 121: plugins.HostService.RegisterTaskHandler:output_type -> plugins.Empty
+	0,   // 122: plugins.HostService.RegisterSiteBrowser:output_type -> plugins.Empty
+	0,   // 123: plugins.HostService.UnregisterSiteBrowser:output_type -> plugins.Empty
+	43,  // 124: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse
+	0,   // 125: plugins.HostService.SetValue:output_type -> plugins.Empty
+	0,   // 126: plugins.HostService.SetValueEncrypted:output_type -> plugins.Empty
+	0,   // 127: plugins.HostService.DeleteValue:output_type -> plugins.Empty
+	45,  // 128: plugins.HostService.GetAllValues:output_type -> plugins.AllStorageValuesResponse
+	0,   // 129: plugins.HostService.RegisterUrlListener:output_type -> plugins.Empty
+	0,   // 130: plugins.HostService.UnregisterUrlListener:output_type -> plugins.Empty
+	48,  // 131: plugins.HostService.CreateTask:output_type -> plugins.CreateTaskResponse
+	50,  // 132: plugins.HostService.GetPluginRoot:output_type -> plugins.GetPluginRootResponse
+	0,   // 133: plugins.HostService.Log:output_type -> plugins.Empty
+	0,   // 134: plugins.HostService.PublishToFrontend:output_type -> plugins.Empty
+	54,  // 135: plugins.HostService.SubscribeFrontend:output_type -> plugins.FrontendMessage
+	0,   // 136: plugins.HostService.UnsubscribeFrontend:output_type -> plugins.Empty
+	60,  // 137: plugins.LibraryQuery.GetWorkById:output_type -> plugins.WorkWithSite
+	60,  // 138: plugins.LibraryQuery.GetWorkBySiteKey:output_type -> plugins.WorkWithSite
+	62,  // 139: plugins.LibraryQuery.QueryWorks:output_type -> plugins.QueryWorksResponse
+	64,  // 140: plugins.LibraryQuery.ListResourcesByWorkId:output_type -> plugins.ListResourcesByWorkIdResponse
+	5,   // 141: plugins.LibraryQuery.GetLocalAuthorById:output_type -> plugins.LocalAuthorDTO
+	69,  // 142: plugins.LibraryQuery.QueryLocalAuthors:output_type -> plugins.QueryLocalAuthorsResponse
+	71,  // 143: plugins.LibraryQuery.GetSiteAuthorBySiteKey:output_type -> plugins.SiteAuthorInfo
+	73,  // 144: plugins.LibraryQuery.QuerySiteAuthors:output_type -> plugins.QuerySiteAuthorsResponse
+	75,  // 145: plugins.LibraryQuery.ListAuthorsByWorkId:output_type -> plugins.ListAuthorsByWorkIdResponse
+	6,   // 146: plugins.LibraryQuery.GetLocalTagById:output_type -> plugins.LocalTagDTO
+	78,  // 147: plugins.LibraryQuery.QueryLocalTags:output_type -> plugins.QueryLocalTagsResponse
+	80,  // 148: plugins.LibraryQuery.GetSiteTagBySiteKey:output_type -> plugins.SiteTagInfo
+	82,  // 149: plugins.LibraryQuery.QuerySiteTags:output_type -> plugins.QuerySiteTagsResponse
+	86,  // 150: plugins.LibraryQuery.ListTagsByWorkId:output_type -> plugins.ListTagsByWorkIdResponse
+	3,   // 151: plugins.LibraryQuery.GetWorkSetById:output_type -> plugins.WorkSet
+	3,   // 152: plugins.LibraryQuery.GetWorkSetBySiteKey:output_type -> plugins.WorkSet
+	90,  // 153: plugins.LibraryQuery.ListWorkSetsByWorkId:output_type -> plugins.ListWorkSetsByWorkIdResponse
+	92,  // 154: plugins.LibraryQuery.ListParentWorkSets:output_type -> plugins.ListParentWorkSetsResponse
+	94,  // 155: plugins.LibraryQuery.ListChildWorkSets:output_type -> plugins.ListChildWorkSetsResponse
+	95,  // 156: plugins.LibraryQuery.ListSites:output_type -> plugins.ListSitesResponse
+	96,  // 157: plugins.LibraryQuery.GetWorkDir:output_type -> plugins.GetWorkDirResponse
+	108, // [108:158] is the sub-list for method output_type
+	58,  // [58:108] is the sub-list for method input_type
+	58,  // [58:58] is the sub-list for extension type_name
+	58,  // [58:58] is the sub-list for extension extendee
+	0,   // [0:58] is the sub-list for field type_name
 }
 
 func init() { file_proto_plugin_proto_init() }
@@ -4467,15 +6912,19 @@ func file_proto_plugin_proto_init() {
 		(*ResumeFrame_Pull)(nil),
 	}
 	file_proto_plugin_proto_msgTypes[36].OneofWrappers = []any{}
+	file_proto_plugin_proto_msgTypes[65].OneofWrappers = []any{}
+	file_proto_plugin_proto_msgTypes[66].OneofWrappers = []any{}
+	file_proto_plugin_proto_msgTypes[71].OneofWrappers = []any{}
+	file_proto_plugin_proto_msgTypes[80].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_plugin_proto_rawDesc), len(file_proto_plugin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   59,
+			NumMessages:   98,
 			NumExtensions: 0,
-			NumServices:   4,
+			NumServices:   5,
 		},
 		GoTypes:           file_proto_plugin_proto_goTypes,
 		DependencyIndexes: file_proto_plugin_proto_depIdxs,
