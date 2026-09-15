@@ -45,13 +45,15 @@ var (
 	//   siteWorkSetId = 多 P 视频的 bvid（一个多 P 视频即一个作品集）
 	Bilibili = Site{Key: "bilibili", Name: "bilibili", Homepage: "https://www.bilibili.com"}
 
-	// Local 本地导入虚拟站点——官方捆绑插件 localImport 的落库站点，无主页。
-	// 与外部站点同构入表，键分配无差别。
+	// Local 本地导入虚拟站点——localImport 归属分轨的回退落库域：作品解析不出真实站点键时落此，
+	// 解析出真实键的作品落对应真实站点域（周边数据经 DTO siteKey 跨站引用挂联真实域行）。
+	// 无主页。与外部站点同构入表，键分配无差别。
 	//
 	// 站点级 ID 约定注记：
 	//   siteWorkId    = 文件内容哈希（单文件导入）；local-dir-{目录相对路径}（目录导入）
-	//   siteTagId     = siteTag:{标签名}
-	//   siteAuthorId  = siteAuthor:{作者名}
+	//   siteTagId     = siteTag:{标签名}（历史形态、写入路径已停——用户供数只有名字时按名落本地域实体，
+	//                   不再造站点伪行；存量伪行不迁，读侧按普通站点行装配展示）
+	//   siteAuthorId  = siteAuthor:{作者名}（历史形态、写入路径已停，同 siteTagId）
 	//   siteWorkSetId = workSet:{作品集名}
 	Local = Site{Key: "local", Name: "local"}
 )

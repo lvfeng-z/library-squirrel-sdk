@@ -784,6 +784,7 @@ type TaskSiteAuthorDTO struct {
 	Homepage        string                 `protobuf:"bytes,3,opt,name=homepage,proto3" json:"homepage,omitempty"`
 	FixedAuthorName string                 `protobuf:"bytes,4,opt,name=fixedAuthorName,proto3" json:"fixedAuthorName,omitempty"`
 	Introduce       string                 `protobuf:"bytes,5,opt,name=introduce,proto3" json:"introduce,omitempty"`
+	SiteKey         string                 `protobuf:"bytes,6,opt,name=siteKey,proto3" json:"siteKey,omitempty"` // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -853,12 +854,20 @@ func (x *TaskSiteAuthorDTO) GetIntroduce() string {
 	return ""
 }
 
+func (x *TaskSiteAuthorDTO) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
 type TaskSiteTagDTO struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SiteTagId     string                 `protobuf:"bytes,1,opt,name=siteTagId,proto3" json:"siteTagId,omitempty"`
 	TagName       string                 `protobuf:"bytes,2,opt,name=tagName,proto3" json:"tagName,omitempty"`
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Namespace     string                 `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"` // tag namespace（language/character/parody/female/male/misc/general 等）；空=无 namespace（pixiv 等无 namespace 站点）
+	SiteKey       string                 `protobuf:"bytes,5,opt,name=siteKey,proto3" json:"siteKey,omitempty"`     // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -921,10 +930,18 @@ func (x *TaskSiteTagDTO) GetNamespace() string {
 	return ""
 }
 
+func (x *TaskSiteTagDTO) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
+	}
+	return ""
+}
+
 type TaskWorkSetDTO struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SiteWorkSetId string                 `protobuf:"bytes,1,opt,name=siteWorkSetId,proto3" json:"siteWorkSetId,omitempty"`
 	WorkSetName   string                 `protobuf:"bytes,2,opt,name=workSetName,proto3" json:"workSetName,omitempty"`
+	SiteKey       string                 `protobuf:"bytes,3,opt,name=siteKey,proto3" json:"siteKey,omitempty"` // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -969,6 +986,13 @@ func (x *TaskWorkSetDTO) GetSiteWorkSetId() string {
 func (x *TaskWorkSetDTO) GetWorkSetName() string {
 	if x != nil {
 		return x.WorkSetName
+	}
+	return ""
+}
+
+func (x *TaskWorkSetDTO) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
 	}
 	return ""
 }
@@ -6168,7 +6192,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x0f_baseLocalTagIdB\x0e\n" +
 	"\f_descriptionB\n" +
 	"\n" +
-	"\b_lastUse\"\xbb\x01\n" +
+	"\b_lastUse\"\xd5\x01\n" +
 	"\x11TaskSiteAuthorDTO\x12\"\n" +
 	"\fsiteAuthorId\x18\x01 \x01(\tR\fsiteAuthorId\x12\x1e\n" +
 	"\n" +
@@ -6176,15 +6200,18 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"authorName\x12\x1a\n" +
 	"\bhomepage\x18\x03 \x01(\tR\bhomepage\x12(\n" +
 	"\x0ffixedAuthorName\x18\x04 \x01(\tR\x0ffixedAuthorName\x12\x1c\n" +
-	"\tintroduce\x18\x05 \x01(\tR\tintroduce\"\x88\x01\n" +
+	"\tintroduce\x18\x05 \x01(\tR\tintroduce\x12\x18\n" +
+	"\asiteKey\x18\x06 \x01(\tR\asiteKey\"\xa2\x01\n" +
 	"\x0eTaskSiteTagDTO\x12\x1c\n" +
 	"\tsiteTagId\x18\x01 \x01(\tR\tsiteTagId\x12\x18\n" +
 	"\atagName\x18\x02 \x01(\tR\atagName\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1c\n" +
-	"\tnamespace\x18\x04 \x01(\tR\tnamespace\"X\n" +
+	"\tnamespace\x18\x04 \x01(\tR\tnamespace\x12\x18\n" +
+	"\asiteKey\x18\x05 \x01(\tR\asiteKey\"r\n" +
 	"\x0eTaskWorkSetDTO\x12$\n" +
 	"\rsiteWorkSetId\x18\x01 \x01(\tR\rsiteWorkSetId\x12 \n" +
-	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\"\xed\x01\n" +
+	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\x12\x18\n" +
+	"\asiteKey\x18\x03 \x01(\tR\asiteKey\"\xed\x01\n" +
 	"\x17TaskCreateChildResponse\x12\x1a\n" +
 	"\btaskName\x18\x01 \x01(\tR\btaskName\x12\x1e\n" +
 	"\n" +

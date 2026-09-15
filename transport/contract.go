@@ -2,9 +2,10 @@ package transport
 
 // ContractVersion 当前插件契约版本（业务契约，非 go-plugin 传输协议版本）。
 //
-// 主程序与插件之间的 DTO/RPC/能力契约的代际编号。仅破坏性变更才 +1：
+// 主程序与插件之间的 DTO/RPC/能力契约的代际编号。破坏性变更必 +1：
 // 删/改 proto 字段类型、改 DTO 结构、改 RPC 签名、改前端 props 契约。
-// proto 加字段（向前兼容，旧插件忽略新字段）不 bump。
+// proto 加字段本身向前兼容（旧插件忽略新字段）不 bump；但当加字段开启一族
+// 新能力（宿主/插件按契约版本识别该能力是否可用）时，作为能力标识 +1。
 //
 // 与 Handshake.ProtocolVersion 分工：
 //   - ProtocolVersion 是 gRPC 传输握手版本（hashicorp/go-plugin，主程序与插件
@@ -12,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 6
+const ContractVersion = 7
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -27,3 +28,8 @@ const ContractVersion = 6
 //       只读查询，身份键复合寻址、无界集合强制分页、默认只返回活数据）；删除 HostService 死声明
 //       GetWorkSetBySiteWorkSetId（无桥接无调用的废弃 RPC，查询能力吸收为 LibraryQuery.GetWorkSetBySiteKey，
 //       按 (site_key, site_work_set_id) 复合键寻址——删 RPC 属破坏性变更故升版）
+//   7 — 周边数据写面契约（作品及周边数据统一写面首期）：任务声明期周边三 DTO
+//       （TaskSiteAuthorDTO/TaskSiteTagDTO/TaskWorkSetDTO）加可选 siteKey 字段——周边数据跨站寻址：
+//       声明站点≠作品站点时 find-only 引用既有行（不存在报错），缺省空=作品所属站点（本站 upsert 行为
+//       不变）；加字段向前兼容，作为周边写面新能力标识升版（主程序 minSupportedContractVersion 维持 5，
+//       v5/v6 插件混装载不受影响）

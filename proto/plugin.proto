@@ -97,6 +97,7 @@ message TaskSiteAuthorDTO {
   string homepage = 3;
   string fixedAuthorName = 4;
   string introduce = 5;
+  string siteKey = 6; // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
 }
 
 message TaskSiteTagDTO {
@@ -104,11 +105,13 @@ message TaskSiteTagDTO {
   string tagName = 2;
   string description = 3;
   string namespace = 4; // tag namespace（language/character/parody/female/male/misc/general 等）；空=无 namespace（pixiv 等无 namespace 站点）
+  string siteKey = 5; // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
 }
 
 message TaskWorkSetDTO {
   string siteWorkSetId = 1;
   string workSetName = 2;
+  string siteKey = 3; // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
 }
 
 message TaskCreateChildResponse {
