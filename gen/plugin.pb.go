@@ -784,7 +784,8 @@ type TaskSiteAuthorDTO struct {
 	Homepage        string                 `protobuf:"bytes,3,opt,name=homepage,proto3" json:"homepage,omitempty"`
 	FixedAuthorName string                 `protobuf:"bytes,4,opt,name=fixedAuthorName,proto3" json:"fixedAuthorName,omitempty"`
 	Introduce       string                 `protobuf:"bytes,5,opt,name=introduce,proto3" json:"introduce,omitempty"`
-	SiteKey         string                 `protobuf:"bytes,6,opt,name=siteKey,proto3" json:"siteKey,omitempty"` // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
+	SiteKey         string                 `protobuf:"bytes,6,opt,name=siteKey,proto3" json:"siteKey,omitempty"`   // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
+	RoleName        string                 `protobuf:"bytes,7,opt,name=roleName,proto3" json:"roleName,omitempty"` // 关联级 role:该作者在本作品关联行上的角色分工(原画/脚本/声优等开放字符串),落点为作品-作者关联行,不写作者实体;空=无 role
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -861,12 +862,19 @@ func (x *TaskSiteAuthorDTO) GetSiteKey() string {
 	return ""
 }
 
+func (x *TaskSiteAuthorDTO) GetRoleName() string {
+	if x != nil {
+		return x.RoleName
+	}
+	return ""
+}
+
 type TaskSiteTagDTO struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SiteTagId     string                 `protobuf:"bytes,1,opt,name=siteTagId,proto3" json:"siteTagId,omitempty"`
 	TagName       string                 `protobuf:"bytes,2,opt,name=tagName,proto3" json:"tagName,omitempty"`
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Namespace     string                 `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"` // tag namespace（language/character/parody/female/male/misc/general 等）；空=无 namespace（pixiv 等无 namespace 站点）
+	Namespace     string                 `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"` // 关联级 namespace:该标签在本作品关联行上的 ns(language/character/parody/female/male/misc/general 等开放字符串),落点为作品-标签关联行,不写标签实体;空=无 namespace
 	SiteKey       string                 `protobuf:"bytes,5,opt,name=siteKey,proto3" json:"siteKey,omitempty"`     // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -4674,7 +4682,7 @@ func (x *GetSiteAuthorBySiteKeyRequest) GetSiteAuthorId() string {
 	return ""
 }
 
-// SiteAuthorInfo 站点作者查询结果：字段面对齐任务声明期 TaskSiteAuthorDTO，另携库内行 id 与身份键锚点
+// SiteAuthorInfo 站点作者查询结果：库内 site_author 行投影，另携行 id 与身份键锚点（role 是作品-作者关联级维度，不在作者实体上——作品维度的 role 见 ListAuthorsByWorkId 的关联条目）
 type SiteAuthorInfo struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                          // 库内 site_author 行 id
@@ -4931,17 +4939,123 @@ func (x *ListAuthorsByWorkIdRequest) GetWorkId() int64 {
 	return 0
 }
 
-type ListAuthorsByWorkIdResponse struct {
+// WorkLocalAuthorEntry 作品的本地作者关联条目（作者 + 关联级 role）
+type WorkLocalAuthorEntry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	LocalAuthors  []*LocalAuthorDTO      `protobuf:"bytes,1,rep,name=local_authors,json=localAuthors,proto3" json:"local_authors,omitempty"` // 本地轨（用户策展关联）
-	SiteAuthors   []*SiteAuthorInfo      `protobuf:"bytes,2,rep,name=site_authors,json=siteAuthors,proto3" json:"site_authors,omitempty"`    // 站点轨（站点来源关联）
+	Author        *LocalAuthorDTO        `protobuf:"bytes,1,opt,name=author,proto3" json:"author,omitempty"`
+	RoleName      string                 `protobuf:"bytes,2,opt,name=role_name,json=roleName,proto3" json:"role_name,omitempty"` // 关联级 role（该作者在本作品关联行上的角色分工，开放字符串）；空=无 role
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkLocalAuthorEntry) Reset() {
+	*x = WorkLocalAuthorEntry{}
+	mi := &file_proto_plugin_proto_msgTypes[75]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkLocalAuthorEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkLocalAuthorEntry) ProtoMessage() {}
+
+func (x *WorkLocalAuthorEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[75]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkLocalAuthorEntry.ProtoReflect.Descriptor instead.
+func (*WorkLocalAuthorEntry) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{75}
+}
+
+func (x *WorkLocalAuthorEntry) GetAuthor() *LocalAuthorDTO {
+	if x != nil {
+		return x.Author
+	}
+	return nil
+}
+
+func (x *WorkLocalAuthorEntry) GetRoleName() string {
+	if x != nil {
+		return x.RoleName
+	}
+	return ""
+}
+
+// WorkSiteAuthorEntry 作品的站点作者关联条目（作者 + 关联级 role）
+type WorkSiteAuthorEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Author        *SiteAuthorInfo        `protobuf:"bytes,1,opt,name=author,proto3" json:"author,omitempty"`
+	RoleName      string                 `protobuf:"bytes,2,opt,name=role_name,json=roleName,proto3" json:"role_name,omitempty"` // 关联级 role（该作者在本作品关联行上的角色分工，开放字符串）；空=无 role
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkSiteAuthorEntry) Reset() {
+	*x = WorkSiteAuthorEntry{}
+	mi := &file_proto_plugin_proto_msgTypes[76]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkSiteAuthorEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkSiteAuthorEntry) ProtoMessage() {}
+
+func (x *WorkSiteAuthorEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_plugin_proto_msgTypes[76]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkSiteAuthorEntry.ProtoReflect.Descriptor instead.
+func (*WorkSiteAuthorEntry) Descriptor() ([]byte, []int) {
+	return file_proto_plugin_proto_rawDescGZIP(), []int{76}
+}
+
+func (x *WorkSiteAuthorEntry) GetAuthor() *SiteAuthorInfo {
+	if x != nil {
+		return x.Author
+	}
+	return nil
+}
+
+func (x *WorkSiteAuthorEntry) GetRoleName() string {
+	if x != nil {
+		return x.RoleName
+	}
+	return ""
+}
+
+type ListAuthorsByWorkIdResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	LocalAuthors  []*WorkLocalAuthorEntry `protobuf:"bytes,1,rep,name=local_authors,json=localAuthors,proto3" json:"local_authors,omitempty"` // 本地轨（用户策展关联，含关联级 role）
+	SiteAuthors   []*WorkSiteAuthorEntry  `protobuf:"bytes,2,rep,name=site_authors,json=siteAuthors,proto3" json:"site_authors,omitempty"`    // 站点轨（站点来源关联，含关联级 role）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListAuthorsByWorkIdResponse) Reset() {
 	*x = ListAuthorsByWorkIdResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[75]
+	mi := &file_proto_plugin_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4953,7 +5067,7 @@ func (x *ListAuthorsByWorkIdResponse) String() string {
 func (*ListAuthorsByWorkIdResponse) ProtoMessage() {}
 
 func (x *ListAuthorsByWorkIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[75]
+	mi := &file_proto_plugin_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4966,17 +5080,17 @@ func (x *ListAuthorsByWorkIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAuthorsByWorkIdResponse.ProtoReflect.Descriptor instead.
 func (*ListAuthorsByWorkIdResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{75}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{77}
 }
 
-func (x *ListAuthorsByWorkIdResponse) GetLocalAuthors() []*LocalAuthorDTO {
+func (x *ListAuthorsByWorkIdResponse) GetLocalAuthors() []*WorkLocalAuthorEntry {
 	if x != nil {
 		return x.LocalAuthors
 	}
 	return nil
 }
 
-func (x *ListAuthorsByWorkIdResponse) GetSiteAuthors() []*SiteAuthorInfo {
+func (x *ListAuthorsByWorkIdResponse) GetSiteAuthors() []*WorkSiteAuthorEntry {
 	if x != nil {
 		return x.SiteAuthors
 	}
@@ -4992,7 +5106,7 @@ type GetLocalTagByIdRequest struct {
 
 func (x *GetLocalTagByIdRequest) Reset() {
 	*x = GetLocalTagByIdRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[76]
+	mi := &file_proto_plugin_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5004,7 +5118,7 @@ func (x *GetLocalTagByIdRequest) String() string {
 func (*GetLocalTagByIdRequest) ProtoMessage() {}
 
 func (x *GetLocalTagByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[76]
+	mi := &file_proto_plugin_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5017,7 +5131,7 @@ func (x *GetLocalTagByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLocalTagByIdRequest.ProtoReflect.Descriptor instead.
 func (*GetLocalTagByIdRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{76}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *GetLocalTagByIdRequest) GetLocalTagId() int64 {
@@ -5037,7 +5151,7 @@ type QueryLocalTagsRequest struct {
 
 func (x *QueryLocalTagsRequest) Reset() {
 	*x = QueryLocalTagsRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[77]
+	mi := &file_proto_plugin_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5049,7 +5163,7 @@ func (x *QueryLocalTagsRequest) String() string {
 func (*QueryLocalTagsRequest) ProtoMessage() {}
 
 func (x *QueryLocalTagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[77]
+	mi := &file_proto_plugin_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5062,7 +5176,7 @@ func (x *QueryLocalTagsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLocalTagsRequest.ProtoReflect.Descriptor instead.
 func (*QueryLocalTagsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{77}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *QueryLocalTagsRequest) GetNameKeyword() string {
@@ -5089,7 +5203,7 @@ type QueryLocalTagsResponse struct {
 
 func (x *QueryLocalTagsResponse) Reset() {
 	*x = QueryLocalTagsResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[78]
+	mi := &file_proto_plugin_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5101,7 +5215,7 @@ func (x *QueryLocalTagsResponse) String() string {
 func (*QueryLocalTagsResponse) ProtoMessage() {}
 
 func (x *QueryLocalTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[78]
+	mi := &file_proto_plugin_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5114,7 +5228,7 @@ func (x *QueryLocalTagsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLocalTagsResponse.ProtoReflect.Descriptor instead.
 func (*QueryLocalTagsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{78}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *QueryLocalTagsResponse) GetItems() []*LocalTagDTO {
@@ -5141,7 +5255,7 @@ type GetSiteTagBySiteKeyRequest struct {
 
 func (x *GetSiteTagBySiteKeyRequest) Reset() {
 	*x = GetSiteTagBySiteKeyRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[79]
+	mi := &file_proto_plugin_proto_msgTypes[81]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5153,7 +5267,7 @@ func (x *GetSiteTagBySiteKeyRequest) String() string {
 func (*GetSiteTagBySiteKeyRequest) ProtoMessage() {}
 
 func (x *GetSiteTagBySiteKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[79]
+	mi := &file_proto_plugin_proto_msgTypes[81]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5166,7 +5280,7 @@ func (x *GetSiteTagBySiteKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSiteTagBySiteKeyRequest.ProtoReflect.Descriptor instead.
 func (*GetSiteTagBySiteKeyRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{79}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *GetSiteTagBySiteKeyRequest) GetSiteKey() string {
@@ -5183,7 +5297,7 @@ func (x *GetSiteTagBySiteKeyRequest) GetSiteTagId() string {
 	return ""
 }
 
-// SiteTagInfo 站点标签查询结果：字段面对齐任务声明期 TaskSiteTagDTO，另携库内行 id 与身份键锚点
+// SiteTagInfo 站点标签查询结果：库内 site_tag 行投影，另携行 id 与身份键锚点（namespace 是作品-标签关联级维度，不在标签实体上——作品维度的 ns 见 ListTagsByWorkId 的关联条目）
 type SiteTagInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                 // 库内 site_tag 行 id
@@ -5191,7 +5305,6 @@ type SiteTagInfo struct {
 	SiteTagId     string                 `protobuf:"bytes,3,opt,name=site_tag_id,json=siteTagId,proto3" json:"site_tag_id,omitempty"` // 站点侧标签 id
 	TagName       string                 `protobuf:"bytes,4,opt,name=tag_name,json=tagName,proto3" json:"tag_name,omitempty"`
 	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Namespace     string                 `protobuf:"bytes,6,opt,name=namespace,proto3" json:"namespace,omitempty"`                              // 站点侧 namespace（language/character/parody/female/male/misc/general 等）；空=站点无 namespace
 	LocalTagId    *int64                 `protobuf:"varint,7,opt,name=local_tag_id,json=localTagId,proto3,oneof" json:"local_tag_id,omitempty"` // 用户桥接的本地标签 id；未桥接时缺省
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -5199,7 +5312,7 @@ type SiteTagInfo struct {
 
 func (x *SiteTagInfo) Reset() {
 	*x = SiteTagInfo{}
-	mi := &file_proto_plugin_proto_msgTypes[80]
+	mi := &file_proto_plugin_proto_msgTypes[82]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5211,7 +5324,7 @@ func (x *SiteTagInfo) String() string {
 func (*SiteTagInfo) ProtoMessage() {}
 
 func (x *SiteTagInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[80]
+	mi := &file_proto_plugin_proto_msgTypes[82]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5224,7 +5337,7 @@ func (x *SiteTagInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SiteTagInfo.ProtoReflect.Descriptor instead.
 func (*SiteTagInfo) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{80}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *SiteTagInfo) GetId() int64 {
@@ -5262,13 +5375,6 @@ func (x *SiteTagInfo) GetDescription() string {
 	return ""
 }
 
-func (x *SiteTagInfo) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
 func (x *SiteTagInfo) GetLocalTagId() int64 {
 	if x != nil && x.LocalTagId != nil {
 		return *x.LocalTagId
@@ -5287,7 +5393,7 @@ type QuerySiteTagsRequest struct {
 
 func (x *QuerySiteTagsRequest) Reset() {
 	*x = QuerySiteTagsRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[81]
+	mi := &file_proto_plugin_proto_msgTypes[83]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5299,7 +5405,7 @@ func (x *QuerySiteTagsRequest) String() string {
 func (*QuerySiteTagsRequest) ProtoMessage() {}
 
 func (x *QuerySiteTagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[81]
+	mi := &file_proto_plugin_proto_msgTypes[83]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5312,7 +5418,7 @@ func (x *QuerySiteTagsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuerySiteTagsRequest.ProtoReflect.Descriptor instead.
 func (*QuerySiteTagsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{81}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *QuerySiteTagsRequest) GetSiteKey() string {
@@ -5346,7 +5452,7 @@ type QuerySiteTagsResponse struct {
 
 func (x *QuerySiteTagsResponse) Reset() {
 	*x = QuerySiteTagsResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[82]
+	mi := &file_proto_plugin_proto_msgTypes[84]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5358,7 +5464,7 @@ func (x *QuerySiteTagsResponse) String() string {
 func (*QuerySiteTagsResponse) ProtoMessage() {}
 
 func (x *QuerySiteTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[82]
+	mi := &file_proto_plugin_proto_msgTypes[84]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5371,7 +5477,7 @@ func (x *QuerySiteTagsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuerySiteTagsResponse.ProtoReflect.Descriptor instead.
 func (*QuerySiteTagsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{82}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{84}
 }
 
 func (x *QuerySiteTagsResponse) GetItems() []*SiteTagInfo {
@@ -5397,7 +5503,7 @@ type ListTagsByWorkIdRequest struct {
 
 func (x *ListTagsByWorkIdRequest) Reset() {
 	*x = ListTagsByWorkIdRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[83]
+	mi := &file_proto_plugin_proto_msgTypes[85]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5409,7 +5515,7 @@ func (x *ListTagsByWorkIdRequest) String() string {
 func (*ListTagsByWorkIdRequest) ProtoMessage() {}
 
 func (x *ListTagsByWorkIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[83]
+	mi := &file_proto_plugin_proto_msgTypes[85]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5422,7 +5528,7 @@ func (x *ListTagsByWorkIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTagsByWorkIdRequest.ProtoReflect.Descriptor instead.
 func (*ListTagsByWorkIdRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{83}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *ListTagsByWorkIdRequest) GetWorkId() int64 {
@@ -5436,14 +5542,14 @@ func (x *ListTagsByWorkIdRequest) GetWorkId() int64 {
 type WorkLocalTagEntry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Tag           *LocalTagDTO           `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
-	Namespace     string                 `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"` // 关联级 namespace（用户自设）；空=无
+	Namespace     string                 `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"` // 关联级 namespace（该标签在本作品关联行上的 ns，用户自设）；空=无
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *WorkLocalTagEntry) Reset() {
 	*x = WorkLocalTagEntry{}
-	mi := &file_proto_plugin_proto_msgTypes[84]
+	mi := &file_proto_plugin_proto_msgTypes[86]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5455,7 +5561,7 @@ func (x *WorkLocalTagEntry) String() string {
 func (*WorkLocalTagEntry) ProtoMessage() {}
 
 func (x *WorkLocalTagEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[84]
+	mi := &file_proto_plugin_proto_msgTypes[86]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5468,7 +5574,7 @@ func (x *WorkLocalTagEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkLocalTagEntry.ProtoReflect.Descriptor instead.
 func (*WorkLocalTagEntry) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{84}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *WorkLocalTagEntry) GetTag() *LocalTagDTO {
@@ -5489,14 +5595,14 @@ func (x *WorkLocalTagEntry) GetNamespace() string {
 type WorkSiteTagEntry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Tag           *SiteTagInfo           `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
-	Namespace     string                 `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"` // 关联级 namespace（所指 site_tag.namespace 在本关联上的镜像）；空=无
+	Namespace     string                 `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"` // 关联级 namespace（该标签在本作品关联行上的 ns，插件声明或用户自设）；空=无
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *WorkSiteTagEntry) Reset() {
 	*x = WorkSiteTagEntry{}
-	mi := &file_proto_plugin_proto_msgTypes[85]
+	mi := &file_proto_plugin_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5508,7 +5614,7 @@ func (x *WorkSiteTagEntry) String() string {
 func (*WorkSiteTagEntry) ProtoMessage() {}
 
 func (x *WorkSiteTagEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[85]
+	mi := &file_proto_plugin_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5521,7 +5627,7 @@ func (x *WorkSiteTagEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkSiteTagEntry.ProtoReflect.Descriptor instead.
 func (*WorkSiteTagEntry) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{85}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *WorkSiteTagEntry) GetTag() *SiteTagInfo {
@@ -5548,7 +5654,7 @@ type ListTagsByWorkIdResponse struct {
 
 func (x *ListTagsByWorkIdResponse) Reset() {
 	*x = ListTagsByWorkIdResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[86]
+	mi := &file_proto_plugin_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5560,7 +5666,7 @@ func (x *ListTagsByWorkIdResponse) String() string {
 func (*ListTagsByWorkIdResponse) ProtoMessage() {}
 
 func (x *ListTagsByWorkIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[86]
+	mi := &file_proto_plugin_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5573,7 +5679,7 @@ func (x *ListTagsByWorkIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTagsByWorkIdResponse.ProtoReflect.Descriptor instead.
 func (*ListTagsByWorkIdResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{86}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *ListTagsByWorkIdResponse) GetLocalTags() []*WorkLocalTagEntry {
@@ -5599,7 +5705,7 @@ type GetWorkSetByIdRequest struct {
 
 func (x *GetWorkSetByIdRequest) Reset() {
 	*x = GetWorkSetByIdRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[87]
+	mi := &file_proto_plugin_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5611,7 +5717,7 @@ func (x *GetWorkSetByIdRequest) String() string {
 func (*GetWorkSetByIdRequest) ProtoMessage() {}
 
 func (x *GetWorkSetByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[87]
+	mi := &file_proto_plugin_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5624,7 +5730,7 @@ func (x *GetWorkSetByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkSetByIdRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkSetByIdRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{87}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *GetWorkSetByIdRequest) GetWorkSetId() int64 {
@@ -5644,7 +5750,7 @@ type GetWorkSetBySiteKeyRequest struct {
 
 func (x *GetWorkSetBySiteKeyRequest) Reset() {
 	*x = GetWorkSetBySiteKeyRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[88]
+	mi := &file_proto_plugin_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5656,7 +5762,7 @@ func (x *GetWorkSetBySiteKeyRequest) String() string {
 func (*GetWorkSetBySiteKeyRequest) ProtoMessage() {}
 
 func (x *GetWorkSetBySiteKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[88]
+	mi := &file_proto_plugin_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5669,7 +5775,7 @@ func (x *GetWorkSetBySiteKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkSetBySiteKeyRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkSetBySiteKeyRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{88}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *GetWorkSetBySiteKeyRequest) GetSiteKey() string {
@@ -5695,7 +5801,7 @@ type ListWorkSetsByWorkIdRequest struct {
 
 func (x *ListWorkSetsByWorkIdRequest) Reset() {
 	*x = ListWorkSetsByWorkIdRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[89]
+	mi := &file_proto_plugin_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5707,7 +5813,7 @@ func (x *ListWorkSetsByWorkIdRequest) String() string {
 func (*ListWorkSetsByWorkIdRequest) ProtoMessage() {}
 
 func (x *ListWorkSetsByWorkIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[89]
+	mi := &file_proto_plugin_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5720,7 +5826,7 @@ func (x *ListWorkSetsByWorkIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkSetsByWorkIdRequest.ProtoReflect.Descriptor instead.
 func (*ListWorkSetsByWorkIdRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{89}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *ListWorkSetsByWorkIdRequest) GetWorkId() int64 {
@@ -5739,7 +5845,7 @@ type ListWorkSetsByWorkIdResponse struct {
 
 func (x *ListWorkSetsByWorkIdResponse) Reset() {
 	*x = ListWorkSetsByWorkIdResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[90]
+	mi := &file_proto_plugin_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5751,7 +5857,7 @@ func (x *ListWorkSetsByWorkIdResponse) String() string {
 func (*ListWorkSetsByWorkIdResponse) ProtoMessage() {}
 
 func (x *ListWorkSetsByWorkIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[90]
+	mi := &file_proto_plugin_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5764,7 +5870,7 @@ func (x *ListWorkSetsByWorkIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkSetsByWorkIdResponse.ProtoReflect.Descriptor instead.
 func (*ListWorkSetsByWorkIdResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{90}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *ListWorkSetsByWorkIdResponse) GetItems() []*WorkSet {
@@ -5783,7 +5889,7 @@ type ListParentWorkSetsRequest struct {
 
 func (x *ListParentWorkSetsRequest) Reset() {
 	*x = ListParentWorkSetsRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[91]
+	mi := &file_proto_plugin_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5795,7 +5901,7 @@ func (x *ListParentWorkSetsRequest) String() string {
 func (*ListParentWorkSetsRequest) ProtoMessage() {}
 
 func (x *ListParentWorkSetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[91]
+	mi := &file_proto_plugin_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5808,7 +5914,7 @@ func (x *ListParentWorkSetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListParentWorkSetsRequest.ProtoReflect.Descriptor instead.
 func (*ListParentWorkSetsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{91}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *ListParentWorkSetsRequest) GetWorkSetId() int64 {
@@ -5827,7 +5933,7 @@ type ListParentWorkSetsResponse struct {
 
 func (x *ListParentWorkSetsResponse) Reset() {
 	*x = ListParentWorkSetsResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[92]
+	mi := &file_proto_plugin_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5839,7 +5945,7 @@ func (x *ListParentWorkSetsResponse) String() string {
 func (*ListParentWorkSetsResponse) ProtoMessage() {}
 
 func (x *ListParentWorkSetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[92]
+	mi := &file_proto_plugin_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5852,7 +5958,7 @@ func (x *ListParentWorkSetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListParentWorkSetsResponse.ProtoReflect.Descriptor instead.
 func (*ListParentWorkSetsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{92}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *ListParentWorkSetsResponse) GetItems() []*WorkSet {
@@ -5871,7 +5977,7 @@ type ListChildWorkSetsRequest struct {
 
 func (x *ListChildWorkSetsRequest) Reset() {
 	*x = ListChildWorkSetsRequest{}
-	mi := &file_proto_plugin_proto_msgTypes[93]
+	mi := &file_proto_plugin_proto_msgTypes[95]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5883,7 +5989,7 @@ func (x *ListChildWorkSetsRequest) String() string {
 func (*ListChildWorkSetsRequest) ProtoMessage() {}
 
 func (x *ListChildWorkSetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[93]
+	mi := &file_proto_plugin_proto_msgTypes[95]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5896,7 +6002,7 @@ func (x *ListChildWorkSetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChildWorkSetsRequest.ProtoReflect.Descriptor instead.
 func (*ListChildWorkSetsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{93}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *ListChildWorkSetsRequest) GetWorkSetId() int64 {
@@ -5915,7 +6021,7 @@ type ListChildWorkSetsResponse struct {
 
 func (x *ListChildWorkSetsResponse) Reset() {
 	*x = ListChildWorkSetsResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[94]
+	mi := &file_proto_plugin_proto_msgTypes[96]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5927,7 +6033,7 @@ func (x *ListChildWorkSetsResponse) String() string {
 func (*ListChildWorkSetsResponse) ProtoMessage() {}
 
 func (x *ListChildWorkSetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[94]
+	mi := &file_proto_plugin_proto_msgTypes[96]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5940,7 +6046,7 @@ func (x *ListChildWorkSetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChildWorkSetsResponse.ProtoReflect.Descriptor instead.
 func (*ListChildWorkSetsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{94}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *ListChildWorkSetsResponse) GetItems() []*WorkSet {
@@ -5959,7 +6065,7 @@ type ListSitesResponse struct {
 
 func (x *ListSitesResponse) Reset() {
 	*x = ListSitesResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[95]
+	mi := &file_proto_plugin_proto_msgTypes[97]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5971,7 +6077,7 @@ func (x *ListSitesResponse) String() string {
 func (*ListSitesResponse) ProtoMessage() {}
 
 func (x *ListSitesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[95]
+	mi := &file_proto_plugin_proto_msgTypes[97]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5984,7 +6090,7 @@ func (x *ListSitesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSitesResponse.ProtoReflect.Descriptor instead.
 func (*ListSitesResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{95}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *ListSitesResponse) GetItems() []*SiteDTO {
@@ -6003,7 +6109,7 @@ type GetWorkDirResponse struct {
 
 func (x *GetWorkDirResponse) Reset() {
 	*x = GetWorkDirResponse{}
-	mi := &file_proto_plugin_proto_msgTypes[96]
+	mi := &file_proto_plugin_proto_msgTypes[98]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6015,7 +6121,7 @@ func (x *GetWorkDirResponse) String() string {
 func (*GetWorkDirResponse) ProtoMessage() {}
 
 func (x *GetWorkDirResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_plugin_proto_msgTypes[96]
+	mi := &file_proto_plugin_proto_msgTypes[98]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6028,7 +6134,7 @@ func (x *GetWorkDirResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkDirResponse.ProtoReflect.Descriptor instead.
 func (*GetWorkDirResponse) Descriptor() ([]byte, []int) {
-	return file_proto_plugin_proto_rawDescGZIP(), []int{96}
+	return file_proto_plugin_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *GetWorkDirResponse) GetPath() string {
@@ -6192,7 +6298,7 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x0f_baseLocalTagIdB\x0e\n" +
 	"\f_descriptionB\n" +
 	"\n" +
-	"\b_lastUse\"\xd5\x01\n" +
+	"\b_lastUse\"\xf1\x01\n" +
 	"\x11TaskSiteAuthorDTO\x12\"\n" +
 	"\fsiteAuthorId\x18\x01 \x01(\tR\fsiteAuthorId\x12\x1e\n" +
 	"\n" +
@@ -6201,7 +6307,8 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\bhomepage\x18\x03 \x01(\tR\bhomepage\x12(\n" +
 	"\x0ffixedAuthorName\x18\x04 \x01(\tR\x0ffixedAuthorName\x12\x1c\n" +
 	"\tintroduce\x18\x05 \x01(\tR\tintroduce\x12\x18\n" +
-	"\asiteKey\x18\x06 \x01(\tR\asiteKey\"\xa2\x01\n" +
+	"\asiteKey\x18\x06 \x01(\tR\asiteKey\x12\x1a\n" +
+	"\broleName\x18\a \x01(\tR\broleName\"\xa2\x01\n" +
 	"\x0eTaskSiteTagDTO\x12\x1c\n" +
 	"\tsiteTagId\x18\x01 \x01(\tR\tsiteTagId\x12\x18\n" +
 	"\atagName\x18\x02 \x01(\tR\atagName\x12 \n" +
@@ -6503,10 +6610,16 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2\x17.plugins.SiteAuthorInfoR\x05items\x12%\n" +
 	"\x04page\x18\x02 \x01(\v2\x11.plugins.PageInfoR\x04page\"5\n" +
 	"\x1aListAuthorsByWorkIdRequest\x12\x17\n" +
-	"\awork_id\x18\x01 \x01(\x03R\x06workId\"\x97\x01\n" +
-	"\x1bListAuthorsByWorkIdResponse\x12<\n" +
-	"\rlocal_authors\x18\x01 \x03(\v2\x17.plugins.LocalAuthorDTOR\flocalAuthors\x12:\n" +
-	"\fsite_authors\x18\x02 \x03(\v2\x17.plugins.SiteAuthorInfoR\vsiteAuthors\":\n" +
+	"\awork_id\x18\x01 \x01(\x03R\x06workId\"d\n" +
+	"\x14WorkLocalAuthorEntry\x12/\n" +
+	"\x06author\x18\x01 \x01(\v2\x17.plugins.LocalAuthorDTOR\x06author\x12\x1b\n" +
+	"\trole_name\x18\x02 \x01(\tR\broleName\"c\n" +
+	"\x13WorkSiteAuthorEntry\x12/\n" +
+	"\x06author\x18\x01 \x01(\v2\x17.plugins.SiteAuthorInfoR\x06author\x12\x1b\n" +
+	"\trole_name\x18\x02 \x01(\tR\broleName\"\xa2\x01\n" +
+	"\x1bListAuthorsByWorkIdResponse\x12B\n" +
+	"\rlocal_authors\x18\x01 \x03(\v2\x1d.plugins.WorkLocalAuthorEntryR\flocalAuthors\x12?\n" +
+	"\fsite_authors\x18\x02 \x03(\v2\x1c.plugins.WorkSiteAuthorEntryR\vsiteAuthors\":\n" +
 	"\x16GetLocalTagByIdRequest\x12 \n" +
 	"\flocal_tag_id\x18\x01 \x01(\x03R\n" +
 	"localTagId\"d\n" +
@@ -6518,17 +6631,16 @@ const file_proto_plugin_proto_rawDesc = "" +
 	"\x04page\x18\x02 \x01(\v2\x11.plugins.PageInfoR\x04page\"W\n" +
 	"\x1aGetSiteTagBySiteKeyRequest\x12\x19\n" +
 	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12\x1e\n" +
-	"\vsite_tag_id\x18\x02 \x01(\tR\tsiteTagId\"\xeb\x01\n" +
+	"\vsite_tag_id\x18\x02 \x01(\tR\tsiteTagId\"\xd3\x01\n" +
 	"\vSiteTagInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
 	"\bsite_key\x18\x02 \x01(\tR\asiteKey\x12\x1e\n" +
 	"\vsite_tag_id\x18\x03 \x01(\tR\tsiteTagId\x12\x19\n" +
 	"\btag_name\x18\x04 \x01(\tR\atagName\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1c\n" +
-	"\tnamespace\x18\x06 \x01(\tR\tnamespace\x12%\n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12%\n" +
 	"\flocal_tag_id\x18\a \x01(\x03H\x00R\n" +
 	"localTagId\x88\x01\x01B\x0f\n" +
-	"\r_local_tag_id\"~\n" +
+	"\r_local_tag_idJ\x04\b\x06\x10\a\"~\n" +
 	"\x14QuerySiteTagsRequest\x12\x19\n" +
 	"\bsite_key\x18\x01 \x01(\tR\asiteKey\x12!\n" +
 	"\fname_keyword\x18\x02 \x01(\tR\vnameKeyword\x12(\n" +
@@ -6640,7 +6752,7 @@ func file_proto_plugin_proto_rawDescGZIP() []byte {
 	return file_proto_plugin_proto_rawDescData
 }
 
-var file_proto_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 98)
+var file_proto_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 100)
 var file_proto_plugin_proto_goTypes = []any{
 	(*Empty)(nil),                         // 0: plugins.Empty
 	(*Task)(nil),                          // 1: plugins.Task
@@ -6717,29 +6829,31 @@ var file_proto_plugin_proto_goTypes = []any{
 	(*QuerySiteAuthorsRequest)(nil),       // 72: plugins.QuerySiteAuthorsRequest
 	(*QuerySiteAuthorsResponse)(nil),      // 73: plugins.QuerySiteAuthorsResponse
 	(*ListAuthorsByWorkIdRequest)(nil),    // 74: plugins.ListAuthorsByWorkIdRequest
-	(*ListAuthorsByWorkIdResponse)(nil),   // 75: plugins.ListAuthorsByWorkIdResponse
-	(*GetLocalTagByIdRequest)(nil),        // 76: plugins.GetLocalTagByIdRequest
-	(*QueryLocalTagsRequest)(nil),         // 77: plugins.QueryLocalTagsRequest
-	(*QueryLocalTagsResponse)(nil),        // 78: plugins.QueryLocalTagsResponse
-	(*GetSiteTagBySiteKeyRequest)(nil),    // 79: plugins.GetSiteTagBySiteKeyRequest
-	(*SiteTagInfo)(nil),                   // 80: plugins.SiteTagInfo
-	(*QuerySiteTagsRequest)(nil),          // 81: plugins.QuerySiteTagsRequest
-	(*QuerySiteTagsResponse)(nil),         // 82: plugins.QuerySiteTagsResponse
-	(*ListTagsByWorkIdRequest)(nil),       // 83: plugins.ListTagsByWorkIdRequest
-	(*WorkLocalTagEntry)(nil),             // 84: plugins.WorkLocalTagEntry
-	(*WorkSiteTagEntry)(nil),              // 85: plugins.WorkSiteTagEntry
-	(*ListTagsByWorkIdResponse)(nil),      // 86: plugins.ListTagsByWorkIdResponse
-	(*GetWorkSetByIdRequest)(nil),         // 87: plugins.GetWorkSetByIdRequest
-	(*GetWorkSetBySiteKeyRequest)(nil),    // 88: plugins.GetWorkSetBySiteKeyRequest
-	(*ListWorkSetsByWorkIdRequest)(nil),   // 89: plugins.ListWorkSetsByWorkIdRequest
-	(*ListWorkSetsByWorkIdResponse)(nil),  // 90: plugins.ListWorkSetsByWorkIdResponse
-	(*ListParentWorkSetsRequest)(nil),     // 91: plugins.ListParentWorkSetsRequest
-	(*ListParentWorkSetsResponse)(nil),    // 92: plugins.ListParentWorkSetsResponse
-	(*ListChildWorkSetsRequest)(nil),      // 93: plugins.ListChildWorkSetsRequest
-	(*ListChildWorkSetsResponse)(nil),     // 94: plugins.ListChildWorkSetsResponse
-	(*ListSitesResponse)(nil),             // 95: plugins.ListSitesResponse
-	(*GetWorkDirResponse)(nil),            // 96: plugins.GetWorkDirResponse
-	nil,                                   // 97: plugins.AllStorageValuesResponse.ValuesEntry
+	(*WorkLocalAuthorEntry)(nil),          // 75: plugins.WorkLocalAuthorEntry
+	(*WorkSiteAuthorEntry)(nil),           // 76: plugins.WorkSiteAuthorEntry
+	(*ListAuthorsByWorkIdResponse)(nil),   // 77: plugins.ListAuthorsByWorkIdResponse
+	(*GetLocalTagByIdRequest)(nil),        // 78: plugins.GetLocalTagByIdRequest
+	(*QueryLocalTagsRequest)(nil),         // 79: plugins.QueryLocalTagsRequest
+	(*QueryLocalTagsResponse)(nil),        // 80: plugins.QueryLocalTagsResponse
+	(*GetSiteTagBySiteKeyRequest)(nil),    // 81: plugins.GetSiteTagBySiteKeyRequest
+	(*SiteTagInfo)(nil),                   // 82: plugins.SiteTagInfo
+	(*QuerySiteTagsRequest)(nil),          // 83: plugins.QuerySiteTagsRequest
+	(*QuerySiteTagsResponse)(nil),         // 84: plugins.QuerySiteTagsResponse
+	(*ListTagsByWorkIdRequest)(nil),       // 85: plugins.ListTagsByWorkIdRequest
+	(*WorkLocalTagEntry)(nil),             // 86: plugins.WorkLocalTagEntry
+	(*WorkSiteTagEntry)(nil),              // 87: plugins.WorkSiteTagEntry
+	(*ListTagsByWorkIdResponse)(nil),      // 88: plugins.ListTagsByWorkIdResponse
+	(*GetWorkSetByIdRequest)(nil),         // 89: plugins.GetWorkSetByIdRequest
+	(*GetWorkSetBySiteKeyRequest)(nil),    // 90: plugins.GetWorkSetBySiteKeyRequest
+	(*ListWorkSetsByWorkIdRequest)(nil),   // 91: plugins.ListWorkSetsByWorkIdRequest
+	(*ListWorkSetsByWorkIdResponse)(nil),  // 92: plugins.ListWorkSetsByWorkIdResponse
+	(*ListParentWorkSetsRequest)(nil),     // 93: plugins.ListParentWorkSetsRequest
+	(*ListParentWorkSetsResponse)(nil),    // 94: plugins.ListParentWorkSetsResponse
+	(*ListChildWorkSetsRequest)(nil),      // 95: plugins.ListChildWorkSetsRequest
+	(*ListChildWorkSetsResponse)(nil),     // 96: plugins.ListChildWorkSetsResponse
+	(*ListSitesResponse)(nil),             // 97: plugins.ListSitesResponse
+	(*GetWorkDirResponse)(nil),            // 98: plugins.GetWorkDirResponse
+	nil,                                   // 99: plugins.AllStorageValuesResponse.ValuesEntry
 }
 var file_proto_plugin_proto_depIdxs = []int32{
 	10,  // 0: plugins.TaskCreateResponse.children:type_name -> plugins.TaskCreateChildResponse
@@ -6769,7 +6883,7 @@ var file_proto_plugin_proto_depIdxs = []int32{
 	31,  // 24: plugins.ResumeFrame.resume:type_name -> plugins.TaskResumeParamMessage
 	35,  // 25: plugins.ResumeFrame.pull:type_name -> plugins.PullRequest
 	36,  // 26: plugins.StoreSpecs.items:type_name -> plugins.StoreSpecMeta
-	97,  // 27: plugins.AllStorageValuesResponse.values:type_name -> plugins.AllStorageValuesResponse.ValuesEntry
+	99,  // 27: plugins.AllStorageValuesResponse.values:type_name -> plugins.AllStorageValuesResponse.ValuesEntry
 	2,   // 28: plugins.WorkWithSite.work:type_name -> plugins.Work
 	4,   // 29: plugins.WorkWithSite.site:type_name -> plugins.SiteDTO
 	56,  // 30: plugins.QueryWorksRequest.page:type_name -> plugins.PageRequest
@@ -6783,128 +6897,130 @@ var file_proto_plugin_proto_depIdxs = []int32{
 	56,  // 38: plugins.QuerySiteAuthorsRequest.page:type_name -> plugins.PageRequest
 	71,  // 39: plugins.QuerySiteAuthorsResponse.items:type_name -> plugins.SiteAuthorInfo
 	57,  // 40: plugins.QuerySiteAuthorsResponse.page:type_name -> plugins.PageInfo
-	5,   // 41: plugins.ListAuthorsByWorkIdResponse.local_authors:type_name -> plugins.LocalAuthorDTO
-	71,  // 42: plugins.ListAuthorsByWorkIdResponse.site_authors:type_name -> plugins.SiteAuthorInfo
-	56,  // 43: plugins.QueryLocalTagsRequest.page:type_name -> plugins.PageRequest
-	6,   // 44: plugins.QueryLocalTagsResponse.items:type_name -> plugins.LocalTagDTO
-	57,  // 45: plugins.QueryLocalTagsResponse.page:type_name -> plugins.PageInfo
-	56,  // 46: plugins.QuerySiteTagsRequest.page:type_name -> plugins.PageRequest
-	80,  // 47: plugins.QuerySiteTagsResponse.items:type_name -> plugins.SiteTagInfo
-	57,  // 48: plugins.QuerySiteTagsResponse.page:type_name -> plugins.PageInfo
-	6,   // 49: plugins.WorkLocalTagEntry.tag:type_name -> plugins.LocalTagDTO
-	80,  // 50: plugins.WorkSiteTagEntry.tag:type_name -> plugins.SiteTagInfo
-	84,  // 51: plugins.ListTagsByWorkIdResponse.local_tags:type_name -> plugins.WorkLocalTagEntry
-	85,  // 52: plugins.ListTagsByWorkIdResponse.site_tags:type_name -> plugins.WorkSiteTagEntry
-	3,   // 53: plugins.ListWorkSetsByWorkIdResponse.items:type_name -> plugins.WorkSet
-	3,   // 54: plugins.ListParentWorkSetsResponse.items:type_name -> plugins.WorkSet
-	3,   // 55: plugins.ListChildWorkSetsResponse.items:type_name -> plugins.WorkSet
-	4,   // 56: plugins.ListSitesResponse.items:type_name -> plugins.SiteDTO
-	42,  // 57: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
-	14,  // 58: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
-	0,   // 59: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
-	22,  // 60: plugins.TaskHandlerService.Create:input_type -> plugins.CreateRequest
-	25,  // 61: plugins.TaskHandlerService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
-	33,  // 62: plugins.TaskHandlerService.Start:input_type -> plugins.StartFrame
-	27,  // 63: plugins.TaskHandlerService.Retry:input_type -> plugins.RetryRequest
-	28,  // 64: plugins.TaskHandlerService.Pause:input_type -> plugins.TaskResParamMessage
-	28,  // 65: plugins.TaskHandlerService.Stop:input_type -> plugins.TaskResParamMessage
-	34,  // 66: plugins.TaskHandlerService.Resume:input_type -> plugins.ResumeFrame
-	16,  // 67: plugins.TaskHandlerService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
-	19,  // 68: plugins.TaskHandlerService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
-	38,  // 69: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
-	38,  // 70: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
-	39,  // 71: plugins.HostService.RegisterTaskHandler:input_type -> plugins.RegisterExtensionRequest
-	39,  // 72: plugins.HostService.RegisterSiteBrowser:input_type -> plugins.RegisterExtensionRequest
-	40,  // 73: plugins.HostService.UnregisterSiteBrowser:input_type -> plugins.UnregisterRequest
-	41,  // 74: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
-	44,  // 75: plugins.HostService.SetValue:input_type -> plugins.StorageEntryRequest
-	44,  // 76: plugins.HostService.SetValueEncrypted:input_type -> plugins.StorageEntryRequest
-	41,  // 77: plugins.HostService.DeleteValue:input_type -> plugins.StorageKeyRequest
-	0,   // 78: plugins.HostService.GetAllValues:input_type -> plugins.Empty
-	46,  // 79: plugins.HostService.RegisterUrlListener:input_type -> plugins.UrlListenerRequest
-	40,  // 80: plugins.HostService.UnregisterUrlListener:input_type -> plugins.UnregisterRequest
-	47,  // 81: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
-	49,  // 82: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
-	51,  // 83: plugins.HostService.Log:input_type -> plugins.LogRequest
-	52,  // 84: plugins.HostService.PublishToFrontend:input_type -> plugins.PublishToFrontendRequest
-	53,  // 85: plugins.HostService.SubscribeFrontend:input_type -> plugins.SubscribeFrontendRequest
-	55,  // 86: plugins.HostService.UnsubscribeFrontend:input_type -> plugins.UnsubscribeFrontendRequest
-	58,  // 87: plugins.LibraryQuery.GetWorkById:input_type -> plugins.GetWorkByIdRequest
-	59,  // 88: plugins.LibraryQuery.GetWorkBySiteKey:input_type -> plugins.GetWorkBySiteKeyRequest
-	61,  // 89: plugins.LibraryQuery.QueryWorks:input_type -> plugins.QueryWorksRequest
-	63,  // 90: plugins.LibraryQuery.ListResourcesByWorkId:input_type -> plugins.ListResourcesByWorkIdRequest
-	67,  // 91: plugins.LibraryQuery.GetLocalAuthorById:input_type -> plugins.GetLocalAuthorByIdRequest
-	68,  // 92: plugins.LibraryQuery.QueryLocalAuthors:input_type -> plugins.QueryLocalAuthorsRequest
-	70,  // 93: plugins.LibraryQuery.GetSiteAuthorBySiteKey:input_type -> plugins.GetSiteAuthorBySiteKeyRequest
-	72,  // 94: plugins.LibraryQuery.QuerySiteAuthors:input_type -> plugins.QuerySiteAuthorsRequest
-	74,  // 95: plugins.LibraryQuery.ListAuthorsByWorkId:input_type -> plugins.ListAuthorsByWorkIdRequest
-	76,  // 96: plugins.LibraryQuery.GetLocalTagById:input_type -> plugins.GetLocalTagByIdRequest
-	77,  // 97: plugins.LibraryQuery.QueryLocalTags:input_type -> plugins.QueryLocalTagsRequest
-	79,  // 98: plugins.LibraryQuery.GetSiteTagBySiteKey:input_type -> plugins.GetSiteTagBySiteKeyRequest
-	81,  // 99: plugins.LibraryQuery.QuerySiteTags:input_type -> plugins.QuerySiteTagsRequest
-	83,  // 100: plugins.LibraryQuery.ListTagsByWorkId:input_type -> plugins.ListTagsByWorkIdRequest
-	87,  // 101: plugins.LibraryQuery.GetWorkSetById:input_type -> plugins.GetWorkSetByIdRequest
-	88,  // 102: plugins.LibraryQuery.GetWorkSetBySiteKey:input_type -> plugins.GetWorkSetBySiteKeyRequest
-	89,  // 103: plugins.LibraryQuery.ListWorkSetsByWorkId:input_type -> plugins.ListWorkSetsByWorkIdRequest
-	91,  // 104: plugins.LibraryQuery.ListParentWorkSets:input_type -> plugins.ListParentWorkSetsRequest
-	93,  // 105: plugins.LibraryQuery.ListChildWorkSets:input_type -> plugins.ListChildWorkSetsRequest
-	0,   // 106: plugins.LibraryQuery.ListSites:input_type -> plugins.Empty
-	0,   // 107: plugins.LibraryQuery.GetWorkDir:input_type -> plugins.Empty
-	15,  // 108: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
-	0,   // 109: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
-	23,  // 110: plugins.TaskHandlerService.Create:output_type -> plugins.CreateChunk
-	12,  // 111: plugins.TaskHandlerService.CreateWorkInfo:output_type -> plugins.WorkResponse
-	32,  // 112: plugins.TaskHandlerService.Start:output_type -> plugins.StreamChunk
-	12,  // 113: plugins.TaskHandlerService.Retry:output_type -> plugins.WorkResponse
-	0,   // 114: plugins.TaskHandlerService.Pause:output_type -> plugins.Empty
-	0,   // 115: plugins.TaskHandlerService.Stop:output_type -> plugins.Empty
-	32,  // 116: plugins.TaskHandlerService.Resume:output_type -> plugins.StreamChunk
-	17,  // 117: plugins.TaskHandlerService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
-	20,  // 118: plugins.TaskHandlerService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
-	0,   // 119: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
-	0,   // 120: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
-	0,   // 121: plugins.HostService.RegisterTaskHandler:output_type -> plugins.Empty
-	0,   // 122: plugins.HostService.RegisterSiteBrowser:output_type -> plugins.Empty
-	0,   // 123: plugins.HostService.UnregisterSiteBrowser:output_type -> plugins.Empty
-	43,  // 124: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse
-	0,   // 125: plugins.HostService.SetValue:output_type -> plugins.Empty
-	0,   // 126: plugins.HostService.SetValueEncrypted:output_type -> plugins.Empty
-	0,   // 127: plugins.HostService.DeleteValue:output_type -> plugins.Empty
-	45,  // 128: plugins.HostService.GetAllValues:output_type -> plugins.AllStorageValuesResponse
-	0,   // 129: plugins.HostService.RegisterUrlListener:output_type -> plugins.Empty
-	0,   // 130: plugins.HostService.UnregisterUrlListener:output_type -> plugins.Empty
-	48,  // 131: plugins.HostService.CreateTask:output_type -> plugins.CreateTaskResponse
-	50,  // 132: plugins.HostService.GetPluginRoot:output_type -> plugins.GetPluginRootResponse
-	0,   // 133: plugins.HostService.Log:output_type -> plugins.Empty
-	0,   // 134: plugins.HostService.PublishToFrontend:output_type -> plugins.Empty
-	54,  // 135: plugins.HostService.SubscribeFrontend:output_type -> plugins.FrontendMessage
-	0,   // 136: plugins.HostService.UnsubscribeFrontend:output_type -> plugins.Empty
-	60,  // 137: plugins.LibraryQuery.GetWorkById:output_type -> plugins.WorkWithSite
-	60,  // 138: plugins.LibraryQuery.GetWorkBySiteKey:output_type -> plugins.WorkWithSite
-	62,  // 139: plugins.LibraryQuery.QueryWorks:output_type -> plugins.QueryWorksResponse
-	64,  // 140: plugins.LibraryQuery.ListResourcesByWorkId:output_type -> plugins.ListResourcesByWorkIdResponse
-	5,   // 141: plugins.LibraryQuery.GetLocalAuthorById:output_type -> plugins.LocalAuthorDTO
-	69,  // 142: plugins.LibraryQuery.QueryLocalAuthors:output_type -> plugins.QueryLocalAuthorsResponse
-	71,  // 143: plugins.LibraryQuery.GetSiteAuthorBySiteKey:output_type -> plugins.SiteAuthorInfo
-	73,  // 144: plugins.LibraryQuery.QuerySiteAuthors:output_type -> plugins.QuerySiteAuthorsResponse
-	75,  // 145: plugins.LibraryQuery.ListAuthorsByWorkId:output_type -> plugins.ListAuthorsByWorkIdResponse
-	6,   // 146: plugins.LibraryQuery.GetLocalTagById:output_type -> plugins.LocalTagDTO
-	78,  // 147: plugins.LibraryQuery.QueryLocalTags:output_type -> plugins.QueryLocalTagsResponse
-	80,  // 148: plugins.LibraryQuery.GetSiteTagBySiteKey:output_type -> plugins.SiteTagInfo
-	82,  // 149: plugins.LibraryQuery.QuerySiteTags:output_type -> plugins.QuerySiteTagsResponse
-	86,  // 150: plugins.LibraryQuery.ListTagsByWorkId:output_type -> plugins.ListTagsByWorkIdResponse
-	3,   // 151: plugins.LibraryQuery.GetWorkSetById:output_type -> plugins.WorkSet
-	3,   // 152: plugins.LibraryQuery.GetWorkSetBySiteKey:output_type -> plugins.WorkSet
-	90,  // 153: plugins.LibraryQuery.ListWorkSetsByWorkId:output_type -> plugins.ListWorkSetsByWorkIdResponse
-	92,  // 154: plugins.LibraryQuery.ListParentWorkSets:output_type -> plugins.ListParentWorkSetsResponse
-	94,  // 155: plugins.LibraryQuery.ListChildWorkSets:output_type -> plugins.ListChildWorkSetsResponse
-	95,  // 156: plugins.LibraryQuery.ListSites:output_type -> plugins.ListSitesResponse
-	96,  // 157: plugins.LibraryQuery.GetWorkDir:output_type -> plugins.GetWorkDirResponse
-	108, // [108:158] is the sub-list for method output_type
-	58,  // [58:108] is the sub-list for method input_type
-	58,  // [58:58] is the sub-list for extension type_name
-	58,  // [58:58] is the sub-list for extension extendee
-	0,   // [0:58] is the sub-list for field type_name
+	5,   // 41: plugins.WorkLocalAuthorEntry.author:type_name -> plugins.LocalAuthorDTO
+	71,  // 42: plugins.WorkSiteAuthorEntry.author:type_name -> plugins.SiteAuthorInfo
+	75,  // 43: plugins.ListAuthorsByWorkIdResponse.local_authors:type_name -> plugins.WorkLocalAuthorEntry
+	76,  // 44: plugins.ListAuthorsByWorkIdResponse.site_authors:type_name -> plugins.WorkSiteAuthorEntry
+	56,  // 45: plugins.QueryLocalTagsRequest.page:type_name -> plugins.PageRequest
+	6,   // 46: plugins.QueryLocalTagsResponse.items:type_name -> plugins.LocalTagDTO
+	57,  // 47: plugins.QueryLocalTagsResponse.page:type_name -> plugins.PageInfo
+	56,  // 48: plugins.QuerySiteTagsRequest.page:type_name -> plugins.PageRequest
+	82,  // 49: plugins.QuerySiteTagsResponse.items:type_name -> plugins.SiteTagInfo
+	57,  // 50: plugins.QuerySiteTagsResponse.page:type_name -> plugins.PageInfo
+	6,   // 51: plugins.WorkLocalTagEntry.tag:type_name -> plugins.LocalTagDTO
+	82,  // 52: plugins.WorkSiteTagEntry.tag:type_name -> plugins.SiteTagInfo
+	86,  // 53: plugins.ListTagsByWorkIdResponse.local_tags:type_name -> plugins.WorkLocalTagEntry
+	87,  // 54: plugins.ListTagsByWorkIdResponse.site_tags:type_name -> plugins.WorkSiteTagEntry
+	3,   // 55: plugins.ListWorkSetsByWorkIdResponse.items:type_name -> plugins.WorkSet
+	3,   // 56: plugins.ListParentWorkSetsResponse.items:type_name -> plugins.WorkSet
+	3,   // 57: plugins.ListChildWorkSetsResponse.items:type_name -> plugins.WorkSet
+	4,   // 58: plugins.ListSitesResponse.items:type_name -> plugins.SiteDTO
+	42,  // 59: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
+	14,  // 60: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
+	0,   // 61: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
+	22,  // 62: plugins.TaskHandlerService.Create:input_type -> plugins.CreateRequest
+	25,  // 63: plugins.TaskHandlerService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
+	33,  // 64: plugins.TaskHandlerService.Start:input_type -> plugins.StartFrame
+	27,  // 65: plugins.TaskHandlerService.Retry:input_type -> plugins.RetryRequest
+	28,  // 66: plugins.TaskHandlerService.Pause:input_type -> plugins.TaskResParamMessage
+	28,  // 67: plugins.TaskHandlerService.Stop:input_type -> plugins.TaskResParamMessage
+	34,  // 68: plugins.TaskHandlerService.Resume:input_type -> plugins.ResumeFrame
+	16,  // 69: plugins.TaskHandlerService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
+	19,  // 70: plugins.TaskHandlerService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
+	38,  // 71: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
+	38,  // 72: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
+	39,  // 73: plugins.HostService.RegisterTaskHandler:input_type -> plugins.RegisterExtensionRequest
+	39,  // 74: plugins.HostService.RegisterSiteBrowser:input_type -> plugins.RegisterExtensionRequest
+	40,  // 75: plugins.HostService.UnregisterSiteBrowser:input_type -> plugins.UnregisterRequest
+	41,  // 76: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
+	44,  // 77: plugins.HostService.SetValue:input_type -> plugins.StorageEntryRequest
+	44,  // 78: plugins.HostService.SetValueEncrypted:input_type -> plugins.StorageEntryRequest
+	41,  // 79: plugins.HostService.DeleteValue:input_type -> plugins.StorageKeyRequest
+	0,   // 80: plugins.HostService.GetAllValues:input_type -> plugins.Empty
+	46,  // 81: plugins.HostService.RegisterUrlListener:input_type -> plugins.UrlListenerRequest
+	40,  // 82: plugins.HostService.UnregisterUrlListener:input_type -> plugins.UnregisterRequest
+	47,  // 83: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
+	49,  // 84: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
+	51,  // 85: plugins.HostService.Log:input_type -> plugins.LogRequest
+	52,  // 86: plugins.HostService.PublishToFrontend:input_type -> plugins.PublishToFrontendRequest
+	53,  // 87: plugins.HostService.SubscribeFrontend:input_type -> plugins.SubscribeFrontendRequest
+	55,  // 88: plugins.HostService.UnsubscribeFrontend:input_type -> plugins.UnsubscribeFrontendRequest
+	58,  // 89: plugins.LibraryQuery.GetWorkById:input_type -> plugins.GetWorkByIdRequest
+	59,  // 90: plugins.LibraryQuery.GetWorkBySiteKey:input_type -> plugins.GetWorkBySiteKeyRequest
+	61,  // 91: plugins.LibraryQuery.QueryWorks:input_type -> plugins.QueryWorksRequest
+	63,  // 92: plugins.LibraryQuery.ListResourcesByWorkId:input_type -> plugins.ListResourcesByWorkIdRequest
+	67,  // 93: plugins.LibraryQuery.GetLocalAuthorById:input_type -> plugins.GetLocalAuthorByIdRequest
+	68,  // 94: plugins.LibraryQuery.QueryLocalAuthors:input_type -> plugins.QueryLocalAuthorsRequest
+	70,  // 95: plugins.LibraryQuery.GetSiteAuthorBySiteKey:input_type -> plugins.GetSiteAuthorBySiteKeyRequest
+	72,  // 96: plugins.LibraryQuery.QuerySiteAuthors:input_type -> plugins.QuerySiteAuthorsRequest
+	74,  // 97: plugins.LibraryQuery.ListAuthorsByWorkId:input_type -> plugins.ListAuthorsByWorkIdRequest
+	78,  // 98: plugins.LibraryQuery.GetLocalTagById:input_type -> plugins.GetLocalTagByIdRequest
+	79,  // 99: plugins.LibraryQuery.QueryLocalTags:input_type -> plugins.QueryLocalTagsRequest
+	81,  // 100: plugins.LibraryQuery.GetSiteTagBySiteKey:input_type -> plugins.GetSiteTagBySiteKeyRequest
+	83,  // 101: plugins.LibraryQuery.QuerySiteTags:input_type -> plugins.QuerySiteTagsRequest
+	85,  // 102: plugins.LibraryQuery.ListTagsByWorkId:input_type -> plugins.ListTagsByWorkIdRequest
+	89,  // 103: plugins.LibraryQuery.GetWorkSetById:input_type -> plugins.GetWorkSetByIdRequest
+	90,  // 104: plugins.LibraryQuery.GetWorkSetBySiteKey:input_type -> plugins.GetWorkSetBySiteKeyRequest
+	91,  // 105: plugins.LibraryQuery.ListWorkSetsByWorkId:input_type -> plugins.ListWorkSetsByWorkIdRequest
+	93,  // 106: plugins.LibraryQuery.ListParentWorkSets:input_type -> plugins.ListParentWorkSetsRequest
+	95,  // 107: plugins.LibraryQuery.ListChildWorkSets:input_type -> plugins.ListChildWorkSetsRequest
+	0,   // 108: plugins.LibraryQuery.ListSites:input_type -> plugins.Empty
+	0,   // 109: plugins.LibraryQuery.GetWorkDir:input_type -> plugins.Empty
+	15,  // 110: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
+	0,   // 111: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
+	23,  // 112: plugins.TaskHandlerService.Create:output_type -> plugins.CreateChunk
+	12,  // 113: plugins.TaskHandlerService.CreateWorkInfo:output_type -> plugins.WorkResponse
+	32,  // 114: plugins.TaskHandlerService.Start:output_type -> plugins.StreamChunk
+	12,  // 115: plugins.TaskHandlerService.Retry:output_type -> plugins.WorkResponse
+	0,   // 116: plugins.TaskHandlerService.Pause:output_type -> plugins.Empty
+	0,   // 117: plugins.TaskHandlerService.Stop:output_type -> plugins.Empty
+	32,  // 118: plugins.TaskHandlerService.Resume:output_type -> plugins.StreamChunk
+	17,  // 119: plugins.TaskHandlerService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
+	20,  // 120: plugins.TaskHandlerService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
+	0,   // 121: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
+	0,   // 122: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
+	0,   // 123: plugins.HostService.RegisterTaskHandler:output_type -> plugins.Empty
+	0,   // 124: plugins.HostService.RegisterSiteBrowser:output_type -> plugins.Empty
+	0,   // 125: plugins.HostService.UnregisterSiteBrowser:output_type -> plugins.Empty
+	43,  // 126: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse
+	0,   // 127: plugins.HostService.SetValue:output_type -> plugins.Empty
+	0,   // 128: plugins.HostService.SetValueEncrypted:output_type -> plugins.Empty
+	0,   // 129: plugins.HostService.DeleteValue:output_type -> plugins.Empty
+	45,  // 130: plugins.HostService.GetAllValues:output_type -> plugins.AllStorageValuesResponse
+	0,   // 131: plugins.HostService.RegisterUrlListener:output_type -> plugins.Empty
+	0,   // 132: plugins.HostService.UnregisterUrlListener:output_type -> plugins.Empty
+	48,  // 133: plugins.HostService.CreateTask:output_type -> plugins.CreateTaskResponse
+	50,  // 134: plugins.HostService.GetPluginRoot:output_type -> plugins.GetPluginRootResponse
+	0,   // 135: plugins.HostService.Log:output_type -> plugins.Empty
+	0,   // 136: plugins.HostService.PublishToFrontend:output_type -> plugins.Empty
+	54,  // 137: plugins.HostService.SubscribeFrontend:output_type -> plugins.FrontendMessage
+	0,   // 138: plugins.HostService.UnsubscribeFrontend:output_type -> plugins.Empty
+	60,  // 139: plugins.LibraryQuery.GetWorkById:output_type -> plugins.WorkWithSite
+	60,  // 140: plugins.LibraryQuery.GetWorkBySiteKey:output_type -> plugins.WorkWithSite
+	62,  // 141: plugins.LibraryQuery.QueryWorks:output_type -> plugins.QueryWorksResponse
+	64,  // 142: plugins.LibraryQuery.ListResourcesByWorkId:output_type -> plugins.ListResourcesByWorkIdResponse
+	5,   // 143: plugins.LibraryQuery.GetLocalAuthorById:output_type -> plugins.LocalAuthorDTO
+	69,  // 144: plugins.LibraryQuery.QueryLocalAuthors:output_type -> plugins.QueryLocalAuthorsResponse
+	71,  // 145: plugins.LibraryQuery.GetSiteAuthorBySiteKey:output_type -> plugins.SiteAuthorInfo
+	73,  // 146: plugins.LibraryQuery.QuerySiteAuthors:output_type -> plugins.QuerySiteAuthorsResponse
+	77,  // 147: plugins.LibraryQuery.ListAuthorsByWorkId:output_type -> plugins.ListAuthorsByWorkIdResponse
+	6,   // 148: plugins.LibraryQuery.GetLocalTagById:output_type -> plugins.LocalTagDTO
+	80,  // 149: plugins.LibraryQuery.QueryLocalTags:output_type -> plugins.QueryLocalTagsResponse
+	82,  // 150: plugins.LibraryQuery.GetSiteTagBySiteKey:output_type -> plugins.SiteTagInfo
+	84,  // 151: plugins.LibraryQuery.QuerySiteTags:output_type -> plugins.QuerySiteTagsResponse
+	88,  // 152: plugins.LibraryQuery.ListTagsByWorkId:output_type -> plugins.ListTagsByWorkIdResponse
+	3,   // 153: plugins.LibraryQuery.GetWorkSetById:output_type -> plugins.WorkSet
+	3,   // 154: plugins.LibraryQuery.GetWorkSetBySiteKey:output_type -> plugins.WorkSet
+	92,  // 155: plugins.LibraryQuery.ListWorkSetsByWorkId:output_type -> plugins.ListWorkSetsByWorkIdResponse
+	94,  // 156: plugins.LibraryQuery.ListParentWorkSets:output_type -> plugins.ListParentWorkSetsResponse
+	96,  // 157: plugins.LibraryQuery.ListChildWorkSets:output_type -> plugins.ListChildWorkSetsResponse
+	97,  // 158: plugins.LibraryQuery.ListSites:output_type -> plugins.ListSitesResponse
+	98,  // 159: plugins.LibraryQuery.GetWorkDir:output_type -> plugins.GetWorkDirResponse
+	110, // [110:160] is the sub-list for method output_type
+	60,  // [60:110] is the sub-list for method input_type
+	60,  // [60:60] is the sub-list for extension type_name
+	60,  // [60:60] is the sub-list for extension extendee
+	0,   // [0:60] is the sub-list for field type_name
 }
 
 func init() { file_proto_plugin_proto_init() }
@@ -6942,14 +7058,14 @@ func file_proto_plugin_proto_init() {
 	file_proto_plugin_proto_msgTypes[65].OneofWrappers = []any{}
 	file_proto_plugin_proto_msgTypes[66].OneofWrappers = []any{}
 	file_proto_plugin_proto_msgTypes[71].OneofWrappers = []any{}
-	file_proto_plugin_proto_msgTypes[80].OneofWrappers = []any{}
+	file_proto_plugin_proto_msgTypes[82].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_plugin_proto_rawDesc), len(file_proto_plugin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   98,
+			NumMessages:   100,
 			NumExtensions: 0,
 			NumServices:   5,
 		},

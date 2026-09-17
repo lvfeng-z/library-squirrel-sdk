@@ -98,13 +98,14 @@ message TaskSiteAuthorDTO {
   string fixedAuthorName = 4;
   string introduce = 5;
   string siteKey = 6; // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
+  string roleName = 7; // 关联级 role:该作者在本作品关联行上的角色分工(原画/脚本/声优等开放字符串),落点为作品-作者关联行,不写作者实体;空=无 role
 }
 
 message TaskSiteTagDTO {
   string siteTagId = 1;
   string tagName = 2;
   string description = 3;
-  string namespace = 4; // tag namespace（language/character/parody/female/male/misc/general 等）；空=无 namespace（pixiv 等无 namespace 站点）
+  string namespace = 4; // 关联级 namespace:该标签在本作品关联行上的 ns(language/character/parody/female/male/misc/general 等开放字符串),落点为作品-标签关联行,不写标签实体;空=无 namespace
   string siteKey = 5; // 站点唯一身份键(identity 注册表分配);周边数据跨站寻址用,声明站点≠作品站点时为跨站引用(只读挂联,行不存在报错);空=作品所属站点(本站 upsert,行为不变)
 }
 
@@ -481,7 +482,7 @@ service LibraryQuery {
   // 资源与 store
   rpc ListResourcesByWorkId(ListResourcesByWorkIdRequest) returns (ListResourcesByWorkIdResponse);
 
-  // 作者（本地轨 / 站点轨 / 作品关联）
+  // 作者（本地轨 / 站点轨 / 作品关联，作品关联含关联级 role 维度）
   rpc GetLocalAuthorById(GetLocalAuthorByIdRequest) returns (LocalAuthorDTO);
   rpc QueryLocalAuthors(QueryLocalAuthorsRequest) returns (QueryLocalAuthorsResponse);
   rpc GetSiteAuthorBySiteKey(GetSiteAuthorBySiteKeyRequest) returns (SiteAuthorInfo);
@@ -603,7 +604,7 @@ message GetSiteAuthorBySiteKeyRequest {
   string site_author_id = 2; // 站点侧作者 id
 }
 
-// SiteAuthorInfo 站点作者查询结果：字段面对齐任务声明期 TaskSiteAuthorDTO，另携库内行 id 与身份键锚点
+// SiteAuthorInfo 站点作者查询结果：库内 site_author 行投影，另携行 id 与身份键锚点（role 是作品-作者关联级维度，不在作者实体上——作品维度的 role 见 ListAuthorsByWorkId 的关联条目）
 message SiteAuthorInfo {
   int64 id = 1;                        // 库内 site_author 行 id
   string site_key = 2;                 // 归属站点身份键
@@ -630,9 +631,21 @@ message ListAuthorsByWorkIdRequest {
   int64 work_id = 1;
 }
 
+// WorkLocalAuthorEntry 作品的本地作者关联条目（作者 + 关联级 role）
+message WorkLocalAuthorEntry {
+  LocalAuthorDTO author = 1;
+  string role_name = 2; // 关联级 role（该作者在本作品关联行上的角色分工，开放字符串）；空=无 role
+}
+
+// WorkSiteAuthorEntry 作品的站点作者关联条目（作者 + 关联级 role）
+message WorkSiteAuthorEntry {
+  SiteAuthorInfo author = 1;
+  string role_name = 2; // 关联级 role（该作者在本作品关联行上的角色分工，开放字符串）；空=无 role
+}
+
 message ListAuthorsByWorkIdResponse {
-  repeated LocalAuthorDTO local_authors = 1; // 本地轨（用户策展关联）
-  repeated SiteAuthorInfo site_authors = 2;  // 站点轨（站点来源关联）
+  repeated WorkLocalAuthorEntry local_authors = 1; // 本地轨（用户策展关联，含关联级 role）
+  repeated WorkSiteAuthorEntry site_authors = 2;   // 站点轨（站点来源关联，含关联级 role）
 }
 
 message GetLocalTagByIdRequest {
@@ -654,15 +667,15 @@ message GetSiteTagBySiteKeyRequest {
   string site_tag_id = 2; // 站点侧标签 id
 }
 
-// SiteTagInfo 站点标签查询结果：字段面对齐任务声明期 TaskSiteTagDTO，另携库内行 id 与身份键锚点
+// SiteTagInfo 站点标签查询结果：库内 site_tag 行投影，另携行 id 与身份键锚点（namespace 是作品-标签关联级维度，不在标签实体上——作品维度的 ns 见 ListTagsByWorkId 的关联条目）
 message SiteTagInfo {
   int64 id = 1;                   // 库内 site_tag 行 id
   string site_key = 2;            // 归属站点身份键
   string site_tag_id = 3;         // 站点侧标签 id
   string tag_name = 4;
   string description = 5;
-  string namespace = 6;           // 站点侧 namespace（language/character/parody/female/male/misc/general 等）；空=站点无 namespace
   optional int64 local_tag_id = 7; // 用户桥接的本地标签 id；未桥接时缺省
+  reserved 6; // 已移除 namespace(ns 归作品-标签关联行承载,标签实体不承载该维度;字段号不复用)
 }
 
 message QuerySiteTagsRequest {
@@ -683,13 +696,13 @@ message ListTagsByWorkIdRequest {
 // WorkLocalTagEntry 作品的本地标签关联条目（标签 + 关联级 namespace）
 message WorkLocalTagEntry {
   LocalTagDTO tag = 1;
-  string namespace = 2; // 关联级 namespace（用户自设）；空=无
+  string namespace = 2; // 关联级 namespace（该标签在本作品关联行上的 ns，用户自设）；空=无
 }
 
 // WorkSiteTagEntry 作品的站点标签关联条目（标签 + 关联级 namespace）
 message WorkSiteTagEntry {
   SiteTagInfo tag = 1;
-  string namespace = 2; // 关联级 namespace（所指 site_tag.namespace 在本关联上的镜像）；空=无
+  string namespace = 2; // 关联级 namespace（该标签在本作品关联行上的 ns，插件声明或用户自设）；空=无
 }
 
 message ListTagsByWorkIdResponse {

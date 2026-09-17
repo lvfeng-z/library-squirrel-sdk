@@ -23,16 +23,22 @@ type ResourceInfo = gen.ResourceInfo
 // StoreInfo 单个活行 store 的文件摘要（file_path 为 relPath 域，分隔符恒正斜杠）（别名 gen.StoreInfo，proto 单源）
 type StoreInfo = gen.StoreInfo
 
-// SiteAuthorInfo 站点作者查询结果：字段面对齐任务声明期 TaskSiteAuthorDTO，另携库内行 id 与身份键锚点（别名 gen.SiteAuthorInfo，proto 单源）
+// SiteAuthorInfo 站点作者查询结果：库内 site_author 行投影，另携行 id 与身份键锚点（role 是作品-作者关联级维度，不在作者实体上——作品维度的 role 见 ListAuthorsByWorkId 的关联条目）（别名 gen.SiteAuthorInfo，proto 单源）
 type SiteAuthorInfo = gen.SiteAuthorInfo
 
-// SiteTagInfo 站点标签查询结果：字段面对齐任务声明期 TaskSiteTagDTO，另携库内行 id 与身份键锚点（别名 gen.SiteTagInfo，proto 单源）
+// WorkLocalAuthorEntry 作品的本地作者关联条目（作者 + 关联级 role）（别名 gen.WorkLocalAuthorEntry，proto 单源）
+type WorkLocalAuthorEntry = gen.WorkLocalAuthorEntry
+
+// WorkSiteAuthorEntry 作品的站点作者关联条目（作者 + 关联级 role）（别名 gen.WorkSiteAuthorEntry，proto 单源）
+type WorkSiteAuthorEntry = gen.WorkSiteAuthorEntry
+
+// SiteTagInfo 站点标签查询结果：库内 site_tag 行投影，另携行 id 与身份键锚点（namespace 是作品-标签关联级维度，不在标签实体上——作品维度的 ns 见 ListTagsByWorkId 的关联条目）（别名 gen.SiteTagInfo，proto 单源）
 type SiteTagInfo = gen.SiteTagInfo
 
 // WorkLocalTagEntry 作品的本地标签关联条目（标签 + 关联级 namespace）（别名 gen.WorkLocalTagEntry，proto 单源）
 type WorkLocalTagEntry = gen.WorkLocalTagEntry
 
-// WorkSiteTagEntry 作品的站点标签关联条目（标签 + 关联级 namespace 镜像）（别名 gen.WorkSiteTagEntry，proto 单源）
+// WorkSiteTagEntry 作品的站点标签关联条目（标签 + 关联级 namespace）（别名 gen.WorkSiteTagEntry，proto 单源）
 type WorkSiteTagEntry = gen.WorkSiteTagEntry
 
 // QueryWorksResponse 作品分页查询结果（别名 gen.QueryWorksResponse，proto 单源）
@@ -47,7 +53,7 @@ type QueryLocalAuthorsResponse = gen.QueryLocalAuthorsResponse
 // QuerySiteAuthorsResponse 站点作者分页查询结果（别名 gen.QuerySiteAuthorsResponse，proto 单源）
 type QuerySiteAuthorsResponse = gen.QuerySiteAuthorsResponse
 
-// ListAuthorsByWorkIdResponse 作品的作者关联全集（local/site 两轨）（别名 gen.ListAuthorsByWorkIdResponse，proto 单源）
+// ListAuthorsByWorkIdResponse 作品的作者关联全集（local/site 两轨，含关联级 role）（别名 gen.ListAuthorsByWorkIdResponse，proto 单源）
 type ListAuthorsByWorkIdResponse = gen.ListAuthorsByWorkIdResponse
 
 // QueryLocalTagsResponse 本地标签分页查询结果（别名 gen.QueryLocalTagsResponse，proto 单源）
@@ -105,7 +111,7 @@ type LibraryQueryProvider interface {
 	// 资源与 store
 	ListResourcesByWorkId(ctx context.Context, req *gen.ListResourcesByWorkIdRequest) (*ListResourcesByWorkIdResponse, error)
 
-	// 作者（本地轨 / 站点轨 / 作品关联）
+	// 作者（本地轨 / 站点轨 / 作品关联，作品关联含关联级 role 维度）
 	GetLocalAuthorById(ctx context.Context, req *gen.GetLocalAuthorByIdRequest) (*gen.LocalAuthorDTO, error)
 	QueryLocalAuthors(ctx context.Context, req *QueryLocalAuthorsRequest) (*QueryLocalAuthorsResponse, error)
 	GetSiteAuthorBySiteKey(ctx context.Context, req *gen.GetSiteAuthorBySiteKeyRequest) (*gen.SiteAuthorInfo, error)

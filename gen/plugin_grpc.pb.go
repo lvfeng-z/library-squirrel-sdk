@@ -1430,7 +1430,7 @@ type LibraryQueryClient interface {
 	QueryWorks(ctx context.Context, in *QueryWorksRequest, opts ...grpc.CallOption) (*QueryWorksResponse, error)
 	// 资源与 store
 	ListResourcesByWorkId(ctx context.Context, in *ListResourcesByWorkIdRequest, opts ...grpc.CallOption) (*ListResourcesByWorkIdResponse, error)
-	// 作者（本地轨 / 站点轨 / 作品关联）
+	// 作者（本地轨 / 站点轨 / 作品关联，作品关联含关联级 role 维度）
 	GetLocalAuthorById(ctx context.Context, in *GetLocalAuthorByIdRequest, opts ...grpc.CallOption) (*LocalAuthorDTO, error)
 	QueryLocalAuthors(ctx context.Context, in *QueryLocalAuthorsRequest, opts ...grpc.CallOption) (*QueryLocalAuthorsResponse, error)
 	GetSiteAuthorBySiteKey(ctx context.Context, in *GetSiteAuthorBySiteKeyRequest, opts ...grpc.CallOption) (*SiteAuthorInfo, error)
@@ -1694,7 +1694,7 @@ type LibraryQueryServer interface {
 	QueryWorks(context.Context, *QueryWorksRequest) (*QueryWorksResponse, error)
 	// 资源与 store
 	ListResourcesByWorkId(context.Context, *ListResourcesByWorkIdRequest) (*ListResourcesByWorkIdResponse, error)
-	// 作者（本地轨 / 站点轨 / 作品关联）
+	// 作者（本地轨 / 站点轨 / 作品关联，作品关联含关联级 role 维度）
 	GetLocalAuthorById(context.Context, *GetLocalAuthorByIdRequest) (*LocalAuthorDTO, error)
 	QueryLocalAuthors(context.Context, *QueryLocalAuthorsRequest) (*QueryLocalAuthorsResponse, error)
 	GetSiteAuthorBySiteKey(context.Context, *GetSiteAuthorBySiteKeyRequest) (*SiteAuthorInfo, error)

@@ -35,7 +35,7 @@ func (s *libraryQueryServer) ListResourcesByWorkId(ctx context.Context, req *gen
 	return s.provider.ListResourcesByWorkId(ctx, req)
 }
 
-// ===== 作者（本地轨 / 站点轨 / 作品关联）=====
+// ===== 作者（本地轨 / 站点轨 / 作品关联，作品关联含关联级 role 维度）=====
 
 func (s *libraryQueryServer) GetLocalAuthorById(ctx context.Context, req *gen.GetLocalAuthorByIdRequest) (*gen.LocalAuthorDTO, error) {
 	return s.provider.GetLocalAuthorById(ctx, req)

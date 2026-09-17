@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 7
+const ContractVersion = 8
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -33,3 +33,11 @@ const ContractVersion = 7
 //       声明站点≠作品站点时 find-only 引用既有行（不存在报错），缺省空=作品所属站点（本站 upsert 行为
 //       不变）；加字段向前兼容，作为周边写面新能力标识升版（主程序 minSupportedContractVersion 维持 5，
 //       v5/v6 插件混装载不受影响）
+//   8 — 关联级维度体系（tag namespace 与 author role 同构为作品-实体关联行上的开放维度）：
+//       SiteTagInfo 删 namespace 字段（ns 由作品-标签关联行承载，标签实体不承载；字段号 6 reserved 不复用）；
+//       TaskSiteTagDTO.namespace 语义定为关联级（本作品上该标签的 ns）；TaskSiteAuthorDTO 加 roleName
+//       （声明面：本作品上该作者的 role）；ListAuthorsByWorkId 返回面由实体级 DTO 整体改为关联条目
+//       （WorkLocalAuthorEntry/WorkSiteAuthorEntry，与标签侧 ListTagsByWorkId 返回形态对称，携带关联级
+//       role_name）。返回消息字段类型更换属线级破坏（旧编译插件按旧消息类型解析会错读），SiteTagInfo
+//       删字段属源级破坏——主程序 minSupportedContractVersion 须同步升至 8，min<8 即宣称兼容自己已破坏
+//       的线协议

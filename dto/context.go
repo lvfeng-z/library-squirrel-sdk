@@ -39,7 +39,7 @@ type PluginContext interface {
 	QueryWorks(req *QueryWorksRequest) (*QueryWorksResponse, error)
 	// 资源与 store
 	ListResourcesByWorkId(workId int64) (*ListResourcesByWorkIdResponse, error)
-	// 作者（本地轨 / 站点轨 / 作品关联）
+	// 作者（本地轨 / 站点轨 / 作品关联，作品关联含关联级 role 维度）
 	GetLocalAuthorById(localAuthorId int64) (*LocalAuthorDTO, error)
 	QueryLocalAuthors(req *QueryLocalAuthorsRequest) (*QueryLocalAuthorsResponse, error)
 	GetSiteAuthorBySiteKey(siteKey string, siteAuthorId string) (*SiteAuthorInfo, error)

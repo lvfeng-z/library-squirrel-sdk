@@ -36,7 +36,7 @@ func (c *PluginContextClient) ListResourcesByWorkId(workId int64) (*dto.ListReso
 	return c.queryClient.ListResourcesByWorkId(context.Background(), &gen.ListResourcesByWorkIdRequest{WorkId: workId})
 }
 
-// ===== 作者（本地轨 / 站点轨 / 作品关联）=====
+// ===== 作者（本地轨 / 站点轨 / 作品关联，作品关联含关联级 role 维度）=====
 
 func (c *PluginContextClient) GetLocalAuthorById(localAuthorId int64) (*dto.LocalAuthorDTO, error) {
 	return c.queryClient.GetLocalAuthorById(context.Background(), &gen.GetLocalAuthorByIdRequest{LocalAuthorId: localAuthorId})
