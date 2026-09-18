@@ -25,22 +25,21 @@ var (
 	kernel32 = windows.NewLazyDLL("kernel32.dll")
 	ole32    = windows.NewLazyDLL("ole32.dll")
 
-	procRegisterClassExW  = user32.NewProc("RegisterClassExW")
-	procCreateWindowExW   = user32.NewProc("CreateWindowExW")
-	procDefWindowProcW    = user32.NewProc("DefWindowProcW")
-	procDestroyWindow     = user32.NewProc("DestroyWindow")
-	procShowWindow        = user32.NewProc("ShowWindow")
-	procGetMessageW       = user32.NewProc("GetMessageW")
-	procTranslateMessage  = user32.NewProc("TranslateMessage")
-	procDispatchMessageW  = user32.NewProc("DispatchMessageW")
-	procPostQuitMessage   = user32.NewProc("PostQuitMessage")
-	procPostMessageW      = user32.NewProc("PostMessageW")
-	procSetWindowLongPtrW = user32.NewProc("SetWindowLongPtrW")
-	procGetModuleHandleW  = kernel32.NewProc("GetModuleHandleW")
-	procLoadCursorW       = user32.NewProc("LoadCursorW")
-	procSetWindowTextW    = user32.NewProc("SetWindowTextW")
-	procCoInitializeEx    = ole32.NewProc("CoInitializeEx")
-	procGetClientRect     = user32.NewProc("GetClientRect")
+	procRegisterClassExW = user32.NewProc("RegisterClassExW")
+	procCreateWindowExW  = user32.NewProc("CreateWindowExW")
+	procDefWindowProcW   = user32.NewProc("DefWindowProcW")
+	procDestroyWindow    = user32.NewProc("DestroyWindow")
+	procShowWindow       = user32.NewProc("ShowWindow")
+	procGetMessageW      = user32.NewProc("GetMessageW")
+	procTranslateMessage = user32.NewProc("TranslateMessage")
+	procDispatchMessageW = user32.NewProc("DispatchMessageW")
+	procPostQuitMessage  = user32.NewProc("PostQuitMessage")
+	procPostMessageW     = user32.NewProc("PostMessageW")
+	procGetModuleHandleW = kernel32.NewProc("GetModuleHandleW")
+	procLoadCursorW      = user32.NewProc("LoadCursorW")
+	procSetWindowTextW   = user32.NewProc("SetWindowTextW")
+	procCoInitializeEx   = ole32.NewProc("CoInitializeEx")
+	procGetClientRect    = user32.NewProc("GetClientRect")
 )
 
 const (
@@ -50,8 +49,6 @@ const (
 	WS_OVERLAPPEDWINDOW = 0x00CF0000
 	WM_EXEC_SCRIPT      = 0x0400 + 100 // WM_USER + 100
 )
-
-var gwlpUserdata = uintptr(0xFFFFFFEB) // GWLP_USERDATA = -21
 
 type wndClassExW struct {
 	CbSize        uint32
@@ -81,6 +78,11 @@ var (
 	wndProcPtr uintptr
 	classOnce  sync.Once
 	className  = syscall.StringToUTF16Ptr("LibrarySquirrelPluginWindow")
+
+	// windowsByHwnd 记录 hwnd → *popupWindow：globalWndProc 经 NewCallback 注册为原生函数,
+	// 无法携带 Go 闭包上下文,经此表按 hwnd 寻址窗口对象（创建时登记、销毁时摘除）,
+	// 同时持有窗口对象引用,窗口存活期内不被 GC 回收
+	windowsByHwnd sync.Map
 )
 
 // ========== popupWindow ==========
@@ -96,6 +98,9 @@ type popupWindow struct {
 	done        chan struct{}
 	closeOnce   sync.Once
 	scriptQueue chan *scriptRequest
+
+	comMu       sync.Mutex
+	comHandlers map[any]struct{} // COM 回调对象保活注册表
 }
 
 type scriptRequest struct {
@@ -168,6 +173,22 @@ func (pw *popupWindow) ExecuteScript(js string) (string, error) {
 
 func (pw *popupWindow) Done() <-chan struct{} {
 	return pw.done
+}
+
+// retainComHandler 登记 COM 回调对象保活：handler 经 unsafe.Pointer 交给原生侧后，其存活对
+// Go GC 不可见（原生指针不参与标记），注册方作用域结束即成无引用堆对象，而完成回调可能在
+// 此后任意时刻从原生线程进入。注册表持有引用直至对应释放：一次性回调（ExecuteScript 完成）
+// 进入时释放，窗口级事件 handler（NavigationStarting）随窗口对象存活。
+func (pw *popupWindow) retainComHandler(handler any) {
+	pw.comMu.Lock()
+	pw.comHandlers[handler] = struct{}{}
+	pw.comMu.Unlock()
+}
+
+func (pw *popupWindow) releaseComHandler(handler any) {
+	pw.comMu.Lock()
+	delete(pw.comHandlers, handler)
+	pw.comMu.Unlock()
 }
 
 // ========== NavigationStarting COM 类型 ==========
@@ -344,6 +365,7 @@ func openWindow(options dto.WindowOptions, ownerHWND uintptr) (dto.WindowHandle,
 		navCh:       make(chan string, 1),
 		done:        make(chan struct{}),
 		scriptQueue: make(chan *scriptRequest, 16),
+		comHandlers: make(map[any]struct{}),
 	}
 
 	errCh := make(chan error, 1)
@@ -406,9 +428,7 @@ func (pw *popupWindow) run(errCh chan<- error) {
 		return
 	}
 	pw.hwnd = hwnd
-
-	// 存储 popupWindow 指针到窗口用户数据
-	procSetWindowLongPtrW.Call(hwnd, gwlpUserdata, uintptr(unsafe.Pointer(pw)))
+	windowsByHwnd.Store(hwnd, pw)
 
 	// 初始化 WebView2
 	chromium := edge.NewChromium()
@@ -451,6 +471,8 @@ func (pw *popupWindow) run(errCh chan<- error) {
 			},
 		}
 
+		// 窗口级事件 handler：保活期=窗口对象生命周期，导航拦截可能在窗口存活期任意时刻进入
+		pw.retainComHandler(handler)
 		var token eventRegistrationToken
 		vtbl := getICoreWebView2Vtbl(webview)
 		vtbl.AddNavigationStarting.Call(
@@ -496,6 +518,7 @@ func (pw *popupWindow) run(errCh chan<- error) {
 	// 清理
 	chromium.ShuttingDown()
 	procDestroyWindow.Call(hwnd)
+	windowsByHwnd.Delete(hwnd)
 	pw.closeOnce.Do(func() { close(pw.done) })
 }
 
@@ -504,18 +527,26 @@ func (pw *popupWindow) handleScriptQueue() {
 		select {
 		case req := <-pw.scriptQueue:
 			resultCh := req.resultCh
-			handler := &executeScriptCompletedHandler{
+			// handler 需在自身初始化表达式内的闭包里被引用（进入回调时释放保活），
+			// 先 var 后赋值使变量在赋值右侧求值时已入作用域
+			var handler *executeScriptCompletedHandler
+			handler = &executeScriptCompletedHandler{
 				vtbl: &execScriptVtbl,
 				impl: func(_ uintptr, jsonPtr *uint16) uintptr {
+					// 一次性完成回调：进入即释放保活注册
+					defer pw.releaseComHandler(handler)
 					var json string
 					if jsonPtr != nil {
+						// resultObjectAsJson 是 WebView2 传入回调的入参,所有权归调用方
+						// (COM 入参约定),仅在本回调内有效——复制后不得 CoTaskMemFree:
+						// 该内存不在本进程 CoTaskMem 堆上,越权释放即堆损坏(0xc0000374)
 						json = windows.UTF16PtrToString(jsonPtr)
-						windows.CoTaskMemFree(unsafe.Pointer(jsonPtr))
 					}
 					resultCh <- scriptResult{json: json}
 					return 0
 				},
 			}
+			pw.retainComHandler(handler)
 			scriptPtr, _ := windows.UTF16PtrFromString(req.js)
 			vtbl := getICoreWebView2Vtbl(pw.webview)
 			vtbl.ExecuteScript.Call(
@@ -540,12 +571,8 @@ func globalWndProc(hwnd uintptr, msg uint32, wParam, lParam uintptr) uintptr {
 		procPostQuitMessage.Call(0)
 		return 0
 	case WM_EXEC_SCRIPT:
-		// 从 GWLP_USERDATA 取回 popupWindow 指针
-		ptr, _, _ := procSetWindowLongPtrW.Call(hwnd, gwlpUserdata, 0)
-		procSetWindowLongPtrW.Call(hwnd, gwlpUserdata, ptr) // 写回
-		if ptr != 0 {
-			pw := (*popupWindow)(unsafe.Pointer(ptr))
-			pw.handleScriptQueue()
+		if v, ok := windowsByHwnd.Load(hwnd); ok {
+			v.(*popupWindow).handleScriptQueue()
 		}
 		return 0
 	}
