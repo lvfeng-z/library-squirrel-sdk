@@ -48,8 +48,8 @@ func TestComposedRelPathForm(t *testing.T) {
 	if err != nil {
 		t.Fatalf("StoreFileName 意外出错：%v", err)
 	}
-	rel := path.Join("store/resource", BucketSegment("bilibili", "BV1xx411c7mD_4538792"), dir, file)
-	want := "store/resource/16/bilibili_BV1xx411c7mD_4538792/videoTrack_000.mp4"
+	rel := path.Join("store/work", BucketSegment("bilibili", "BV1xx411c7mD_4538792"), dir, file)
+	want := "store/work/16/bilibili_BV1xx411c7mD_4538792/videoTrack_000.mp4"
 	if rel != want {
 		t.Errorf("组合 relPath = %q；want %q", rel, want)
 	}

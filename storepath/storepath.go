@@ -2,15 +2,15 @@
 //
 // 落盘布局（relPath，workDir 相对、正斜杠）：
 //
-//	store/resource/{bucket 2hex}/{siteKey}_{siteWorkId 派生段}/{role}_{seq 三位零填充}{ext}
-//	示例：store/resource/73/pixiv_128937464/image_000.jpg
-//	      store/resource/16/bilibili_BV1xx411c7mD_4538792/videoTrack_000.mp4
+//	store/work/{bucket 2hex}/{siteKey}_{siteWorkId 派生段}/{role}_{seq 三位零填充}{ext}
+//	示例：store/work/73/pixiv_128937464/image_000.jpg
+//	      store/work/16/bilibili_BV1xx411c7mD_4538792/videoTrack_000.mp4
 //
 // 桶段 = 复合键（siteKey + "_" + siteWorkId）SHA256 前 2 位小写 hex，共 256 桶：
-// 几万作品级库的 store/resource 根目录按桶扇出，Explorer/外部工具打开根目录与各
+// 几万作品级库的 store/work 根目录按桶扇出，Explorer/外部工具打开根目录与各
 // 桶目录保持流畅；同键恒同桶，路径锚定不变量（重下同复合键恒同路径）保持。
 //
-// "store/resource/" 前缀属主程序库内布局，不在本包——本包只产出桶段、目录段与
+// "store/work/" 前缀属主程序库内布局，不在本包——本包只产出桶段、目录段与
 // 文件段，完整 relPath 由主程序侧 path.Join 组合；插件可引用本包推导兄弟文件名（如
 // document 关联的 image）。作品目录段 = siteKey（站点身份注册表 slug，原文直用）
 // + "_" + siteWorkId 派生段（单射：不同 siteWorkId 恒得不同段）。store 文件段
@@ -86,7 +86,7 @@ func StoreFileName(role string, seq int, ext string) (string, error) {
 // WorkDirName 承担（桶段与作品目录段取同一对 siteKey/siteWorkId），本函数恒返
 // 字符串、无 error。
 //
-// 桶段分摊几万作品级库 store/resource 根目录的扇出，Explorer/外部工具打开根目录
+// 桶段分摊几万作品级库 store/work 根目录的扇出，Explorer/外部工具打开根目录
 // 与各桶目录保持流畅；同键恒同桶，路径锚定不变量（同复合键恒得同库内路径）保持。
 func BucketSegment(siteKey, siteWorkId string) string {
 	return hashHex(siteKey+"_"+siteWorkId, 2)
