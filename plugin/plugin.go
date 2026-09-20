@@ -12,10 +12,11 @@ import (
 type ServeOption func(*serveConfig)
 
 type serveConfig struct {
-	handler    dto.TaskHandler
-	browser    dto.SiteBrowser
-	onActivate func(dto.PluginContext)
-	onShutdown func()
+	handler           dto.TaskHandler
+	browser           dto.SiteBrowser
+	siteAuthorFetcher dto.SiteAuthorFetcher
+	onActivate        func(dto.PluginContext)
+	onShutdown        func()
 }
 
 // WithTaskHandler 注册 TaskHandler 扩展点（下载型插件）。未设置本选项时插件进程不注册
@@ -28,6 +29,13 @@ func WithTaskHandler(handler dto.TaskHandler) ServeOption {
 // WithBrowser 注册 SiteBrowser 扩展点
 func WithBrowser(browser dto.SiteBrowser) ServeOption {
 	return func(c *serveConfig) { c.browser = browser }
+}
+
+// WithSiteAuthorFetcher 注册站点作者信息拉取扩展点（「站点实体元数据+资源拉取」契约家族
+// 首成员）。未设置本选项时插件进程不注册 SiteAuthorFetchService，主程序侧拉取 RPC 得到
+// gRPC Unimplemented；主程序仅对 manifest 声明 siteAuthorFetch 能力的插件调用
+func WithSiteAuthorFetcher(fetcher dto.SiteAuthorFetcher) ServeOption {
+	return func(c *serveConfig) { c.siteAuthorFetcher = fetcher }
 }
 
 // WithActivate 设置 Activate 回调（在此回调中注册扩展点和 URL 监听器）
@@ -59,9 +67,10 @@ func newLSPlugin(opts ...ServeOption) *transport.LSPlugin {
 		o(cfg)
 	}
 	return &transport.LSPlugin{
-		Handler:    cfg.handler,
-		Browser:    cfg.browser,
-		OnActivate: cfg.onActivate,
-		OnShutdown: cfg.onShutdown,
+		Handler:           cfg.handler,
+		Browser:           cfg.browser,
+		SiteAuthorFetcher: cfg.siteAuthorFetcher,
+		OnActivate:        cfg.onActivate,
+		OnShutdown:        cfg.onShutdown,
 	}
 }

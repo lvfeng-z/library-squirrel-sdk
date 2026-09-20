@@ -13,11 +13,12 @@ import (
 // LSPlugin 实现 hashicorp/go-plugin 的 GRPCPlugin 接口
 type LSPlugin struct {
 	plugin.NetRPCUnsupportedPlugin
-	Handler    dto.TaskHandler
-	Browser    dto.SiteBrowser
-	OnActivate func(dto.PluginContext)
-	OnShutdown func()
-	HostDeps   *HostDeps
+	Handler           dto.TaskHandler
+	Browser           dto.SiteBrowser
+	SiteAuthorFetcher dto.SiteAuthorFetcher
+	OnActivate        func(dto.PluginContext)
+	OnShutdown        func()
+	HostDeps          *HostDeps
 }
 
 func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
@@ -38,6 +39,11 @@ func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
 			browser: p.Browser,
 		})
 	}
+	if p.SiteAuthorFetcher != nil {
+		gen.RegisterSiteAuthorFetchServiceServer(s, &siteAuthorFetchServer{
+			fetcher: p.SiteAuthorFetcher,
+		})
+	}
 	return nil
 }
 
@@ -54,9 +60,10 @@ func (p *LSPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c 
 	}
 
 	return &GRPCPluginClient{
-		Lifecycle:     gen.NewPluginLifecycleClient(c),
-		Task:          gen.NewTaskHandlerServiceClient(c),
-		Browser:       gen.NewSiteBrowserServiceClient(c),
-		HostServiceId: hostServiceId,
+		Lifecycle:       gen.NewPluginLifecycleClient(c),
+		Task:            gen.NewTaskHandlerServiceClient(c),
+		Browser:         gen.NewSiteBrowserServiceClient(c),
+		SiteAuthorFetch: gen.NewSiteAuthorFetchServiceClient(c),
+		HostServiceId:   hostServiceId,
 	}, nil
 }

@@ -2283,3 +2283,125 @@ var LibraryQuery_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/plugin.proto",
 }
+
+const (
+	SiteAuthorFetchService_FetchSiteAuthorInfo_FullMethodName = "/plugins.SiteAuthorFetchService/FetchSiteAuthorInfo"
+)
+
+// SiteAuthorFetchServiceClient is the client API for SiteAuthorFetchService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
+// 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
+// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
+// 路由=能力广播：主程序逐个调用，插件按请求 siteKey 自判归属（identity 键比对，SDK
+// identity.CheckSiteOwnership），非本站返回未归属错误——SDK 服务端适配层转译为 gRPC
+// PermissionDenied 跨进程传递，主程序据此静默跳过本插件继续广播。
+type SiteAuthorFetchServiceClient interface {
+	// 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
+	FetchSiteAuthorInfo(ctx context.Context, in *FetchSiteAuthorInfoRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[AuthorInfoChunk], error)
+}
+
+type siteAuthorFetchServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewSiteAuthorFetchServiceClient(cc grpc.ClientConnInterface) SiteAuthorFetchServiceClient {
+	return &siteAuthorFetchServiceClient{cc}
+}
+
+func (c *siteAuthorFetchServiceClient) FetchSiteAuthorInfo(ctx context.Context, in *FetchSiteAuthorInfoRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[AuthorInfoChunk], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &SiteAuthorFetchService_ServiceDesc.Streams[0], SiteAuthorFetchService_FetchSiteAuthorInfo_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[FetchSiteAuthorInfoRequest, AuthorInfoChunk]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SiteAuthorFetchService_FetchSiteAuthorInfoClient = grpc.ServerStreamingClient[AuthorInfoChunk]
+
+// SiteAuthorFetchServiceServer is the server API for SiteAuthorFetchService service.
+// All implementations must embed UnimplementedSiteAuthorFetchServiceServer
+// for forward compatibility.
+//
+// ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
+// 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
+// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
+// 路由=能力广播：主程序逐个调用，插件按请求 siteKey 自判归属（identity 键比对，SDK
+// identity.CheckSiteOwnership），非本站返回未归属错误——SDK 服务端适配层转译为 gRPC
+// PermissionDenied 跨进程传递，主程序据此静默跳过本插件继续广播。
+type SiteAuthorFetchServiceServer interface {
+	// 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
+	FetchSiteAuthorInfo(*FetchSiteAuthorInfoRequest, grpc.ServerStreamingServer[AuthorInfoChunk]) error
+	mustEmbedUnimplementedSiteAuthorFetchServiceServer()
+}
+
+// UnimplementedSiteAuthorFetchServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedSiteAuthorFetchServiceServer struct{}
+
+func (UnimplementedSiteAuthorFetchServiceServer) FetchSiteAuthorInfo(*FetchSiteAuthorInfoRequest, grpc.ServerStreamingServer[AuthorInfoChunk]) error {
+	return status.Error(codes.Unimplemented, "method FetchSiteAuthorInfo not implemented")
+}
+func (UnimplementedSiteAuthorFetchServiceServer) mustEmbedUnimplementedSiteAuthorFetchServiceServer() {
+}
+func (UnimplementedSiteAuthorFetchServiceServer) testEmbeddedByValue() {}
+
+// UnsafeSiteAuthorFetchServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SiteAuthorFetchServiceServer will
+// result in compilation errors.
+type UnsafeSiteAuthorFetchServiceServer interface {
+	mustEmbedUnimplementedSiteAuthorFetchServiceServer()
+}
+
+func RegisterSiteAuthorFetchServiceServer(s grpc.ServiceRegistrar, srv SiteAuthorFetchServiceServer) {
+	// If the following call panics, it indicates UnimplementedSiteAuthorFetchServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&SiteAuthorFetchService_ServiceDesc, srv)
+}
+
+func _SiteAuthorFetchService_FetchSiteAuthorInfo_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(FetchSiteAuthorInfoRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SiteAuthorFetchServiceServer).FetchSiteAuthorInfo(m, &grpc.GenericServerStream[FetchSiteAuthorInfoRequest, AuthorInfoChunk]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SiteAuthorFetchService_FetchSiteAuthorInfoServer = grpc.ServerStreamingServer[AuthorInfoChunk]
+
+// SiteAuthorFetchService_ServiceDesc is the grpc.ServiceDesc for SiteAuthorFetchService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var SiteAuthorFetchService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "plugins.SiteAuthorFetchService",
+	HandlerType: (*SiteAuthorFetchServiceServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "FetchSiteAuthorInfo",
+			Handler:       _SiteAuthorFetchService_FetchSiteAuthorInfo_Handler,
+			ServerStreams: true,
+		},
+	},
+	Metadata: "proto/plugin.proto",
+}

@@ -750,3 +750,36 @@ message ListSitesResponse {
 message GetWorkDirResponse {
   string path = 1; // 资源库根目录绝对路径（OS 原生分隔符，absPath 域）。未配置时本 RPC 返回 FailedPrecondition 错误（显式拒绝，不返回空路径）
 }
+
+// ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
+// 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
+// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
+// 路由=能力广播：主程序逐个调用，插件按请求 siteKey 自判归属（identity 键比对，SDK
+// identity.CheckSiteOwnership），非本站返回未归属错误——SDK 服务端适配层转译为 gRPC
+// PermissionDenied 跨进程传递，主程序据此静默跳过本插件继续广播。
+service SiteAuthorFetchService {
+  // 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
+  rpc FetchSiteAuthorInfo(FetchSiteAuthorInfoRequest) returns (stream AuthorInfoChunk);
+}
+
+message FetchSiteAuthorInfoRequest {
+  string siteKey = 1;       // 站点身份键（identity 注册表 slug）——插件自判归属，非本站返回未归属错误
+  string siteAuthorId = 2;  // 站点侧作者 ID
+}
+
+message AuthorInfoChunk {
+  oneof payload {
+    AuthorInfoMeta meta = 1;         // 恒为首块且仅一块
+    AuthorResourceData resource = 2; // 头像字节块（可多块）
+  }
+}
+
+message AuthorInfoMeta {
+  string authorName = 1;     // 站点侧当前名（回写插件权威域列）
+  string introduce = 2;      // 签名/简介
+  string homepage = 3;       // 主页
+  string avatarUrl = 4;      // 头像来源 URL（host 存 avatar_source_url，变更检测与溯源用）
+  string avatarFormat = 5;   // 头像格式声明（ext 无点形式如 "jpg"；无头像则 avatarUrl/Format 均空）
+}
+
+message AuthorResourceData { bytes data = 1; }

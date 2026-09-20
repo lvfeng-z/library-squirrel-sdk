@@ -16,6 +16,11 @@ type browserStub struct {
 	dto.SiteBrowser
 }
 
+// siteAuthorFetcherStub 占位站点作者信息拉取器（同上）
+type siteAuthorFetcherStub struct {
+	dto.SiteAuthorFetcher
+}
+
 // TestNewLSPluginWithoutTaskHandler 仅可选项（Activate/Shutdown）构造：Handler 为 nil，
 // 无任务处理器的工具型插件运行时形态可构造
 func TestNewLSPluginWithoutTaskHandler(t *testing.T) {
@@ -48,5 +53,18 @@ func TestNewLSPluginWithTaskHandler(t *testing.T) {
 	)
 	if p.Handler != handler || p.Browser != browser || p.OnActivate == nil || p.OnShutdown == nil {
 		t.Fatal("全部选项应各自落位")
+	}
+}
+
+// TestNewLSPluginWithSiteAuthorFetcher 拉取扩展点选项落位：未设时为 nil（service 不注册），
+// 设置后为所设实现
+func TestNewLSPluginWithSiteAuthorFetcher(t *testing.T) {
+	if p := newLSPlugin(WithActivate(func(dto.PluginContext) {})); p.SiteAuthorFetcher != nil {
+		t.Fatal("未设 WithSiteAuthorFetcher 时 SiteAuthorFetcher 应为 nil")
+	}
+	fetcher := &siteAuthorFetcherStub{}
+	p := newLSPlugin(WithSiteAuthorFetcher(fetcher))
+	if p.SiteAuthorFetcher != fetcher {
+		t.Fatal("WithSiteAuthorFetcher 应落位到 LSPlugin.SiteAuthorFetcher")
 	}
 }
