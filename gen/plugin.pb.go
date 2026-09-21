@@ -6146,7 +6146,7 @@ func (x *GetWorkDirResponse) GetPath() string {
 
 type FetchSiteAuthorInfoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SiteKey       string                 `protobuf:"bytes,1,opt,name=siteKey,proto3" json:"siteKey,omitempty"`           // 站点身份键（identity 注册表 slug）——插件自判归属，非本站返回未归属错误
+	SiteKey       string                 `protobuf:"bytes,1,opt,name=siteKey,proto3" json:"siteKey,omitempty"`           // 站点身份键（identity 注册表 slug）
 	SiteAuthorId  string                 `protobuf:"bytes,2,opt,name=siteAuthorId,proto3" json:"siteAuthorId,omitempty"` // 站点侧作者 ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

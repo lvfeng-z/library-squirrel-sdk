@@ -2295,9 +2295,6 @@ const (
 // ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
 // 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
 // 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
-// 路由=能力广播：主程序逐个调用，插件按请求 siteKey 自判归属（identity 键比对，SDK
-// identity.CheckSiteOwnership），非本站返回未归属错误——SDK 服务端适配层转译为 gRPC
-// PermissionDenied 跨进程传递，主程序据此静默跳过本插件继续广播。
 type SiteAuthorFetchServiceClient interface {
 	// 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
 	FetchSiteAuthorInfo(ctx context.Context, in *FetchSiteAuthorInfoRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[AuthorInfoChunk], error)
@@ -2337,9 +2334,6 @@ type SiteAuthorFetchService_FetchSiteAuthorInfoClient = grpc.ServerStreamingClie
 // ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
 // 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
 // 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
-// 路由=能力广播：主程序逐个调用，插件按请求 siteKey 自判归属（identity 键比对，SDK
-// identity.CheckSiteOwnership），非本站返回未归属错误——SDK 服务端适配层转译为 gRPC
-// PermissionDenied 跨进程传递，主程序据此静默跳过本插件继续广播。
 type SiteAuthorFetchServiceServer interface {
 	// 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
 	FetchSiteAuthorInfo(*FetchSiteAuthorInfoRequest, grpc.ServerStreamingServer[AuthorInfoChunk]) error

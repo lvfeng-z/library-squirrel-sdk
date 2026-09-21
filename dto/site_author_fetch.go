@@ -27,9 +27,7 @@ type AuthorInfoMeta = gen.AuthorInfoMeta
 type AuthorResourceData = gen.AuthorResourceData
 
 // SiteAuthorFetcher 站点作者信息拉取处理器（可选扩展点，「站点实体元数据+资源拉取」
-// 契约家族首成员）。经 WithSiteAuthorFetcher 注册；主程序按请求 siteKey 广播路由，
-// 插件实现须先做归属自判（identity.CheckSiteOwnership），非本站返回未归属错误
-// 而非拉取失败，主程序据此静默跳过本插件。
+// 契约家族首成员）。经 WithSiteAuthorFetcher 注册；主程序按请求 siteKey 广播路由。
 type SiteAuthorFetcher interface {
 	// FetchSiteAuthorInfo 按站点身份键拉取作者最新元数据与头像资源。
 	// 首块恒为 meta（含头像 URL/format 前置声明），后续块为头像字节；

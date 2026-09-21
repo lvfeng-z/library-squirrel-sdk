@@ -754,16 +754,13 @@ message GetWorkDirResponse {
 // ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
 // 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
 // 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
-// 路由=能力广播：主程序逐个调用，插件按请求 siteKey 自判归属（identity 键比对，SDK
-// identity.CheckSiteOwnership），非本站返回未归属错误——SDK 服务端适配层转译为 gRPC
-// PermissionDenied 跨进程传递，主程序据此静默跳过本插件继续广播。
 service SiteAuthorFetchService {
   // 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
   rpc FetchSiteAuthorInfo(FetchSiteAuthorInfoRequest) returns (stream AuthorInfoChunk);
 }
 
 message FetchSiteAuthorInfoRequest {
-  string siteKey = 1;       // 站点身份键（identity 注册表 slug）——插件自判归属，非本站返回未归属错误
+  string siteKey = 1;       // 站点身份键（identity 注册表 slug）
   string siteAuthorId = 2;  // 站点侧作者 ID
 }
 

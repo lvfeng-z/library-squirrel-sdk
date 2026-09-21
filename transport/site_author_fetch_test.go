@@ -7,7 +7,6 @@ import (
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
-	"github.com/lvfeng-z/library-squirrel-sdk/identity"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -97,31 +96,8 @@ func TestSiteAuthorFetchWithFetcherStreams(t *testing.T) {
 	}
 }
 
-// TestSiteAuthorFetchNotOwnedStatus 归属自判错误跨进程转译：fetcher 返回
-// identity.CheckSiteOwnership 的未归属错误 → 客户端侧得 codes.PermissionDenied，
-// IsSiteNotOwnedStatus 命中（主程序广播路由据此静默跳过本插件）
-func TestSiteAuthorFetchNotOwnedStatus(t *testing.T) {
-	fetcher := &fetcherStub{err: identity.CheckSiteOwnership(identity.Bilibili.Key, identity.Pixiv.Key)}
-	conn := serveGRPC(t, func(s *grpc.Server) {
-		if err := (&LSPlugin{SiteAuthorFetcher: fetcher}).GRPCServer(nil, s); err != nil {
-			t.Errorf("GRPCServer 注册失败: %v", err)
-		}
-	})
-	client := gen.NewSiteAuthorFetchServiceClient(conn)
-	stream, err := client.FetchSiteAuthorInfo(context.Background(), &gen.FetchSiteAuthorInfoRequest{SiteKey: "pixiv"})
-	if err == nil {
-		_, err = stream.Recv()
-	}
-	if status.Code(err) != codes.PermissionDenied {
-		t.Fatalf("错误码 = %v, 期望 codes.PermissionDenied (err=%v)", status.Code(err), err)
-	}
-	if !IsSiteNotOwnedStatus(err) {
-		t.Fatal("IsSiteNotOwnedStatus 应识别未归属信号")
-	}
-}
-
-// TestSiteAuthorFetchInternalStatus 普通拉取失败（非归属信号）按 Internal 转译，
-// IsSiteNotOwnedStatus 不命中（主程序按拉取失败记日志，不静默跳过）
+// TestSiteAuthorFetchInternalStatus 处理器返回的错误按 Internal 转译（客户端侧无
+// 归属信号分支，一律按拉取失败处理）
 func TestSiteAuthorFetchInternalStatus(t *testing.T) {
 	fetcher := &fetcherStub{err: io.ErrUnexpectedEOF}
 	conn := serveGRPC(t, func(s *grpc.Server) {
@@ -136,8 +112,5 @@ func TestSiteAuthorFetchInternalStatus(t *testing.T) {
 	}
 	if status.Code(err) != codes.Internal {
 		t.Fatalf("错误码 = %v, 期望 codes.Internal (err=%v)", status.Code(err), err)
-	}
-	if IsSiteNotOwnedStatus(err) {
-		t.Fatal("普通拉取失败不应被误判为未归属信号")
 	}
 }

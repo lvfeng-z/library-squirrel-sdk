@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 8
+const ContractVersion = 9
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -41,3 +41,10 @@ const ContractVersion = 8
 //       role_name）。返回消息字段类型更换属线级破坏（旧编译插件按旧消息类型解析会错读），SiteTagInfo
 //       删字段属源级破坏——主程序 minSupportedContractVersion 须同步升至 8，min<8 即宣称兼容自己已破坏
 //       的线协议
+//   9 — 插件声明面重构（能力包模型）：声明面移入 extensions 段条目级——顶层 capabilities 由
+//       extensions 各条目的包内声明取代（siteAuthorFetch 携 sites 作用域、workOrderQuery 与
+//       workSetRelationQuery 下沉 taskHandlers[].options、resourceTypeProvider 取消），门控粒度
+//       相应改为（插件, 扩展点）条目级；站点归属自判机制退役——插件侧的身份键比对辅助、跨进程
+//       未归属错误信号及其 gRPC 状态码转译与宿主侧判定一并删除，作者拉取候选改由宿主按插件已
+//       声明的站点范围收窄，插件不再自判归属。声明面结构更换与导出符号删除属源级破坏——
+//       主程序 minSupportedContractVersion 须同步升至 9

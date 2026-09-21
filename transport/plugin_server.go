@@ -2,7 +2,6 @@ package transport
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -10,7 +9,6 @@ import (
 	"github.com/hashicorp/go-plugin"
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
-	"github.com/lvfeng-z/library-squirrel-sdk/identity"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -379,24 +377,12 @@ type siteAuthorFetchServer struct {
 }
 
 // FetchSiteAuthorInfo 服务端流式拉取：流与 stream.Send 直通给插件处理器（dto 层 send 回调，
-// 复用 gen 生成的 stream.Send，无中间缓冲）。ErrSiteNotOwned 转译为 PermissionDenied
-// 跨进程传递（主程序广播路由的跳过信号，见 IsSiteNotOwnedStatus），其余错误按 Internal。
+// 复用 gen 生成的 stream.Send，无中间缓冲）。处理器错误按 Internal 转译。
 func (s *siteAuthorFetchServer) FetchSiteAuthorInfo(req *gen.FetchSiteAuthorInfoRequest, stream grpc.ServerStreamingServer[gen.AuthorInfoChunk]) error {
 	if err := s.fetcher.FetchSiteAuthorInfo(stream.Context(), req, stream.Send); err != nil {
-		if errors.Is(err, identity.ErrSiteNotOwned) {
-			return status.Error(codes.PermissionDenied, err.Error())
-		}
 		return status.Errorf(codes.Internal, "fetchSiteAuthorInfo failed: %v", err)
 	}
 	return nil
-}
-
-// IsSiteNotOwnedStatus 主程序侧判定：FetchSiteAuthorInfo 调用返回的错误是否为
-// 插件归属自判的「未归属本插件」信号（插件侧 identity.ErrSiteNotOwned 经
-// siteAuthorFetchServer 转译为 PermissionDenied 跨进程到达此处）。
-// 能力广播路由消费契约：命中则静默跳过该插件继续遍历，不按拉取失败记日志。
-func IsSiteNotOwnedStatus(err error) bool {
-	return status.Code(err) == codes.PermissionDenied
 }
 
 // ========== 转换函数 ==========
