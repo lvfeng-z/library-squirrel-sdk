@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 9
+const ContractVersion = 10
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -48,3 +48,6 @@ const ContractVersion = 9
 //       未归属错误信号及其 gRPC 状态码转译与宿主侧判定一并删除，作者拉取候选改由宿主按插件已
 //       声明的站点范围收窄，插件不再自判归属。声明面结构更换与导出符号删除属源级破坏——
 //       主程序 minSupportedContractVersion 须同步升至 9
+//  10 — 插件清单结构变更：用户设置项声明（settings 段）住清单根级（extensions 段只承载
+//       能力包声明，不承载 settings 子段）。段位置变更属宿主读清单的源级破坏——主程序
+//       minSupportedContractVersion 须同步升至 10，低于 10 的清单在加载期拒收
