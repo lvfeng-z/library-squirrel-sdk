@@ -21,12 +21,6 @@ type TaskCreateProvider interface {
 	CreateTask(ctx context.Context, url string) (*CreateTaskResult, error)
 }
 
-// UrlListenerRegistry URL 监听器注册
-type UrlListenerRegistry interface {
-	RegisterUrlListener(ctx context.Context, extensionId string, patterns []string) error
-	UnregisterUrlListener(ctx context.Context, extensionId string) error
-}
-
 // FrontendEventProvider 前后端事件桥接
 type FrontendEventProvider interface {
 	PublishToFrontend(topic string, data []byte) error

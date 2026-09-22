@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 10
+const ContractVersion = 11
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -51,3 +51,10 @@ const ContractVersion = 10
 //  10 — 插件清单结构变更：用户设置项声明（settings 段）住清单根级（extensions 段只承载
 //       能力包声明，不承载 settings 子段）。段位置变更属宿主读清单的源级破坏——主程序
 //       minSupportedContractVersion 须同步升至 10，低于 10 的清单在加载期拒收
+//  11 — siteAuthorFetch 数组化 + 注册面声明化：拉取请求 FetchSiteAuthorInfoRequest 加
+//       extensionId（候选粒度从插件升为（插件, 条目）全键，插件侧服务端按条目 id 分派、
+//       未命中报 InvalidArgument，WithSiteAuthorFetcher 改为按条目可多次注册）；HostService
+//       五个运行时注册/监听 RPC 退役（RegisterTaskHandler/RegisterSiteBrowser/
+//       UnregisterSiteBrowser/RegisterUrlListener/UnregisterUrlListener）——taskHandlers/
+//       siteBrowsers 由宿主激活期按清单条目派生注册，URL 监听迁入清单 urlPatterns 字段。
+//       删 RPC 属线级破坏——主程序 minSupportedContractVersion 须同步升至 11

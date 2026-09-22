@@ -349,11 +349,6 @@ message BrowserRequest {
 // ========== 4. 主程序宿主服务（插件 → 主程序，通过 GRPCBroker）==========
 
 service HostService {
-  // 扩展点注册
-  rpc RegisterTaskHandler(RegisterExtensionRequest) returns (Empty);
-  rpc RegisterSiteBrowser(RegisterExtensionRequest) returns (Empty);
-  rpc UnregisterSiteBrowser(UnregisterRequest) returns (Empty);
-
   // 插件自存信息（统一 KV 存储，取代临时 plugin_data 与 secure_storage）
   rpc GetValue(StorageKeyRequest) returns (StorageValueResponse);
   rpc SetValue(StorageEntryRequest) returns (Empty);
@@ -362,8 +357,6 @@ service HostService {
   rpc GetAllValues(Empty) returns (AllStorageValuesResponse);
 
   // 任务管理
-  rpc RegisterUrlListener(UrlListenerRequest) returns (Empty);
-  rpc UnregisterUrlListener(UnregisterRequest) returns (Empty);
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
 
   // 路径
@@ -410,11 +403,6 @@ message StorageEntryRequest {
 
 message AllStorageValuesResponse {
   map<string, StorageValue> values = 1;   // 全量：key → 带版本的值
-}
-
-message UrlListenerRequest {
-  string extensionId = 1;
-  repeated string patterns = 2;
 }
 
 message CreateTaskRequest {
@@ -762,6 +750,7 @@ service SiteAuthorFetchService {
 message FetchSiteAuthorInfoRequest {
   string siteKey = 1;       // 站点身份键（identity 注册表 slug）
   string siteAuthorId = 2;  // 站点侧作者 ID
+  string extensionId = 3;   // siteAuthorFetch 扩展点条目 ID（manifest 清单条目 id）；插件侧服务端按此分派到对应条目实现，未命中报 InvalidArgument
 }
 
 message AuthorInfoChunk {

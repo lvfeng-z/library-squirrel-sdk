@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v5.29.5
-// source: proto/plugin.proto
+// source: plugin.proto
 
 package gen
 
@@ -155,7 +155,7 @@ var PluginLifecycle_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -553,7 +553,7 @@ var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -693,36 +693,27 @@ var SiteBrowserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
-	HostService_RegisterTaskHandler_FullMethodName   = "/plugins.HostService/RegisterTaskHandler"
-	HostService_RegisterSiteBrowser_FullMethodName   = "/plugins.HostService/RegisterSiteBrowser"
-	HostService_UnregisterSiteBrowser_FullMethodName = "/plugins.HostService/UnregisterSiteBrowser"
-	HostService_GetValue_FullMethodName              = "/plugins.HostService/GetValue"
-	HostService_SetValue_FullMethodName              = "/plugins.HostService/SetValue"
-	HostService_SetValueEncrypted_FullMethodName     = "/plugins.HostService/SetValueEncrypted"
-	HostService_DeleteValue_FullMethodName           = "/plugins.HostService/DeleteValue"
-	HostService_GetAllValues_FullMethodName          = "/plugins.HostService/GetAllValues"
-	HostService_RegisterUrlListener_FullMethodName   = "/plugins.HostService/RegisterUrlListener"
-	HostService_UnregisterUrlListener_FullMethodName = "/plugins.HostService/UnregisterUrlListener"
-	HostService_CreateTask_FullMethodName            = "/plugins.HostService/CreateTask"
-	HostService_GetPluginRoot_FullMethodName         = "/plugins.HostService/GetPluginRoot"
-	HostService_Log_FullMethodName                   = "/plugins.HostService/Log"
-	HostService_PublishToFrontend_FullMethodName     = "/plugins.HostService/PublishToFrontend"
-	HostService_SubscribeFrontend_FullMethodName     = "/plugins.HostService/SubscribeFrontend"
-	HostService_UnsubscribeFrontend_FullMethodName   = "/plugins.HostService/UnsubscribeFrontend"
+	HostService_GetValue_FullMethodName            = "/plugins.HostService/GetValue"
+	HostService_SetValue_FullMethodName            = "/plugins.HostService/SetValue"
+	HostService_SetValueEncrypted_FullMethodName   = "/plugins.HostService/SetValueEncrypted"
+	HostService_DeleteValue_FullMethodName         = "/plugins.HostService/DeleteValue"
+	HostService_GetAllValues_FullMethodName        = "/plugins.HostService/GetAllValues"
+	HostService_CreateTask_FullMethodName          = "/plugins.HostService/CreateTask"
+	HostService_GetPluginRoot_FullMethodName       = "/plugins.HostService/GetPluginRoot"
+	HostService_Log_FullMethodName                 = "/plugins.HostService/Log"
+	HostService_PublishToFrontend_FullMethodName   = "/plugins.HostService/PublishToFrontend"
+	HostService_SubscribeFrontend_FullMethodName   = "/plugins.HostService/SubscribeFrontend"
+	HostService_UnsubscribeFrontend_FullMethodName = "/plugins.HostService/UnsubscribeFrontend"
 )
 
 // HostServiceClient is the client API for HostService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HostServiceClient interface {
-	// 扩展点注册
-	RegisterTaskHandler(ctx context.Context, in *RegisterExtensionRequest, opts ...grpc.CallOption) (*Empty, error)
-	RegisterSiteBrowser(ctx context.Context, in *RegisterExtensionRequest, opts ...grpc.CallOption) (*Empty, error)
-	UnregisterSiteBrowser(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error)
 	// 插件自存信息（统一 KV 存储，取代临时 plugin_data 与 secure_storage）
 	GetValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*StorageValueResponse, error)
 	SetValue(ctx context.Context, in *StorageEntryRequest, opts ...grpc.CallOption) (*Empty, error)
@@ -730,8 +721,6 @@ type HostServiceClient interface {
 	DeleteValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetAllValues(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AllStorageValuesResponse, error)
 	// 任务管理
-	RegisterUrlListener(ctx context.Context, in *UrlListenerRequest, opts ...grpc.CallOption) (*Empty, error)
-	UnregisterUrlListener(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error)
 	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error)
 	// 路径
 	GetPluginRoot(ctx context.Context, in *GetPluginRootRequest, opts ...grpc.CallOption) (*GetPluginRootResponse, error)
@@ -749,36 +738,6 @@ type hostServiceClient struct {
 
 func NewHostServiceClient(cc grpc.ClientConnInterface) HostServiceClient {
 	return &hostServiceClient{cc}
-}
-
-func (c *hostServiceClient) RegisterTaskHandler(ctx context.Context, in *RegisterExtensionRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, HostService_RegisterTaskHandler_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) RegisterSiteBrowser(ctx context.Context, in *RegisterExtensionRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, HostService_RegisterSiteBrowser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) UnregisterSiteBrowser(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, HostService_UnregisterSiteBrowser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *hostServiceClient) GetValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*StorageValueResponse, error) {
@@ -825,26 +784,6 @@ func (c *hostServiceClient) GetAllValues(ctx context.Context, in *Empty, opts ..
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AllStorageValuesResponse)
 	err := c.cc.Invoke(ctx, HostService_GetAllValues_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) RegisterUrlListener(ctx context.Context, in *UrlListenerRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, HostService_RegisterUrlListener_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) UnregisterUrlListener(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, HostService_UnregisterUrlListener_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -924,10 +863,6 @@ func (c *hostServiceClient) UnsubscribeFrontend(ctx context.Context, in *Unsubsc
 // All implementations must embed UnimplementedHostServiceServer
 // for forward compatibility.
 type HostServiceServer interface {
-	// 扩展点注册
-	RegisterTaskHandler(context.Context, *RegisterExtensionRequest) (*Empty, error)
-	RegisterSiteBrowser(context.Context, *RegisterExtensionRequest) (*Empty, error)
-	UnregisterSiteBrowser(context.Context, *UnregisterRequest) (*Empty, error)
 	// 插件自存信息（统一 KV 存储，取代临时 plugin_data 与 secure_storage）
 	GetValue(context.Context, *StorageKeyRequest) (*StorageValueResponse, error)
 	SetValue(context.Context, *StorageEntryRequest) (*Empty, error)
@@ -935,8 +870,6 @@ type HostServiceServer interface {
 	DeleteValue(context.Context, *StorageKeyRequest) (*Empty, error)
 	GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error)
 	// 任务管理
-	RegisterUrlListener(context.Context, *UrlListenerRequest) (*Empty, error)
-	UnregisterUrlListener(context.Context, *UnregisterRequest) (*Empty, error)
 	CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error)
 	// 路径
 	GetPluginRoot(context.Context, *GetPluginRootRequest) (*GetPluginRootResponse, error)
@@ -956,15 +889,6 @@ type HostServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedHostServiceServer struct{}
 
-func (UnimplementedHostServiceServer) RegisterTaskHandler(context.Context, *RegisterExtensionRequest) (*Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method RegisterTaskHandler not implemented")
-}
-func (UnimplementedHostServiceServer) RegisterSiteBrowser(context.Context, *RegisterExtensionRequest) (*Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method RegisterSiteBrowser not implemented")
-}
-func (UnimplementedHostServiceServer) UnregisterSiteBrowser(context.Context, *UnregisterRequest) (*Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method UnregisterSiteBrowser not implemented")
-}
 func (UnimplementedHostServiceServer) GetValue(context.Context, *StorageKeyRequest) (*StorageValueResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetValue not implemented")
 }
@@ -979,12 +903,6 @@ func (UnimplementedHostServiceServer) DeleteValue(context.Context, *StorageKeyRe
 }
 func (UnimplementedHostServiceServer) GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllValues not implemented")
-}
-func (UnimplementedHostServiceServer) RegisterUrlListener(context.Context, *UrlListenerRequest) (*Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method RegisterUrlListener not implemented")
-}
-func (UnimplementedHostServiceServer) UnregisterUrlListener(context.Context, *UnregisterRequest) (*Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method UnregisterUrlListener not implemented")
 }
 func (UnimplementedHostServiceServer) CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateTask not implemented")
@@ -1023,60 +941,6 @@ func RegisterHostServiceServer(s grpc.ServiceRegistrar, srv HostServiceServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&HostService_ServiceDesc, srv)
-}
-
-func _HostService_RegisterTaskHandler_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterExtensionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).RegisterTaskHandler(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_RegisterTaskHandler_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).RegisterTaskHandler(ctx, req.(*RegisterExtensionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_RegisterSiteBrowser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterExtensionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).RegisterSiteBrowser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_RegisterSiteBrowser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).RegisterSiteBrowser(ctx, req.(*RegisterExtensionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_UnregisterSiteBrowser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnregisterRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).UnregisterSiteBrowser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_UnregisterSiteBrowser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).UnregisterSiteBrowser(ctx, req.(*UnregisterRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _HostService_GetValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1165,42 +1029,6 @@ func _HostService_GetAllValues_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).GetAllValues(ctx, req.(*Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_RegisterUrlListener_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UrlListenerRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).RegisterUrlListener(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_RegisterUrlListener_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).RegisterUrlListener(ctx, req.(*UrlListenerRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_UnregisterUrlListener_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnregisterRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).UnregisterUrlListener(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_UnregisterUrlListener_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).UnregisterUrlListener(ctx, req.(*UnregisterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1314,18 +1142,6 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*HostServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RegisterTaskHandler",
-			Handler:    _HostService_RegisterTaskHandler_Handler,
-		},
-		{
-			MethodName: "RegisterSiteBrowser",
-			Handler:    _HostService_RegisterSiteBrowser_Handler,
-		},
-		{
-			MethodName: "UnregisterSiteBrowser",
-			Handler:    _HostService_UnregisterSiteBrowser_Handler,
-		},
-		{
 			MethodName: "GetValue",
 			Handler:    _HostService_GetValue_Handler,
 		},
@@ -1344,14 +1160,6 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllValues",
 			Handler:    _HostService_GetAllValues_Handler,
-		},
-		{
-			MethodName: "RegisterUrlListener",
-			Handler:    _HostService_RegisterUrlListener_Handler,
-		},
-		{
-			MethodName: "UnregisterUrlListener",
-			Handler:    _HostService_UnregisterUrlListener_Handler,
 		},
 		{
 			MethodName: "CreateTask",
@@ -1381,7 +1189,7 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -2281,7 +2089,7 @@ var LibraryQuery_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }
 
 const (
@@ -2397,5 +2205,5 @@ var SiteAuthorFetchService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "proto/plugin.proto",
+	Metadata: "plugin.proto",
 }

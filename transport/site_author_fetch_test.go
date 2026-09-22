@@ -65,12 +65,12 @@ func TestSiteAuthorFetchWithFetcherStreams(t *testing.T) {
 		{Payload: &dto.AuthorInfoChunk_Resource{Resource: &dto.AuthorResourceData{Data: []byte("avatar-bytes")}}},
 	}}
 	conn := serveGRPC(t, func(s *grpc.Server) {
-		if err := (&LSPlugin{SiteAuthorFetcher: fetcher}).GRPCServer(nil, s); err != nil {
+		if err := (&LSPlugin{SiteAuthorFetchers: map[string]dto.SiteAuthorFetcher{"main": fetcher}}).GRPCServer(nil, s); err != nil {
 			t.Errorf("GRPCServer 注册失败: %v", err)
 		}
 	})
 	client := gen.NewSiteAuthorFetchServiceClient(conn)
-	stream, err := client.FetchSiteAuthorInfo(context.Background(), &gen.FetchSiteAuthorInfoRequest{SiteKey: "bilibili", SiteAuthorId: "42"})
+	stream, err := client.FetchSiteAuthorInfo(context.Background(), &gen.FetchSiteAuthorInfoRequest{SiteKey: "bilibili", SiteAuthorId: "42", ExtensionId: "main"})
 	if err != nil {
 		t.Fatalf("FetchSiteAuthorInfo 开流失败: %v", err)
 	}
@@ -91,8 +91,58 @@ func TestSiteAuthorFetchWithFetcherStreams(t *testing.T) {
 	if _, err := stream.Recv(); err != io.EOF {
 		t.Fatalf("流应结束于 EOF, 实得 %v", err)
 	}
-	if len(fetcher.requests) != 1 || fetcher.requests[0].SiteKey != "bilibili" || fetcher.requests[0].SiteAuthorId != "42" {
+	if len(fetcher.requests) != 1 || fetcher.requests[0].SiteKey != "bilibili" || fetcher.requests[0].SiteAuthorId != "42" || fetcher.requests[0].ExtensionId != "main" {
 		t.Fatalf("请求应直通插件处理器: %+v", fetcher.requests)
+	}
+}
+
+// TestSiteAuthorFetchDispatchesByExtensionId 多实例分派：同插件注册两个条目实现，请求按
+// extensionId 路由到对应条目，另一条目不被触达
+func TestSiteAuthorFetchDispatchesByExtensionId(t *testing.T) {
+	mainFetcher := &fetcherStub{}
+	altFetcher := &fetcherStub{chunks: []*dto.AuthorInfoChunk{
+		{Payload: &dto.AuthorInfoChunk_Meta{Meta: &dto.AuthorInfoMeta{AuthorName: "alt 实例作者"}}},
+	}}
+	conn := serveGRPC(t, func(s *grpc.Server) {
+		if err := (&LSPlugin{SiteAuthorFetchers: map[string]dto.SiteAuthorFetcher{"main": mainFetcher, "alt": altFetcher}}).GRPCServer(nil, s); err != nil {
+			t.Errorf("GRPCServer 注册失败: %v", err)
+		}
+	})
+	client := gen.NewSiteAuthorFetchServiceClient(conn)
+	stream, err := client.FetchSiteAuthorInfo(context.Background(), &gen.FetchSiteAuthorInfoRequest{SiteKey: "bilibili", SiteAuthorId: "42", ExtensionId: "alt"})
+	if err != nil {
+		t.Fatalf("FetchSiteAuthorInfo 开流失败: %v", err)
+	}
+	meta, err := stream.Recv()
+	if err != nil {
+		t.Fatalf("首块(meta)接收失败: %v", err)
+	}
+	if meta.GetMeta().GetAuthorName() != "alt 实例作者" {
+		t.Fatalf("应路由到 alt 条目实现: %+v", meta.GetMeta())
+	}
+	if len(altFetcher.requests) != 1 || altFetcher.requests[0].ExtensionId != "alt" {
+		t.Fatalf("alt 条目应收到带本条目 id 的请求: %+v", altFetcher.requests)
+	}
+	if len(mainFetcher.requests) != 0 {
+		t.Fatalf("main 条目不应被触达: %+v", mainFetcher.requests)
+	}
+}
+
+// TestSiteAuthorFetchUnknownExtensionIdInvalidArgument 条目 id 分派未命中：请求 extensionId
+// 不在插件注册表内时返回 codes.InvalidArgument（插件侧分派拦截）
+func TestSiteAuthorFetchUnknownExtensionIdInvalidArgument(t *testing.T) {
+	conn := serveGRPC(t, func(s *grpc.Server) {
+		if err := (&LSPlugin{SiteAuthorFetchers: map[string]dto.SiteAuthorFetcher{"main": &fetcherStub{}}}).GRPCServer(nil, s); err != nil {
+			t.Errorf("GRPCServer 注册失败: %v", err)
+		}
+	})
+	client := gen.NewSiteAuthorFetchServiceClient(conn)
+	stream, err := client.FetchSiteAuthorInfo(context.Background(), &gen.FetchSiteAuthorInfoRequest{SiteKey: "bilibili", ExtensionId: "ghost"})
+	if err == nil {
+		_, err = stream.Recv()
+	}
+	if status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("错误码 = %v, 期望 codes.InvalidArgument (err=%v)", status.Code(err), err)
 	}
 }
 
@@ -101,12 +151,12 @@ func TestSiteAuthorFetchWithFetcherStreams(t *testing.T) {
 func TestSiteAuthorFetchInternalStatus(t *testing.T) {
 	fetcher := &fetcherStub{err: io.ErrUnexpectedEOF}
 	conn := serveGRPC(t, func(s *grpc.Server) {
-		if err := (&LSPlugin{SiteAuthorFetcher: fetcher}).GRPCServer(nil, s); err != nil {
+		if err := (&LSPlugin{SiteAuthorFetchers: map[string]dto.SiteAuthorFetcher{"main": fetcher}}).GRPCServer(nil, s); err != nil {
 			t.Errorf("GRPCServer 注册失败: %v", err)
 		}
 	})
 	client := gen.NewSiteAuthorFetchServiceClient(conn)
-	stream, err := client.FetchSiteAuthorInfo(context.Background(), &gen.FetchSiteAuthorInfoRequest{SiteKey: "bilibili"})
+	stream, err := client.FetchSiteAuthorInfo(context.Background(), &gen.FetchSiteAuthorInfoRequest{SiteKey: "bilibili", ExtensionId: "main"})
 	if err == nil {
 		_, err = stream.Recv()
 	}

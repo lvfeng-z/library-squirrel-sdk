@@ -56,15 +56,19 @@ func TestNewLSPluginWithTaskHandler(t *testing.T) {
 	}
 }
 
-// TestNewLSPluginWithSiteAuthorFetcher 拉取扩展点选项落位：未设时为 nil（service 不注册），
-// 设置后为所设实现
+// TestNewLSPluginWithSiteAuthorFetcher 拉取扩展点选项落位：未设时为 nil（service 不注册）；
+// 多次调用按条目 id 累积成 id→实现 表，同 id 后调覆盖
 func TestNewLSPluginWithSiteAuthorFetcher(t *testing.T) {
-	if p := newLSPlugin(WithActivate(func(dto.PluginContext) {})); p.SiteAuthorFetcher != nil {
-		t.Fatal("未设 WithSiteAuthorFetcher 时 SiteAuthorFetcher 应为 nil")
+	if p := newLSPlugin(WithActivate(func(dto.PluginContext) {})); p.SiteAuthorFetchers != nil {
+		t.Fatal("未设 WithSiteAuthorFetcher 时 SiteAuthorFetchers 应为 nil")
 	}
-	fetcher := &siteAuthorFetcherStub{}
-	p := newLSPlugin(WithSiteAuthorFetcher(fetcher))
-	if p.SiteAuthorFetcher != fetcher {
-		t.Fatal("WithSiteAuthorFetcher 应落位到 LSPlugin.SiteAuthorFetcher")
+	first, second, alt := &siteAuthorFetcherStub{}, &siteAuthorFetcherStub{}, &siteAuthorFetcherStub{}
+	p := newLSPlugin(
+		WithSiteAuthorFetcher("main", first),
+		WithSiteAuthorFetcher("alt", alt),
+		WithSiteAuthorFetcher("main", second),
+	)
+	if len(p.SiteAuthorFetchers) != 2 || p.SiteAuthorFetchers["main"] != second || p.SiteAuthorFetchers["alt"] != alt {
+		t.Fatal("WithSiteAuthorFetcher 多次调用应按条目 id 累积落位（同 id 后调覆盖）")
 	}
 }

@@ -33,31 +33,6 @@ func (c *PluginContextClient) SetMainWindowHandle(hwnd uintptr) {
 	c.mainWindowHWND = hwnd
 }
 
-func (c *PluginContextClient) RegisterTaskHandler(id, name, description string, handler dto.TaskHandler) error {
-	_, err := c.hostClient.RegisterTaskHandler(context.Background(), &gen.RegisterExtensionRequest{
-		ExtensionId: id,
-		Name:        name,
-		Description: description,
-	})
-	return err
-}
-
-func (c *PluginContextClient) RegisterSiteBrowser(id, name, description string, browser dto.SiteBrowser) error {
-	_, err := c.hostClient.RegisterSiteBrowser(context.Background(), &gen.RegisterExtensionRequest{
-		ExtensionId: id,
-		Name:        name,
-		Description: description,
-	})
-	return err
-}
-
-func (c *PluginContextClient) UnregisterSiteBrowser(id string) error {
-	_, err := c.hostClient.UnregisterSiteBrowser(context.Background(), &gen.UnregisterRequest{
-		ExtensionId: id,
-	})
-	return err
-}
-
 func (c *PluginContextClient) GetValue(key string) (*dto.StorageValue, error) {
 	resp, err := c.hostClient.GetValue(context.Background(), &gen.StorageKeyRequest{Key: key})
 	if err != nil {
@@ -93,21 +68,6 @@ func (c *PluginContextClient) GetAllValues() (map[string]*dto.StorageValue, erro
 		return nil, err
 	}
 	return resp.Values, nil
-}
-
-func (c *PluginContextClient) RegisterUrlListener(extensionId string, patterns []string) error {
-	_, err := c.hostClient.RegisterUrlListener(context.Background(), &gen.UrlListenerRequest{
-		ExtensionId: extensionId,
-		Patterns:    patterns,
-	})
-	return err
-}
-
-func (c *PluginContextClient) UnregisterUrlListener(extensionId string) error {
-	_, err := c.hostClient.UnregisterUrlListener(context.Background(), &gen.UnregisterRequest{
-		ExtensionId: extensionId,
-	})
-	return err
 }
 
 func (c *PluginContextClient) CreateTask(url string) (*dto.CreateTaskResult, error) {

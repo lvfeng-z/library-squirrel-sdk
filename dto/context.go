@@ -2,13 +2,6 @@ package dto
 
 // PluginContext 插件上下文，主程序提供给插件的完整 API
 type PluginContext interface {
-	// 扩展点注册
-	RegisterTaskHandler(id string, name string, description string, handler TaskHandler) error
-	RegisterSiteBrowser(id string, name string, description string, browser SiteBrowser) error
-
-	// 扩展点注销
-	UnregisterSiteBrowser(id string) error
-
 	// 插件自存信息（统一 KV 存储，取代临时 plugin_data 与加密存储）
 	GetValue(key string) (*StorageValue, error)
 	SetValue(key string, value string) error
@@ -17,8 +10,6 @@ type PluginContext interface {
 	GetAllValues() (map[string]*StorageValue, error)
 
 	// 任务
-	RegisterUrlListener(extensionId string, patterns []string) error
-	UnregisterUrlListener(extensionId string) error
 	CreateTask(url string) (*CreateTaskResult, error)
 
 	// 前后端通信

@@ -13,12 +13,12 @@ import (
 // LSPlugin 实现 hashicorp/go-plugin 的 GRPCPlugin 接口
 type LSPlugin struct {
 	plugin.NetRPCUnsupportedPlugin
-	Handler           dto.TaskHandler
-	Browser           dto.SiteBrowser
-	SiteAuthorFetcher dto.SiteAuthorFetcher
-	OnActivate        func(dto.PluginContext)
-	OnShutdown        func()
-	HostDeps          *HostDeps
+	Handler            dto.TaskHandler
+	Browser            dto.SiteBrowser
+	SiteAuthorFetchers map[string]dto.SiteAuthorFetcher
+	OnActivate         func(dto.PluginContext)
+	OnShutdown         func()
+	HostDeps           *HostDeps
 }
 
 func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
@@ -39,9 +39,9 @@ func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
 			browser: p.Browser,
 		})
 	}
-	if p.SiteAuthorFetcher != nil {
+	if len(p.SiteAuthorFetchers) > 0 {
 		gen.RegisterSiteAuthorFetchServiceServer(s, &siteAuthorFetchServer{
-			fetcher: p.SiteAuthorFetcher,
+			fetchers: p.SiteAuthorFetchers,
 		})
 	}
 	return nil

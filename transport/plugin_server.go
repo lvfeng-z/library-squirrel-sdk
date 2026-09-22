@@ -373,13 +373,18 @@ func (s *siteBrowserServer) Close(ctx context.Context, req *gen.BrowserRequest) 
 
 type siteAuthorFetchServer struct {
 	gen.UnimplementedSiteAuthorFetchServiceServer
-	fetcher dto.SiteAuthorFetcher
+	fetchers map[string]dto.SiteAuthorFetcher
 }
 
-// FetchSiteAuthorInfo 服务端流式拉取：流与 stream.Send 直通给插件处理器（dto 层 send 回调，
+// FetchSiteAuthorInfo 服务端流式拉取：按请求 extensionId 分派到对应条目实现（表内未命中
+// 该条目 id 返回 InvalidArgument），流与 stream.Send 直通给插件处理器（dto 层 send 回调，
 // 复用 gen 生成的 stream.Send，无中间缓冲）。处理器错误按 Internal 转译。
 func (s *siteAuthorFetchServer) FetchSiteAuthorInfo(req *gen.FetchSiteAuthorInfoRequest, stream grpc.ServerStreamingServer[gen.AuthorInfoChunk]) error {
-	if err := s.fetcher.FetchSiteAuthorInfo(stream.Context(), req, stream.Send); err != nil {
+	fetcher, ok := s.fetchers[req.GetExtensionId()]
+	if !ok {
+		return status.Errorf(codes.InvalidArgument, "siteAuthorFetch 条目未注册: %q", req.GetExtensionId())
+	}
+	if err := fetcher.FetchSiteAuthorInfo(stream.Context(), req, stream.Send); err != nil {
 		return status.Errorf(codes.Internal, "fetchSiteAuthorInfo failed: %v", err)
 	}
 	return nil
