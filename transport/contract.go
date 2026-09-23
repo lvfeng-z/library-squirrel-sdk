@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 11
+const ContractVersion = 12
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -58,3 +58,7 @@ const ContractVersion = 11
 //       UnregisterSiteBrowser/RegisterUrlListener/UnregisterUrlListener）——taskHandlers/
 //       siteBrowsers 由宿主激活期按清单条目派生注册，URL 监听迁入清单 urlPatterns 字段。
 //       删 RPC 属线级破坏——主程序 minSupportedContractVersion 须同步升至 11
+//  12 — 扩展点正名：任务处理器（taskHandlers / TaskHandler / TaskHandlerService）正名为
+//       作品拉取（workFetch / WorkFetcher / WorkFetchService）——清单段名、SDK 接口与选项、
+//       gRPC 服务名、宿主侧类型与状态字段一并更换。清单段名更换属宿主读清单的源级破坏、
+//       gRPC 服务名更换属线级破坏——主程序 minSupportedContractVersion 须同步升至 12

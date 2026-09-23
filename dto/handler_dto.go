@@ -96,11 +96,11 @@ type StoreSpec struct {
 	ExpectedSha256    *string       `json:"expectedSha256,omitempty"`    // 来源侧声明的期望 SHA256(下载内容完整性校验);nil=来源未声明,主程序跳过校验
 }
 
-// TaskSiteAuthorDTO 任务处理器站点作者DTO（别名 gen.TaskSiteAuthorDTO，proto 单源）
+// TaskSiteAuthorDTO 作品拉取站点作者DTO（别名 gen.TaskSiteAuthorDTO，proto 单源）
 type TaskSiteAuthorDTO = gen.TaskSiteAuthorDTO
 
-// TaskSiteTagDTO 任务处理器站点标签DTO（别名 gen.TaskSiteTagDTO，proto 单源）
+// TaskSiteTagDTO 作品拉取站点标签DTO（别名 gen.TaskSiteTagDTO，proto 单源）
 type TaskSiteTagDTO = gen.TaskSiteTagDTO
 
-// TaskWorkSetDTO 任务处理器作品集DTO（别名 gen.TaskWorkSetDTO，proto 单源）
+// TaskWorkSetDTO 作品拉取作品集DTO（别名 gen.TaskWorkSetDTO，proto 单源）
 type TaskWorkSetDTO = gen.TaskWorkSetDTO

@@ -21,9 +21,9 @@ func (f *fakeCreateStream) Send(chunk *gen.CreateChunk) error {
 	return nil
 }
 
-// fakeCreateHandler 仅实现 Create，嵌入 nil dto.TaskHandler 占位接口其余方法
+// fakeCreateHandler 仅实现 Create，嵌入 nil dto.WorkFetcher 占位接口其余方法
 type fakeCreateHandler struct {
-	dto.TaskHandler
+	dto.WorkFetcher
 	result *dto.TaskCreateResult
 	err    error
 }
@@ -32,11 +32,11 @@ func (f *fakeCreateHandler) Create(url string) (*dto.TaskCreateResult, error) {
 	return f.result, f.err
 }
 
-// runCreate 驱动 taskHandlerServer.Create 并断言流正常结束（无 gRPC 错误）
+// runCreate 驱动 workFetchServer.Create 并断言流正常结束（无 gRPC 错误）
 func runCreate(t *testing.T, handler *fakeCreateHandler) []*gen.CreateChunk {
 	t.Helper()
 	stream := &fakeCreateStream{}
-	server := &taskHandlerServer{handler: handler}
+	server := &workFetchServer{handler: handler}
 	if err := server.Create(&gen.CreateRequest{Url: "https://example.com/work"}, stream); err != nil {
 		t.Fatalf("Create 返回 gRPC 错误: %v", err)
 	}

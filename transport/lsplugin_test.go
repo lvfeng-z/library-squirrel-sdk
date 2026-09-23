@@ -35,9 +35,9 @@ func serveGRPC(t *testing.T, register func(*grpc.Server)) *grpc.ClientConn {
 	return conn
 }
 
-// pauseRecordingHandler 仅实现 Pause，嵌入 nil dto.TaskHandler 占位接口其余方法
+// pauseRecordingHandler 仅实现 Pause，嵌入 nil dto.WorkFetcher 占位接口其余方法
 type pauseRecordingHandler struct {
-	dto.TaskHandler
+	dto.WorkFetcher
 	paused int
 }
 
@@ -46,17 +46,17 @@ func (f *pauseRecordingHandler) Pause(param *dto.TaskResParam) error {
 	return nil
 }
 
-// TestGRPCServerWithoutTaskHandlerUnimplemented 无 TaskHandler 形态（工具型插件：
-// 仅库查询/前端扩展等宿主能力）：TaskHandlerService 未注册，主程序侧任务 RPC
+// TestGRPCServerWithoutWorkFetcherUnimplemented 无作品拉取扩展形态（工具型插件：
+// 仅库查询/前端扩展等宿主能力）：WorkFetchService 未注册，主程序侧任务 RPC
 // 调用得 codes.Unimplemented（不 panic、不空响应）
-func TestGRPCServerWithoutTaskHandlerUnimplemented(t *testing.T) {
+func TestGRPCServerWithoutWorkFetcherUnimplemented(t *testing.T) {
 	conn := serveGRPC(t, func(s *grpc.Server) {
 		// broker 仅被 lifecycleServer 持有、Activate 调用时才解引用，注册路径传 nil 安全
 		if err := (&LSPlugin{}).GRPCServer(nil, s); err != nil {
 			t.Errorf("GRPCServer 注册失败: %v", err)
 		}
 	})
-	taskClient := gen.NewTaskHandlerServiceClient(conn)
+	taskClient := gen.NewWorkFetchServiceClient(conn)
 	unaryCalls := map[string]func() error{
 		"Pause": func() error {
 			_, err := taskClient.Pause(context.Background(), &gen.TaskResParamMessage{})
@@ -78,15 +78,15 @@ func TestGRPCServerWithoutTaskHandlerUnimplemented(t *testing.T) {
 	}
 }
 
-// TestGRPCServerWithTaskHandlerServesPause 对照：注册 TaskHandler 后同一 RPC 到达插件处理器
-func TestGRPCServerWithTaskHandlerServesPause(t *testing.T) {
+// TestGRPCServerWithWorkFetchServesPause 对照：注册作品拉取扩展后同一 RPC 到达插件处理器
+func TestGRPCServerWithWorkFetchServesPause(t *testing.T) {
 	handler := &pauseRecordingHandler{}
 	conn := serveGRPC(t, func(s *grpc.Server) {
 		if err := (&LSPlugin{Handler: handler}).GRPCServer(nil, s); err != nil {
 			t.Errorf("GRPCServer 注册失败: %v", err)
 		}
 	})
-	taskClient := gen.NewTaskHandlerServiceClient(conn)
+	taskClient := gen.NewWorkFetchServiceClient(conn)
 	if _, err := taskClient.Pause(context.Background(), &gen.TaskResParamMessage{}); err != nil {
 		t.Fatalf("Pause 应到达插件处理器: %v", err)
 	}

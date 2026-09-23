@@ -159,21 +159,21 @@ var PluginLifecycle_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	TaskHandlerService_Create_FullMethodName                = "/plugins.TaskHandlerService/Create"
-	TaskHandlerService_CreateWorkInfo_FullMethodName        = "/plugins.TaskHandlerService/CreateWorkInfo"
-	TaskHandlerService_Start_FullMethodName                 = "/plugins.TaskHandlerService/Start"
-	TaskHandlerService_Retry_FullMethodName                 = "/plugins.TaskHandlerService/Retry"
-	TaskHandlerService_Pause_FullMethodName                 = "/plugins.TaskHandlerService/Pause"
-	TaskHandlerService_Stop_FullMethodName                  = "/plugins.TaskHandlerService/Stop"
-	TaskHandlerService_Resume_FullMethodName                = "/plugins.TaskHandlerService/Resume"
-	TaskHandlerService_QueryWorkSetOrder_FullMethodName     = "/plugins.TaskHandlerService/QueryWorkSetOrder"
-	TaskHandlerService_QueryWorkSetRelations_FullMethodName = "/plugins.TaskHandlerService/QueryWorkSetRelations"
+	WorkFetchService_Create_FullMethodName                = "/plugins.WorkFetchService/Create"
+	WorkFetchService_CreateWorkInfo_FullMethodName        = "/plugins.WorkFetchService/CreateWorkInfo"
+	WorkFetchService_Start_FullMethodName                 = "/plugins.WorkFetchService/Start"
+	WorkFetchService_Retry_FullMethodName                 = "/plugins.WorkFetchService/Retry"
+	WorkFetchService_Pause_FullMethodName                 = "/plugins.WorkFetchService/Pause"
+	WorkFetchService_Stop_FullMethodName                  = "/plugins.WorkFetchService/Stop"
+	WorkFetchService_Resume_FullMethodName                = "/plugins.WorkFetchService/Resume"
+	WorkFetchService_QueryWorkSetOrder_FullMethodName     = "/plugins.WorkFetchService/QueryWorkSetOrder"
+	WorkFetchService_QueryWorkSetRelations_FullMethodName = "/plugins.WorkFetchService/QueryWorkSetRelations"
 )
 
-// TaskHandlerServiceClient is the client API for TaskHandlerService service.
+// WorkFetchServiceClient is the client API for WorkFetchService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type TaskHandlerServiceClient interface {
+type WorkFetchServiceClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateChunk], error)
 	CreateWorkInfo(ctx context.Context, in *CreateWorkInfoRequest, opts ...grpc.CallOption) (*WorkResponse, error)
 	Start(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StartFrame, StreamChunk], error)
@@ -185,17 +185,17 @@ type TaskHandlerServiceClient interface {
 	QueryWorkSetRelations(ctx context.Context, in *QueryWorkSetRelationsRequest, opts ...grpc.CallOption) (*QueryWorkSetRelationsResponse, error)
 }
 
-type taskHandlerServiceClient struct {
+type workFetchServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewTaskHandlerServiceClient(cc grpc.ClientConnInterface) TaskHandlerServiceClient {
-	return &taskHandlerServiceClient{cc}
+func NewWorkFetchServiceClient(cc grpc.ClientConnInterface) WorkFetchServiceClient {
+	return &workFetchServiceClient{cc}
 }
 
-func (c *taskHandlerServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateChunk], error) {
+func (c *workFetchServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateChunk], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[0], TaskHandlerService_Create_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &WorkFetchService_ServiceDesc.Streams[0], WorkFetchService_Create_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -210,21 +210,21 @@ func (c *taskHandlerServiceClient) Create(ctx context.Context, in *CreateRequest
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_CreateClient = grpc.ServerStreamingClient[CreateChunk]
+type WorkFetchService_CreateClient = grpc.ServerStreamingClient[CreateChunk]
 
-func (c *taskHandlerServiceClient) CreateWorkInfo(ctx context.Context, in *CreateWorkInfoRequest, opts ...grpc.CallOption) (*WorkResponse, error) {
+func (c *workFetchServiceClient) CreateWorkInfo(ctx context.Context, in *CreateWorkInfoRequest, opts ...grpc.CallOption) (*WorkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WorkResponse)
-	err := c.cc.Invoke(ctx, TaskHandlerService_CreateWorkInfo_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, WorkFetchService_CreateWorkInfo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *taskHandlerServiceClient) Start(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StartFrame, StreamChunk], error) {
+func (c *workFetchServiceClient) Start(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StartFrame, StreamChunk], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[1], TaskHandlerService_Start_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &WorkFetchService_ServiceDesc.Streams[1], WorkFetchService_Start_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -233,41 +233,41 @@ func (c *taskHandlerServiceClient) Start(ctx context.Context, opts ...grpc.CallO
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_StartClient = grpc.BidiStreamingClient[StartFrame, StreamChunk]
+type WorkFetchService_StartClient = grpc.BidiStreamingClient[StartFrame, StreamChunk]
 
-func (c *taskHandlerServiceClient) Retry(ctx context.Context, in *RetryRequest, opts ...grpc.CallOption) (*WorkResponse, error) {
+func (c *workFetchServiceClient) Retry(ctx context.Context, in *RetryRequest, opts ...grpc.CallOption) (*WorkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WorkResponse)
-	err := c.cc.Invoke(ctx, TaskHandlerService_Retry_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, WorkFetchService_Retry_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *taskHandlerServiceClient) Pause(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error) {
+func (c *workFetchServiceClient) Pause(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, TaskHandlerService_Pause_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, WorkFetchService_Pause_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *taskHandlerServiceClient) Stop(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error) {
+func (c *workFetchServiceClient) Stop(ctx context.Context, in *TaskResParamMessage, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, TaskHandlerService_Stop_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, WorkFetchService_Stop_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *taskHandlerServiceClient) Resume(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ResumeFrame, StreamChunk], error) {
+func (c *workFetchServiceClient) Resume(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ResumeFrame, StreamChunk], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &TaskHandlerService_ServiceDesc.Streams[2], TaskHandlerService_Resume_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &WorkFetchService_ServiceDesc.Streams[2], WorkFetchService_Resume_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -276,32 +276,32 @@ func (c *taskHandlerServiceClient) Resume(ctx context.Context, opts ...grpc.Call
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_ResumeClient = grpc.BidiStreamingClient[ResumeFrame, StreamChunk]
+type WorkFetchService_ResumeClient = grpc.BidiStreamingClient[ResumeFrame, StreamChunk]
 
-func (c *taskHandlerServiceClient) QueryWorkSetOrder(ctx context.Context, in *QueryWorkSetOrderRequest, opts ...grpc.CallOption) (*QueryWorkSetOrderResponse, error) {
+func (c *workFetchServiceClient) QueryWorkSetOrder(ctx context.Context, in *QueryWorkSetOrderRequest, opts ...grpc.CallOption) (*QueryWorkSetOrderResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryWorkSetOrderResponse)
-	err := c.cc.Invoke(ctx, TaskHandlerService_QueryWorkSetOrder_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, WorkFetchService_QueryWorkSetOrder_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *taskHandlerServiceClient) QueryWorkSetRelations(ctx context.Context, in *QueryWorkSetRelationsRequest, opts ...grpc.CallOption) (*QueryWorkSetRelationsResponse, error) {
+func (c *workFetchServiceClient) QueryWorkSetRelations(ctx context.Context, in *QueryWorkSetRelationsRequest, opts ...grpc.CallOption) (*QueryWorkSetRelationsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryWorkSetRelationsResponse)
-	err := c.cc.Invoke(ctx, TaskHandlerService_QueryWorkSetRelations_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, WorkFetchService_QueryWorkSetRelations_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// TaskHandlerServiceServer is the server API for TaskHandlerService service.
-// All implementations must embed UnimplementedTaskHandlerServiceServer
+// WorkFetchServiceServer is the server API for WorkFetchService service.
+// All implementations must embed UnimplementedWorkFetchServiceServer
 // for forward compatibility.
-type TaskHandlerServiceServer interface {
+type WorkFetchServiceServer interface {
 	Create(*CreateRequest, grpc.ServerStreamingServer[CreateChunk]) error
 	CreateWorkInfo(context.Context, *CreateWorkInfoRequest) (*WorkResponse, error)
 	Start(grpc.BidiStreamingServer[StartFrame, StreamChunk]) error
@@ -311,244 +311,244 @@ type TaskHandlerServiceServer interface {
 	Resume(grpc.BidiStreamingServer[ResumeFrame, StreamChunk]) error
 	QueryWorkSetOrder(context.Context, *QueryWorkSetOrderRequest) (*QueryWorkSetOrderResponse, error)
 	QueryWorkSetRelations(context.Context, *QueryWorkSetRelationsRequest) (*QueryWorkSetRelationsResponse, error)
-	mustEmbedUnimplementedTaskHandlerServiceServer()
+	mustEmbedUnimplementedWorkFetchServiceServer()
 }
 
-// UnimplementedTaskHandlerServiceServer must be embedded to have
+// UnimplementedWorkFetchServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedTaskHandlerServiceServer struct{}
+type UnimplementedWorkFetchServiceServer struct{}
 
-func (UnimplementedTaskHandlerServiceServer) Create(*CreateRequest, grpc.ServerStreamingServer[CreateChunk]) error {
+func (UnimplementedWorkFetchServiceServer) Create(*CreateRequest, grpc.ServerStreamingServer[CreateChunk]) error {
 	return status.Error(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) CreateWorkInfo(context.Context, *CreateWorkInfoRequest) (*WorkResponse, error) {
+func (UnimplementedWorkFetchServiceServer) CreateWorkInfo(context.Context, *CreateWorkInfoRequest) (*WorkResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateWorkInfo not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) Start(grpc.BidiStreamingServer[StartFrame, StreamChunk]) error {
+func (UnimplementedWorkFetchServiceServer) Start(grpc.BidiStreamingServer[StartFrame, StreamChunk]) error {
 	return status.Error(codes.Unimplemented, "method Start not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) Retry(context.Context, *RetryRequest) (*WorkResponse, error) {
+func (UnimplementedWorkFetchServiceServer) Retry(context.Context, *RetryRequest) (*WorkResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Retry not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) Pause(context.Context, *TaskResParamMessage) (*Empty, error) {
+func (UnimplementedWorkFetchServiceServer) Pause(context.Context, *TaskResParamMessage) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method Pause not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) Stop(context.Context, *TaskResParamMessage) (*Empty, error) {
+func (UnimplementedWorkFetchServiceServer) Stop(context.Context, *TaskResParamMessage) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method Stop not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) Resume(grpc.BidiStreamingServer[ResumeFrame, StreamChunk]) error {
+func (UnimplementedWorkFetchServiceServer) Resume(grpc.BidiStreamingServer[ResumeFrame, StreamChunk]) error {
 	return status.Error(codes.Unimplemented, "method Resume not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) QueryWorkSetOrder(context.Context, *QueryWorkSetOrderRequest) (*QueryWorkSetOrderResponse, error) {
+func (UnimplementedWorkFetchServiceServer) QueryWorkSetOrder(context.Context, *QueryWorkSetOrderRequest) (*QueryWorkSetOrderResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method QueryWorkSetOrder not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) QueryWorkSetRelations(context.Context, *QueryWorkSetRelationsRequest) (*QueryWorkSetRelationsResponse, error) {
+func (UnimplementedWorkFetchServiceServer) QueryWorkSetRelations(context.Context, *QueryWorkSetRelationsRequest) (*QueryWorkSetRelationsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method QueryWorkSetRelations not implemented")
 }
-func (UnimplementedTaskHandlerServiceServer) mustEmbedUnimplementedTaskHandlerServiceServer() {}
-func (UnimplementedTaskHandlerServiceServer) testEmbeddedByValue()                            {}
+func (UnimplementedWorkFetchServiceServer) mustEmbedUnimplementedWorkFetchServiceServer() {}
+func (UnimplementedWorkFetchServiceServer) testEmbeddedByValue()                          {}
 
-// UnsafeTaskHandlerServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to TaskHandlerServiceServer will
+// UnsafeWorkFetchServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to WorkFetchServiceServer will
 // result in compilation errors.
-type UnsafeTaskHandlerServiceServer interface {
-	mustEmbedUnimplementedTaskHandlerServiceServer()
+type UnsafeWorkFetchServiceServer interface {
+	mustEmbedUnimplementedWorkFetchServiceServer()
 }
 
-func RegisterTaskHandlerServiceServer(s grpc.ServiceRegistrar, srv TaskHandlerServiceServer) {
-	// If the following call panics, it indicates UnimplementedTaskHandlerServiceServer was
+func RegisterWorkFetchServiceServer(s grpc.ServiceRegistrar, srv WorkFetchServiceServer) {
+	// If the following call panics, it indicates UnimplementedWorkFetchServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&TaskHandlerService_ServiceDesc, srv)
+	s.RegisterService(&WorkFetchService_ServiceDesc, srv)
 }
 
-func _TaskHandlerService_Create_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _WorkFetchService_Create_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(CreateRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(TaskHandlerServiceServer).Create(m, &grpc.GenericServerStream[CreateRequest, CreateChunk]{ServerStream: stream})
+	return srv.(WorkFetchServiceServer).Create(m, &grpc.GenericServerStream[CreateRequest, CreateChunk]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_CreateServer = grpc.ServerStreamingServer[CreateChunk]
+type WorkFetchService_CreateServer = grpc.ServerStreamingServer[CreateChunk]
 
-func _TaskHandlerService_CreateWorkInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _WorkFetchService_CreateWorkInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateWorkInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TaskHandlerServiceServer).CreateWorkInfo(ctx, in)
+		return srv.(WorkFetchServiceServer).CreateWorkInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TaskHandlerService_CreateWorkInfo_FullMethodName,
+		FullMethod: WorkFetchService_CreateWorkInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskHandlerServiceServer).CreateWorkInfo(ctx, req.(*CreateWorkInfoRequest))
+		return srv.(WorkFetchServiceServer).CreateWorkInfo(ctx, req.(*CreateWorkInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TaskHandlerService_Start_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(TaskHandlerServiceServer).Start(&grpc.GenericServerStream[StartFrame, StreamChunk]{ServerStream: stream})
+func _WorkFetchService_Start_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(WorkFetchServiceServer).Start(&grpc.GenericServerStream[StartFrame, StreamChunk]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_StartServer = grpc.BidiStreamingServer[StartFrame, StreamChunk]
+type WorkFetchService_StartServer = grpc.BidiStreamingServer[StartFrame, StreamChunk]
 
-func _TaskHandlerService_Retry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _WorkFetchService_Retry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RetryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TaskHandlerServiceServer).Retry(ctx, in)
+		return srv.(WorkFetchServiceServer).Retry(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TaskHandlerService_Retry_FullMethodName,
+		FullMethod: WorkFetchService_Retry_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskHandlerServiceServer).Retry(ctx, req.(*RetryRequest))
+		return srv.(WorkFetchServiceServer).Retry(ctx, req.(*RetryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TaskHandlerService_Pause_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _WorkFetchService_Pause_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TaskResParamMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TaskHandlerServiceServer).Pause(ctx, in)
+		return srv.(WorkFetchServiceServer).Pause(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TaskHandlerService_Pause_FullMethodName,
+		FullMethod: WorkFetchService_Pause_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskHandlerServiceServer).Pause(ctx, req.(*TaskResParamMessage))
+		return srv.(WorkFetchServiceServer).Pause(ctx, req.(*TaskResParamMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TaskHandlerService_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _WorkFetchService_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TaskResParamMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TaskHandlerServiceServer).Stop(ctx, in)
+		return srv.(WorkFetchServiceServer).Stop(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TaskHandlerService_Stop_FullMethodName,
+		FullMethod: WorkFetchService_Stop_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskHandlerServiceServer).Stop(ctx, req.(*TaskResParamMessage))
+		return srv.(WorkFetchServiceServer).Stop(ctx, req.(*TaskResParamMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TaskHandlerService_Resume_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(TaskHandlerServiceServer).Resume(&grpc.GenericServerStream[ResumeFrame, StreamChunk]{ServerStream: stream})
+func _WorkFetchService_Resume_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(WorkFetchServiceServer).Resume(&grpc.GenericServerStream[ResumeFrame, StreamChunk]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TaskHandlerService_ResumeServer = grpc.BidiStreamingServer[ResumeFrame, StreamChunk]
+type WorkFetchService_ResumeServer = grpc.BidiStreamingServer[ResumeFrame, StreamChunk]
 
-func _TaskHandlerService_QueryWorkSetOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _WorkFetchService_QueryWorkSetOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryWorkSetOrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TaskHandlerServiceServer).QueryWorkSetOrder(ctx, in)
+		return srv.(WorkFetchServiceServer).QueryWorkSetOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TaskHandlerService_QueryWorkSetOrder_FullMethodName,
+		FullMethod: WorkFetchService_QueryWorkSetOrder_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskHandlerServiceServer).QueryWorkSetOrder(ctx, req.(*QueryWorkSetOrderRequest))
+		return srv.(WorkFetchServiceServer).QueryWorkSetOrder(ctx, req.(*QueryWorkSetOrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TaskHandlerService_QueryWorkSetRelations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _WorkFetchService_QueryWorkSetRelations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryWorkSetRelationsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TaskHandlerServiceServer).QueryWorkSetRelations(ctx, in)
+		return srv.(WorkFetchServiceServer).QueryWorkSetRelations(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TaskHandlerService_QueryWorkSetRelations_FullMethodName,
+		FullMethod: WorkFetchService_QueryWorkSetRelations_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskHandlerServiceServer).QueryWorkSetRelations(ctx, req.(*QueryWorkSetRelationsRequest))
+		return srv.(WorkFetchServiceServer).QueryWorkSetRelations(ctx, req.(*QueryWorkSetRelationsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// TaskHandlerService_ServiceDesc is the grpc.ServiceDesc for TaskHandlerService service.
+// WorkFetchService_ServiceDesc is the grpc.ServiceDesc for WorkFetchService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var TaskHandlerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "plugins.TaskHandlerService",
-	HandlerType: (*TaskHandlerServiceServer)(nil),
+var WorkFetchService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "plugins.WorkFetchService",
+	HandlerType: (*WorkFetchServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "CreateWorkInfo",
-			Handler:    _TaskHandlerService_CreateWorkInfo_Handler,
+			Handler:    _WorkFetchService_CreateWorkInfo_Handler,
 		},
 		{
 			MethodName: "Retry",
-			Handler:    _TaskHandlerService_Retry_Handler,
+			Handler:    _WorkFetchService_Retry_Handler,
 		},
 		{
 			MethodName: "Pause",
-			Handler:    _TaskHandlerService_Pause_Handler,
+			Handler:    _WorkFetchService_Pause_Handler,
 		},
 		{
 			MethodName: "Stop",
-			Handler:    _TaskHandlerService_Stop_Handler,
+			Handler:    _WorkFetchService_Stop_Handler,
 		},
 		{
 			MethodName: "QueryWorkSetOrder",
-			Handler:    _TaskHandlerService_QueryWorkSetOrder_Handler,
+			Handler:    _WorkFetchService_QueryWorkSetOrder_Handler,
 		},
 		{
 			MethodName: "QueryWorkSetRelations",
-			Handler:    _TaskHandlerService_QueryWorkSetRelations_Handler,
+			Handler:    _WorkFetchService_QueryWorkSetRelations_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Create",
-			Handler:       _TaskHandlerService_Create_Handler,
+			Handler:       _WorkFetchService_Create_Handler,
 			ServerStreams: true,
 		},
 		{
 			StreamName:    "Start",
-			Handler:       _TaskHandlerService_Start_Handler,
+			Handler:       _WorkFetchService_Start_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
 		{
 			StreamName:    "Resume",
-			Handler:       _TaskHandlerService_Resume_Handler,
+			Handler:       _WorkFetchService_Resume_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
@@ -2102,7 +2102,7 @@ const (
 //
 // ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
 // 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
-// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
+// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，WorkFetchService 零改动）。
 type SiteAuthorFetchServiceClient interface {
 	// 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
 	FetchSiteAuthorInfo(ctx context.Context, in *FetchSiteAuthorInfoRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[AuthorInfoChunk], error)
@@ -2141,7 +2141,7 @@ type SiteAuthorFetchService_FetchSiteAuthorInfoClient = grpc.ServerStreamingClie
 //
 // ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
 // 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
-// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
+// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，WorkFetchService 零改动）。
 type SiteAuthorFetchServiceServer interface {
 	// 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
 	FetchSiteAuthorInfo(*FetchSiteAuthorInfoRequest, grpc.ServerStreamingServer[AuthorInfoChunk]) error

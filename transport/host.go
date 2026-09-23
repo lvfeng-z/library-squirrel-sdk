@@ -137,7 +137,7 @@ func (s *HostServiceServer) UnsubscribeFrontend(ctx context.Context, req *gen.Un
 // GRPCPluginClient 封装插件侧的 gRPC 客户端接口
 type GRPCPluginClient struct {
 	Lifecycle       gen.PluginLifecycleClient
-	Task            gen.TaskHandlerServiceClient
+	WorkFetch       gen.WorkFetchServiceClient
 	Browser         gen.SiteBrowserServiceClient
 	SiteAuthorFetch gen.SiteAuthorFetchServiceClient
 	HostServiceId   uint32 // GRPCBroker 上 HostService 的 ID，传递给插件 Activate
@@ -147,7 +147,7 @@ type GRPCPluginClient struct {
 func DiscoverPluginServices(conn *grpc.ClientConn) *GRPCPluginClient {
 	return &GRPCPluginClient{
 		Lifecycle:       gen.NewPluginLifecycleClient(conn),
-		Task:            gen.NewTaskHandlerServiceClient(conn),
+		WorkFetch:       gen.NewWorkFetchServiceClient(conn),
 		Browser:         gen.NewSiteBrowserServiceClient(conn),
 		SiteAuthorFetch: gen.NewSiteAuthorFetchServiceClient(conn),
 	}

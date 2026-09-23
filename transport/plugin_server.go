@@ -43,11 +43,11 @@ func (s *lifecycleServer) Shutdown(ctx context.Context, req *gen.Empty) (*gen.Em
 	return &gen.Empty{}, nil
 }
 
-// ========== TaskHandlerServiceServer ==========
+// ========== WorkFetchServiceServer ==========
 
-type taskHandlerServer struct {
-	gen.UnimplementedTaskHandlerServiceServer
-	handler dto.TaskHandler
+type workFetchServer struct {
+	gen.UnimplementedWorkFetchServiceServer
+	handler dto.WorkFetcher
 }
 
 // Create 处理插件任务创建请求的流式响应。协议语义：error 块承载插件业务失败原因
@@ -55,7 +55,7 @@ type taskHandlerServer struct {
 // （不发 mode 块）；正常返回时 mode 块在前，全部 task 块之后结果声明了 reason 时
 // 追加 error 块收尾。gRPC status 错误专属基础设施故障（进程崩溃/连接中断/传输异常），
 // 不承载插件业务错误。
-func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
+func (s *workFetchServer) Create(req *gen.CreateRequest, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
 	result, err := s.handler.Create(req.Url)
 	if err != nil {
 		return stream.Send(&gen.CreateChunk{
@@ -102,7 +102,7 @@ func (s *taskHandlerServer) Create(req *gen.CreateRequest, stream grpc.ServerStr
 	return nil
 }
 
-func (s *taskHandlerServer) CreateWorkInfo(ctx context.Context, req *gen.CreateWorkInfoRequest) (*gen.WorkResponse, error) {
+func (s *workFetchServer) CreateWorkInfo(ctx context.Context, req *gen.CreateWorkInfoRequest) (*gen.WorkResponse, error) {
 	task := req.Task
 	workResp, err := s.handler.CreateWorkInfo(task)
 	if err != nil {
@@ -111,7 +111,7 @@ func (s *taskHandlerServer) CreateWorkInfo(ctx context.Context, req *gen.CreateW
 	return workResp, nil
 }
 
-func (s *taskHandlerServer) Start(stream gen.TaskHandlerService_StartServer) error {
+func (s *workFetchServer) Start(stream gen.WorkFetchService_StartServer) error {
 	ctx := stream.Context()
 	// 首帧:StartRequest
 	frame, err := stream.Recv()
@@ -136,7 +136,7 @@ func (s *taskHandlerServer) Start(stream gen.TaskHandlerService_StartServer) err
 	}, specs, workResp)
 }
 
-func (s *taskHandlerServer) Retry(ctx context.Context, req *gen.RetryRequest) (*gen.WorkResponse, error) {
+func (s *workFetchServer) Retry(ctx context.Context, req *gen.RetryRequest) (*gen.WorkResponse, error) {
 	task := req.Task
 	workResp, err := s.handler.Retry(task)
 	if err != nil {
@@ -145,7 +145,7 @@ func (s *taskHandlerServer) Retry(ctx context.Context, req *gen.RetryRequest) (*
 	return workResp, nil
 }
 
-func (s *taskHandlerServer) Pause(ctx context.Context, req *gen.TaskResParamMessage) (*gen.Empty, error) {
+func (s *workFetchServer) Pause(ctx context.Context, req *gen.TaskResParamMessage) (*gen.Empty, error) {
 	param := req.Param
 	if err := s.handler.Pause(param); err != nil {
 		return nil, status.Errorf(codes.Internal, "pause failed: %v", err)
@@ -153,7 +153,7 @@ func (s *taskHandlerServer) Pause(ctx context.Context, req *gen.TaskResParamMess
 	return &gen.Empty{}, nil
 }
 
-func (s *taskHandlerServer) Stop(ctx context.Context, req *gen.TaskResParamMessage) (*gen.Empty, error) {
+func (s *workFetchServer) Stop(ctx context.Context, req *gen.TaskResParamMessage) (*gen.Empty, error) {
 	param := req.Param
 	if err := s.handler.Stop(param); err != nil {
 		return nil, status.Errorf(codes.Internal, "stop failed: %v", err)
@@ -161,7 +161,7 @@ func (s *taskHandlerServer) Stop(ctx context.Context, req *gen.TaskResParamMessa
 	return &gen.Empty{}, nil
 }
 
-func (s *taskHandlerServer) Resume(stream gen.TaskHandlerService_ResumeServer) error {
+func (s *workFetchServer) Resume(stream gen.WorkFetchService_ResumeServer) error {
 	ctx := stream.Context()
 	// 首帧:TaskResumeParamMessage
 	frame, err := stream.Recv()
@@ -188,7 +188,7 @@ func (s *taskHandlerServer) Resume(stream gen.TaskHandlerService_ResumeServer) e
 
 // QueryWorkSetOrder 查询作品集内作品原站顺序（主程序作品入库后拉取，仅写 site_sort_order）
 // 可选能力：插件未实现 dto.WorkOrderQuerier 时返回空响应（site_sort_order 保持空，仅本地序）
-func (s *taskHandlerServer) QueryWorkSetOrder(ctx context.Context, req *gen.QueryWorkSetOrderRequest) (*gen.QueryWorkSetOrderResponse, error) {
+func (s *workFetchServer) QueryWorkSetOrder(ctx context.Context, req *gen.QueryWorkSetOrderRequest) (*gen.QueryWorkSetOrderResponse, error) {
 	querier, ok := s.handler.(dto.WorkOrderQuerier)
 	if !ok {
 		return &gen.QueryWorkSetOrderResponse{}, nil
@@ -202,7 +202,7 @@ func (s *taskHandlerServer) QueryWorkSetOrder(ctx context.Context, req *gen.Quer
 
 // QueryWorkSetRelations 查询本作品集的父集关系 + 在各父集下的原站序（主程序作品入库后拉取，仅写 site_sort_order）
 // 可选能力：插件未实现 dto.WorkSetRelationQuerier 时返回空响应（site_sort_order 保持空，作品集层级不生效）
-func (s *taskHandlerServer) QueryWorkSetRelations(ctx context.Context, req *gen.QueryWorkSetRelationsRequest) (*gen.QueryWorkSetRelationsResponse, error) {
+func (s *workFetchServer) QueryWorkSetRelations(ctx context.Context, req *gen.QueryWorkSetRelationsRequest) (*gen.QueryWorkSetRelationsResponse, error) {
 	querier, ok := s.handler.(dto.WorkSetRelationQuerier)
 	if !ok {
 		return &gen.QueryWorkSetRelationsResponse{}, nil

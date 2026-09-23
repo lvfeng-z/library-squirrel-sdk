@@ -2,9 +2,9 @@ package dto
 
 import "context"
 
-// TaskHandler 任务处理器接口
+// WorkFetcher 作品拉取接口
 // 插件实现此接口处理任务。Start/Resume 返回 StoreSpec 流集合(含下载型 downloaded 与派生型 derived)。
-type TaskHandler interface {
+type WorkFetcher interface {
 	// Create 创建任务
 	Create(url string) (*TaskCreateResult, error)
 	// CreateWorkInfo 生成作品信息

@@ -34,7 +34,7 @@ func (f *fetcherStub) FetchSiteAuthorInfo(ctx context.Context, req *dto.FetchSit
 
 // TestSiteAuthorFetchWithoutFetcherUnimplemented 未提供 SiteAuthorFetcher 形态：
 // SiteAuthorFetchService 未注册，主程序侧拉取 RPC 得 codes.Unimplemented
-// （对照 TestGRPCServerWithoutTaskHandlerUnimplemented 同款契约）
+// （对照 TestGRPCServerWithoutWorkFetcherUnimplemented 同款契约）
 func TestSiteAuthorFetchWithoutFetcherUnimplemented(t *testing.T) {
 	conn := serveGRPC(t, func(s *grpc.Server) {
 		if err := (&LSPlugin{}).GRPCServer(nil, s); err != nil {

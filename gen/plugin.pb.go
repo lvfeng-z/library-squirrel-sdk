@@ -6908,8 +6908,8 @@ const file_plugin_proto_rawDesc = "" +
 	"\x04data\x18\x01 \x01(\fR\x04data2~\n" +
 	"\x0fPluginLifecycle\x12?\n" +
 	"\bActivate\x12\x18.plugins.ActivateRequest\x1a\x19.plugins.ActivateResponse\x12*\n" +
-	"\bShutdown\x12\x0e.plugins.Empty\x1a\x0e.plugins.Empty2\xf1\x04\n" +
-	"\x12TaskHandlerService\x128\n" +
+	"\bShutdown\x12\x0e.plugins.Empty\x1a\x0e.plugins.Empty2\xef\x04\n" +
+	"\x10WorkFetchService\x128\n" +
 	"\x06Create\x12\x16.plugins.CreateRequest\x1a\x14.plugins.CreateChunk0\x01\x12G\n" +
 	"\x0eCreateWorkInfo\x12\x1e.plugins.CreateWorkInfoRequest\x1a\x15.plugins.WorkResponse\x126\n" +
 	"\x05Start\x12\x13.plugins.StartFrame\x1a\x14.plugins.StreamChunk(\x010\x01\x125\n" +
@@ -7145,15 +7145,15 @@ var file_plugin_proto_depIdxs = []int32{
 	42,  // 61: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
 	14,  // 62: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
 	0,   // 63: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
-	22,  // 64: plugins.TaskHandlerService.Create:input_type -> plugins.CreateRequest
-	25,  // 65: plugins.TaskHandlerService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
-	33,  // 66: plugins.TaskHandlerService.Start:input_type -> plugins.StartFrame
-	27,  // 67: plugins.TaskHandlerService.Retry:input_type -> plugins.RetryRequest
-	28,  // 68: plugins.TaskHandlerService.Pause:input_type -> plugins.TaskResParamMessage
-	28,  // 69: plugins.TaskHandlerService.Stop:input_type -> plugins.TaskResParamMessage
-	34,  // 70: plugins.TaskHandlerService.Resume:input_type -> plugins.ResumeFrame
-	16,  // 71: plugins.TaskHandlerService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
-	19,  // 72: plugins.TaskHandlerService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
+	22,  // 64: plugins.WorkFetchService.Create:input_type -> plugins.CreateRequest
+	25,  // 65: plugins.WorkFetchService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
+	33,  // 66: plugins.WorkFetchService.Start:input_type -> plugins.StartFrame
+	27,  // 67: plugins.WorkFetchService.Retry:input_type -> plugins.RetryRequest
+	28,  // 68: plugins.WorkFetchService.Pause:input_type -> plugins.TaskResParamMessage
+	28,  // 69: plugins.WorkFetchService.Stop:input_type -> plugins.TaskResParamMessage
+	34,  // 70: plugins.WorkFetchService.Resume:input_type -> plugins.ResumeFrame
+	16,  // 71: plugins.WorkFetchService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
+	19,  // 72: plugins.WorkFetchService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
 	38,  // 73: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
 	38,  // 74: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
 	41,  // 75: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
@@ -7191,15 +7191,15 @@ var file_plugin_proto_depIdxs = []int32{
 	98,  // 107: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:input_type -> plugins.FetchSiteAuthorInfoRequest
 	15,  // 108: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
 	0,   // 109: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
-	23,  // 110: plugins.TaskHandlerService.Create:output_type -> plugins.CreateChunk
-	12,  // 111: plugins.TaskHandlerService.CreateWorkInfo:output_type -> plugins.WorkResponse
-	32,  // 112: plugins.TaskHandlerService.Start:output_type -> plugins.StreamChunk
-	12,  // 113: plugins.TaskHandlerService.Retry:output_type -> plugins.WorkResponse
-	0,   // 114: plugins.TaskHandlerService.Pause:output_type -> plugins.Empty
-	0,   // 115: plugins.TaskHandlerService.Stop:output_type -> plugins.Empty
-	32,  // 116: plugins.TaskHandlerService.Resume:output_type -> plugins.StreamChunk
-	17,  // 117: plugins.TaskHandlerService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
-	20,  // 118: plugins.TaskHandlerService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
+	23,  // 110: plugins.WorkFetchService.Create:output_type -> plugins.CreateChunk
+	12,  // 111: plugins.WorkFetchService.CreateWorkInfo:output_type -> plugins.WorkResponse
+	32,  // 112: plugins.WorkFetchService.Start:output_type -> plugins.StreamChunk
+	12,  // 113: plugins.WorkFetchService.Retry:output_type -> plugins.WorkResponse
+	0,   // 114: plugins.WorkFetchService.Pause:output_type -> plugins.Empty
+	0,   // 115: plugins.WorkFetchService.Stop:output_type -> plugins.Empty
+	32,  // 116: plugins.WorkFetchService.Resume:output_type -> plugins.StreamChunk
+	17,  // 117: plugins.WorkFetchService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
+	20,  // 118: plugins.WorkFetchService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
 	0,   // 119: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
 	0,   // 120: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
 	43,  // 121: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse

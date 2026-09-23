@@ -172,9 +172,9 @@ message ActivateRequest {
 
 message ActivateResponse {}
 
-// ========== 2. 任务处理器服务（主程序 → 插件）==========
+// ========== 2. 作品拉取服务（主程序 → 插件）==========
 
-service TaskHandlerService {
+service WorkFetchService {
   rpc Create(CreateRequest) returns (stream CreateChunk);
   rpc CreateWorkInfo(CreateWorkInfoRequest) returns (WorkResponse);
   rpc Start(stream StartFrame) returns (stream StreamChunk);
@@ -741,7 +741,7 @@ message GetWorkDirResponse {
 
 // ========== 6. 站点作者信息拉取服务（主程序 → 插件）==========
 // 「站点实体元数据+资源拉取」契约家族首成员：主程序按站点身份键向声明 siteAuthorFetch 能力的
-// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，TaskHandlerService 零改动）。
+// 插件拉取作者最新元数据与头像资源（独立于作品下载契约，WorkFetchService 零改动）。
 service SiteAuthorFetchService {
   // 按站点身份键拉取作者最新元数据与头像资源。首块元数据，后续块头像字节。
   rpc FetchSiteAuthorInfo(FetchSiteAuthorInfoRequest) returns (stream AuthorInfoChunk);

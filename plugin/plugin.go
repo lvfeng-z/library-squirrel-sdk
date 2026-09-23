@@ -12,17 +12,17 @@ import (
 type ServeOption func(*serveConfig)
 
 type serveConfig struct {
-	handler            dto.TaskHandler
+	handler            dto.WorkFetcher
 	browser            dto.SiteBrowser
 	siteAuthorFetchers map[string]dto.SiteAuthorFetcher
 	onActivate         func(dto.PluginContext)
 	onShutdown         func()
 }
 
-// WithTaskHandler 注册 TaskHandler 扩展点（下载型插件）。未设置本选项时插件进程不注册
-// TaskHandlerService，主程序侧任务相关 RPC 得到 gRPC Unimplemented——工具型插件
-// （仅库查询/前端扩展等宿主能力）无需注册任务处理器
-func WithTaskHandler(handler dto.TaskHandler) ServeOption {
+// WithWorkFetcher 注册 WorkFetcher 扩展点（作品拉取型插件）。未设置本选项时插件进程不注册
+// WorkFetchService，主程序侧任务相关 RPC 得到 gRPC Unimplemented——工具型插件
+// （仅库查询/前端扩展等宿主能力）无需注册作品拉取扩展
+func WithWorkFetcher(handler dto.WorkFetcher) ServeOption {
 	return func(c *serveConfig) { c.handler = handler }
 }
 
@@ -57,7 +57,7 @@ func WithShutdown(fn func()) ServeOption {
 }
 
 // Serve 启动插件进程，由插件开发者调用。全部能力以选项提供，无必填参数：
-// 下载型插件经 WithTaskHandler 注册任务处理器，工具型插件省略之
+// 作品拉取型插件经 WithWorkFetcher 注册作品拉取扩展，工具型插件省略之
 func Serve(opts ...ServeOption) {
 	goPlugin.Serve(&goPlugin.ServeConfig{
 		HandshakeConfig: transport.Handshake,

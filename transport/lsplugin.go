@@ -13,7 +13,7 @@ import (
 // LSPlugin 实现 hashicorp/go-plugin 的 GRPCPlugin 接口
 type LSPlugin struct {
 	plugin.NetRPCUnsupportedPlugin
-	Handler            dto.TaskHandler
+	Handler            dto.WorkFetcher
 	Browser            dto.SiteBrowser
 	SiteAuthorFetchers map[string]dto.SiteAuthorFetcher
 	OnActivate         func(dto.PluginContext)
@@ -27,10 +27,10 @@ func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
 		onShutdown: p.OnShutdown,
 		broker:     broker,
 	})
-	// 未提供 TaskHandler 时不注册 TaskHandlerService：gRPC 对未注册服务的调用返回
-	// codes.Unimplemented，工具型插件（仅库查询/前端扩展等宿主能力）无需注册假任务处理器
+	// 未提供 WorkFetcher 时不注册 WorkFetchService：gRPC 对未注册服务的调用返回
+	// codes.Unimplemented，工具型插件（仅库查询/前端扩展等宿主能力）无需注册假作品拉取扩展
 	if p.Handler != nil {
-		gen.RegisterTaskHandlerServiceServer(s, &taskHandlerServer{
+		gen.RegisterWorkFetchServiceServer(s, &workFetchServer{
 			handler: p.Handler,
 		})
 	}
@@ -61,7 +61,7 @@ func (p *LSPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c 
 
 	return &GRPCPluginClient{
 		Lifecycle:       gen.NewPluginLifecycleClient(c),
-		Task:            gen.NewTaskHandlerServiceClient(c),
+		WorkFetch:       gen.NewWorkFetchServiceClient(c),
 		Browser:         gen.NewSiteBrowserServiceClient(c),
 		SiteAuthorFetch: gen.NewSiteAuthorFetchServiceClient(c),
 		HostServiceId:   hostServiceId,
