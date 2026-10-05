@@ -38,9 +38,13 @@ var (
 	//
 	// 站点级 ID 约定注记（同站点多插件产出收敛到同一条 norm）：
 	//   siteWorkId    = 视频：父任务 bvid、分 P 子任务 {bvid}_{cid}；
-	//                   图文动态：父任务动态 id、子任务 {动态 id}_{序号}；
-	//                   专栏：专栏 id 原值
-	//   siteTagId     = 标签名（tag 名即 id）
+	//                   图文动态：父任务动态 id、子任务 {动态 id}_{图床 URL 的图片对象段}
+	//                   （new_dyn 图 URL 中图片对象 ID 的十六进制段——目录段/文件名连写/
+	//                   live_ 实况图前缀三形态并存，连写形态取最长十六进制前缀(对象 ID 后
+	//                   连作者 mid 尾,长度不定故整体含尾提取,同图恒同串)；图片对象在站内
+	//                   的持久身份、不随图片列表增删漂移；提取失败回退 {动态 id}_{序号} 并记警告）；
+	//                   专栏：归一 opus 号（cv 入口经 302 落至 opus 页捕获；旧版无跳转保持 cv 形态）
+	//   siteTagId     = 数字 tag_id（十进制字符串，展示名另存）
 	//   siteAuthorId  = UP 主 mid（十进制字符串）
 	//   siteWorkSetId = 多 P 视频的 bvid（一个多 P 视频即一个作品集）
 	Bilibili = Site{Key: "bilibili", Name: "bilibili", Homepage: "https://www.bilibili.com"}
