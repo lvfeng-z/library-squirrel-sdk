@@ -70,6 +70,34 @@ func (c *PluginContextClient) GetAllValues() (map[string]*dto.StorageValue, erro
 	return resp.Values, nil
 }
 
+func (c *PluginContextClient) GetPreference(key string) (*dto.PreferenceValue, bool, error) {
+	resp, err := c.hostClient.GetPreference(context.Background(), &gen.PreferenceKeyRequest{Key: key})
+	if err != nil {
+		return nil, false, err
+	}
+	if !resp.Ok {
+		// 无记录是合法状态（用户已删除或从未写入），不是错误——调用方据此重新发起问答
+		return nil, false, nil
+	}
+	return resp.Value, true, nil
+}
+
+func (c *PluginContextClient) SetPreference(key string, value *dto.PreferenceValue) error {
+	_, err := c.hostClient.SetPreference(context.Background(), &gen.PreferenceEntryRequest{
+		Key:   key,
+		Value: value,
+	})
+	return err
+}
+
+func (c *PluginContextClient) ListMyPreferences() ([]string, error) {
+	resp, err := c.hostClient.ListMyPreferences(context.Background(), &gen.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Keys, nil
+}
+
 func (c *PluginContextClient) CreateTask(url string) (*dto.CreateTaskResult, error) {
 	resp, err := c.hostClient.CreateTask(context.Background(), &gen.CreateTaskRequest{Url: url})
 	if err != nil {

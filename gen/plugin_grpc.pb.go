@@ -702,6 +702,9 @@ const (
 	HostService_SetValueEncrypted_FullMethodName   = "/plugins.HostService/SetValueEncrypted"
 	HostService_DeleteValue_FullMethodName         = "/plugins.HostService/DeleteValue"
 	HostService_GetAllValues_FullMethodName        = "/plugins.HostService/GetAllValues"
+	HostService_GetPreference_FullMethodName       = "/plugins.HostService/GetPreference"
+	HostService_SetPreference_FullMethodName       = "/plugins.HostService/SetPreference"
+	HostService_ListMyPreferences_FullMethodName   = "/plugins.HostService/ListMyPreferences"
 	HostService_CreateTask_FullMethodName          = "/plugins.HostService/CreateTask"
 	HostService_GetPluginRoot_FullMethodName       = "/plugins.HostService/GetPluginRoot"
 	HostService_Log_FullMethodName                 = "/plugins.HostService/Log"
@@ -720,6 +723,12 @@ type HostServiceClient interface {
 	SetValueEncrypted(ctx context.Context, in *StorageEntryRequest, opts ...grpc.CallOption) (*Empty, error)
 	DeleteValue(ctx context.Context, in *StorageKeyRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetAllValues(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AllStorageValuesResponse, error)
+	// 用户决策偏好（偏好域）：插件经用户问答沉淀的决策记忆——与 plugin_storage 配置面正交
+	// （边界判据：删掉它之后用户会被重新问吗？会 → 偏好域；不会 → settings/plugin_storage）。
+	// 无删除 RPC：「忘掉」是用户权利，删除仅经宿主记忆管理面，插件只能覆写不能销毁记忆
+	GetPreference(ctx context.Context, in *PreferenceKeyRequest, opts ...grpc.CallOption) (*PreferenceGetResponse, error)
+	SetPreference(ctx context.Context, in *PreferenceEntryRequest, opts ...grpc.CallOption) (*Empty, error)
+	ListMyPreferences(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*PreferenceListResponse, error)
 	// 任务管理
 	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error)
 	// 路径
@@ -784,6 +793,36 @@ func (c *hostServiceClient) GetAllValues(ctx context.Context, in *Empty, opts ..
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AllStorageValuesResponse)
 	err := c.cc.Invoke(ctx, HostService_GetAllValues_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) GetPreference(ctx context.Context, in *PreferenceKeyRequest, opts ...grpc.CallOption) (*PreferenceGetResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PreferenceGetResponse)
+	err := c.cc.Invoke(ctx, HostService_GetPreference_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) SetPreference(ctx context.Context, in *PreferenceEntryRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, HostService_SetPreference_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) ListMyPreferences(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*PreferenceListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PreferenceListResponse)
+	err := c.cc.Invoke(ctx, HostService_ListMyPreferences_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -869,6 +908,12 @@ type HostServiceServer interface {
 	SetValueEncrypted(context.Context, *StorageEntryRequest) (*Empty, error)
 	DeleteValue(context.Context, *StorageKeyRequest) (*Empty, error)
 	GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error)
+	// 用户决策偏好（偏好域）：插件经用户问答沉淀的决策记忆——与 plugin_storage 配置面正交
+	// （边界判据：删掉它之后用户会被重新问吗？会 → 偏好域；不会 → settings/plugin_storage）。
+	// 无删除 RPC：「忘掉」是用户权利，删除仅经宿主记忆管理面，插件只能覆写不能销毁记忆
+	GetPreference(context.Context, *PreferenceKeyRequest) (*PreferenceGetResponse, error)
+	SetPreference(context.Context, *PreferenceEntryRequest) (*Empty, error)
+	ListMyPreferences(context.Context, *Empty) (*PreferenceListResponse, error)
 	// 任务管理
 	CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error)
 	// 路径
@@ -903,6 +948,15 @@ func (UnimplementedHostServiceServer) DeleteValue(context.Context, *StorageKeyRe
 }
 func (UnimplementedHostServiceServer) GetAllValues(context.Context, *Empty) (*AllStorageValuesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllValues not implemented")
+}
+func (UnimplementedHostServiceServer) GetPreference(context.Context, *PreferenceKeyRequest) (*PreferenceGetResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPreference not implemented")
+}
+func (UnimplementedHostServiceServer) SetPreference(context.Context, *PreferenceEntryRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetPreference not implemented")
+}
+func (UnimplementedHostServiceServer) ListMyPreferences(context.Context, *Empty) (*PreferenceListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMyPreferences not implemented")
 }
 func (UnimplementedHostServiceServer) CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateTask not implemented")
@@ -1029,6 +1083,60 @@ func _HostService_GetAllValues_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).GetAllValues(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_GetPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PreferenceKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).GetPreference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_GetPreference_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).GetPreference(ctx, req.(*PreferenceKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_SetPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PreferenceEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).SetPreference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_SetPreference_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).SetPreference(ctx, req.(*PreferenceEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_ListMyPreferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).ListMyPreferences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_ListMyPreferences_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).ListMyPreferences(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1160,6 +1268,18 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllValues",
 			Handler:    _HostService_GetAllValues_Handler,
+		},
+		{
+			MethodName: "GetPreference",
+			Handler:    _HostService_GetPreference_Handler,
+		},
+		{
+			MethodName: "SetPreference",
+			Handler:    _HostService_SetPreference_Handler,
+		},
+		{
+			MethodName: "ListMyPreferences",
+			Handler:    _HostService_ListMyPreferences_Handler,
 		},
 		{
 			MethodName: "CreateTask",

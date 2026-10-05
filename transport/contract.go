@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 12
+const ContractVersion = 13
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -62,3 +62,9 @@ const ContractVersion = 12
 //       作品拉取（workFetch / WorkFetcher / WorkFetchService）——清单段名、SDK 接口与选项、
 //       gRPC 服务名、宿主侧类型与状态字段一并更换。清单段名更换属宿主读清单的源级破坏、
 //       gRPC 服务名更换属线级破坏——主程序 minSupportedContractVersion 须同步升至 12
+//  13 — 用户决策偏好域（插件偏好记忆）：HostService 线级新增 GetPreference/
+//       SetPreference/ListMyPreferences 三 RPC（插件经用户问答沉淀的决策记忆，与
+//       plugin_storage 配置面正交；无删除 RPC——删除仅经宿主记忆管理面），SDK
+//       PluginContext 配套三方法。线级新增非破坏（旧插件不调新 RPC，契约 12 插件
+//       在新宿主照常运行）——minSupportedContractVersion 维持 12；新插件对旧宿主
+//       调用偏好面得 gRPC Unimplemented，既有面不受影响

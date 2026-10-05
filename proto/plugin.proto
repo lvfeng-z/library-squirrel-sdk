@@ -356,6 +356,13 @@ service HostService {
   rpc DeleteValue(StorageKeyRequest) returns (Empty);
   rpc GetAllValues(Empty) returns (AllStorageValuesResponse);
 
+  // 用户决策偏好（偏好域）：插件经用户问答沉淀的决策记忆——与 plugin_storage 配置面正交
+  //（边界判据：删掉它之后用户会被重新问吗？会 → 偏好域；不会 → settings/plugin_storage）。
+  // 无删除 RPC：「忘掉」是用户权利，删除仅经宿主记忆管理面，插件只能覆写不能销毁记忆
+  rpc GetPreference(PreferenceKeyRequest) returns (PreferenceGetResponse);
+  rpc SetPreference(PreferenceEntryRequest) returns (Empty);
+  rpc ListMyPreferences(Empty) returns (PreferenceListResponse);
+
   // 任务管理
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
 
@@ -403,6 +410,38 @@ message StorageEntryRequest {
 
 message AllStorageValuesResponse {
   map<string, StorageValue> values = 1;   // 全量：key → 带版本的值
+}
+
+// ========== 用户决策偏好（偏好域）消息类型 ==========
+// 偏好域承载插件问答沉淀的用户决策记忆（与 plugin_storage 配置面正交），值恒为完整信封
+
+// PreferenceValue 偏好值信封（整值覆写的写入单位）。schema_version 标记值结构版本
+//（初值 1，规则类值演进时插件自管升版）；title/description 由插件写入时随值携带
+//（决策标题在问答发生时才确定，供宿主记忆管理页展示，区别于清单静态声明）；data 为
+// 插件自定义负载（JSON 文本，粒度编码在键或值内由插件自决，宿主只存不解释）
+message PreferenceValue {
+  int32 schema_version = 1;
+  string title = 2;
+  string description = 3;
+  string data = 4;
+}
+
+message PreferenceKeyRequest {
+  string key = 1;   // 插件自定义偏好键（插件内唯一，与调用方插件复合寻址）
+}
+
+message PreferenceEntryRequest {
+  string key = 1;
+  PreferenceValue value = 2;   // 完整值信封（整值覆写：同键已存在则整体重写）
+}
+
+message PreferenceGetResponse {
+  bool ok = 1;                 // false=无记录（用户已删除或从未写入，合法状态而非错误）
+  PreferenceValue value = 2;   // ok=true 时在场
+}
+
+message PreferenceListResponse {
+  repeated string keys = 1;    // 本插件全部偏好键（插件自身域，跨插件键互不可见；pref_key 升序）
 }
 
 message CreateTaskRequest {

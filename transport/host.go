@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/go-plugin"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
@@ -18,6 +20,7 @@ type HostDeps struct {
 	dto.TaskCreateProvider
 	dto.FrontendEventProvider
 	dto.LibraryQueryProvider
+	dto.PreferenceProvider
 	LogFunc func(level int32, template string, args []string, loggerName string)
 }
 
@@ -71,6 +74,48 @@ func (s *HostServiceServer) GetAllValues(ctx context.Context, req *gen.Empty) (*
 		return nil, err
 	}
 	return &gen.AllStorageValuesResponse{Values: values}, nil
+}
+
+// preferenceProvider 偏好域依赖取用：未注入（宿主未装配偏好服务）时以 Unimplemented
+// 语义码拒绝，与 LibraryQuery 未注册时插件的调用形态一致
+func (s *HostServiceServer) preferenceProvider() (dto.PreferenceProvider, error) {
+	if s.deps.PreferenceProvider == nil {
+		return nil, status.Error(codes.Unimplemented, "偏好域能力未配置")
+	}
+	return s.deps.PreferenceProvider, nil
+}
+
+func (s *HostServiceServer) GetPreference(ctx context.Context, req *gen.PreferenceKeyRequest) (*gen.PreferenceGetResponse, error) {
+	provider, err := s.preferenceProvider()
+	if err != nil {
+		return nil, err
+	}
+	v, ok, err := provider.GetPreference(ctx, req.Key)
+	if err != nil {
+		return nil, err
+	}
+	// 无记录经显式 ok=false 下行而非错误：无记录是合法状态（用户已删除或从未写入）
+	return &gen.PreferenceGetResponse{Ok: ok, Value: v}, nil
+}
+
+func (s *HostServiceServer) SetPreference(ctx context.Context, req *gen.PreferenceEntryRequest) (*gen.Empty, error) {
+	provider, err := s.preferenceProvider()
+	if err != nil {
+		return nil, err
+	}
+	return &gen.Empty{}, provider.SetPreference(ctx, req.Key, req.Value)
+}
+
+func (s *HostServiceServer) ListMyPreferences(ctx context.Context, req *gen.Empty) (*gen.PreferenceListResponse, error) {
+	provider, err := s.preferenceProvider()
+	if err != nil {
+		return nil, err
+	}
+	keys, err := provider.ListMyPreferences(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &gen.PreferenceListResponse{Keys: keys}, nil
 }
 
 func (s *HostServiceServer) CreateTask(ctx context.Context, req *gen.CreateTaskRequest) (*gen.CreateTaskResponse, error) {

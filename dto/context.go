@@ -9,6 +9,14 @@ type PluginContext interface {
 	DeleteValue(key string) error
 	GetAllValues() (map[string]*StorageValue, error)
 
+	// 用户决策偏好（偏好域）：插件经用户问答沉淀的决策记忆——与上面统一 KV 的配置面
+	// 正交（边界判据：删掉它之后用户会被重新问吗？会 → 偏好域；不会 → settings/
+	// plugin_storage）。写入纪律：仅写经用户问答确认的决策；无删除方法——「忘掉」是
+	// 用户权利，删除仅经宿主记忆管理面，插件只能覆写不能销毁记忆。
+	GetPreference(key string) (*PreferenceValue, bool, error) // 无记录返回 (nil,false,nil) 不报错，调用方据此重新发起问答
+	SetPreference(key string, value *PreferenceValue) error   // 整值覆写：同键已存在则整体重写
+	ListMyPreferences() ([]string, error)                     // 本插件全部偏好键（跨插件键互不可见）
+
 	// 任务
 	CreateTask(url string) (*CreateTaskResult, error)
 

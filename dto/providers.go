@@ -27,3 +27,12 @@ type FrontendEventProvider interface {
 	SubscribeFrontend(topic string, pushCh func([]byte)) (cancel func(), err error)
 	UnsubscribeFrontend(topic string) error
 }
+
+// PreferenceProvider 用户决策偏好域（插件经用户问答沉淀的用户决策记忆，与统一 KV
+// 配置面正交）。读（无记录 ok=false 不报错）/ 整值覆写 / 列自身键三能力；无删除——
+//「忘掉」是用户权利，删除仅经宿主记忆管理面
+type PreferenceProvider interface {
+	GetPreference(ctx context.Context, key string) (*PreferenceValue, bool, error)
+	SetPreference(ctx context.Context, key string, value *PreferenceValue) error
+	ListMyPreferences(ctx context.Context) ([]string, error)
+}
