@@ -30,6 +30,14 @@ keys, err := ctx.ListMyPreferences()
 - **无删除方法**：「忘掉」是用户权利，删除仅经宿主管理面——插件只能覆写不能销毁记忆。
 - **旧宿主降级**：契约 <13 的宿主未实现对应 RPC，调用得 gRPC `Unimplemented`，应优雅降级（回落为每次都问），不当数据错误处理。
 
+## 流等待期心跳（契约 v14）
+
+插件在流式 RPC（`Create`/`Start`/`Resume`）的 handler 执行期可周期上报**心跳块**保活当前流，越过宿主 60 秒空闲超时窗（`liveness.ReaderIdleTimeout`）——适用 handler 内的长等待（等用户输入、串行外部请求、重试退避循环）。语义＝「本等待点有界且仍在推进」：**每个上报心跳的等待点须保有自身超时**（弹窗 dismiss 上限、二维码有效期、HTTP 超时），在永不收口的等待里上报会让宿主失效 hang 检测。
+
+- **接入**：`Create` 实现可选接口 `dto.HeartbeatCreateFetcher`（`CreateWithHeartbeat(url, reporter)`）；`Start`/`Resume` 经 `dto.HeartbeatFromContext(ctx)` 取用（未注入返回 `dto.NoopHeartbeat`，免判空）。上报器随每次 RPC 调用到达、按流程独立。
+- **调用**：`reporter.Heartbeat()` 并发安全、限频 20 秒（`liveness.HeartbeatInterval`），可任意 tick 频率调用；生命周期由 SDK 管理（handler 返回即关闭），等待终结时须停止自挂的 ticker。旧宿主（契约 <14，含未协商）为 no-op，可按 `transport.HostContractVersion()` 自适应。
+- **不支持**：`Start`/`Resume` 返回后的 pull 数据传输期无心跳——传输停滞超窗被杀是正确的 hang 检测。完整约定见主仓 `doc/plugin-dev-guide.md` 6.1「流等待期心跳」。
+
 ## 设置驱动的派生面热生效（resolver 契约）
 
 插件可自带 resolver 脚本：宿主在激活完成后与每次设置落库后，以插件全量设置为输入求值它，得到各派生面（作品拉取/作者拉取/站点浏览器/资源类型/前端扩展）上已声明条目的参与度快照。`settingresolver/` 提供 TS 契约类型与本地 harness，**非破坏交付**——gRPC/proto 零改动、契约版本零 bump：
