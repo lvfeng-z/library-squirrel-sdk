@@ -25,6 +25,12 @@ const (
 	// ReaderIdleTimeout Start/Resume 流式读取时两次收到数据之间允许的最大空闲,
 	// 超过判应用级无响应(连接活但插件在等上游 HTTP);由 reader 侧实施
 	ReaderIdleTimeout = 60 * time.Second
+
+	// HeartbeatInterval 流等待期心跳块的限频间隔:插件在流式 RPC(Create/Start/
+	// Resume)handler 执行期的长等待点向当前流上报心跳块,维持宿主空闲检测窗
+	//(ReaderIdleTimeout 量级);间隔取窗的 1/3,窗内 3 次机会,单次丢失不致超时。
+	// 上报器按此间隔限频,消费方可任意 tick 频率调用而不产生线上噪音
+	HeartbeatInterval = 20 * time.Second
 )
 
 // ClientDialOptions 返回主程序连接插件子进程时注入的 gRPC dial options,启用 client 主动 keepalive 探测。

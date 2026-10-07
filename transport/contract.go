@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 13
+const ContractVersion = 14
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -68,3 +68,14 @@ const ContractVersion = 13
 //       PluginContext 配套三方法。线级新增非破坏（旧插件不调新 RPC，契约 12 插件
 //       在新宿主照常运行）——minSupportedContractVersion 维持 12；新插件对旧宿主
 //       调用偏好面得 gRPC Unimplemented，既有面不受影响
+//  14 — 流等待期心跳（全部流式 RPC 的 handler 执行期等待保活，Create/Start/Resume
+//       三流一次定形）：CreateChunk/StreamChunk 双流 oneof 各增 Heartbeat 态（共享
+//       空消息 Heartbeat，留字段扩展位），ActivateRequest 增 host_contract_version
+//       协商字段（宿主随 Activate 下发自身契约版本，插件侧运行时门控心跳发送——
+//       旧宿主上心跳 no-op，线形态与升级前一致）；SDK 新增通用心跳上报器（并发
+//       安全+限频+handler 返回后关闭）与两条接入通道（Create 可选接口
+//       HeartbeatCreateFetcher、Start/Resume ctx 注入 HeartbeatFromContext）。
+//       心跳语义=「本等待点有界且仍在推进」，hang 检测的保留依赖「每个上报心跳
+//       的等待点自身有界」的 SDK 文档约定。加字段开启新能力族升版——心跳块由
+//       插件显式上报、旧插件零行为变化，线级新增非破坏，
+//       minSupportedContractVersion 维持 12

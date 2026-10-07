@@ -24,3 +24,16 @@ type WorkFetcher interface {
 	// ctx 语义同 Start
 	Resume(ctx context.Context, param *TaskResumeParam) ([]*StoreSpec, *WorkResponse, error)
 }
+
+// HeartbeatCreateFetcher Create 流等待期心跳的可选接入接口：在 WorkFetcher 之上
+// 提供 CreateWithHeartbeat——SDK 服务端调用它时构造心跳上报器传入，插件在
+// Create 的长等待点（等用户输入等）周期调用 reporter.Heartbeat() 维持宿主空闲
+// 检测窗（越过 Create 首块空闲超时墙）。未实现本接口的插件照旧走 Create，
+// 行为零变化。reporter 由 SDK 管理生命周期（handler 返回后关闭，结果块发送
+// 独占流），实现方只调用不关闭
+type HeartbeatCreateFetcher interface {
+	WorkFetcher
+	// CreateWithHeartbeat 带心跳上报器的 Create：主体逻辑同 Create，
+	// 长等待点经 reporter 上报心跳
+	CreateWithHeartbeat(url string, reporter HeartbeatReporter) (*TaskCreateResult, error)
+}

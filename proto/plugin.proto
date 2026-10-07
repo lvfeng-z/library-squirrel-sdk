@@ -8,6 +8,12 @@ option go_package = "github.com/lvfeng-z/library-squirrel-sdk/gen;gen";
 
 message Empty {}
 
+// Heartbeat 流等待期心跳块载荷：插件在流式 RPC（Create/Start/Resume）handler 执行期的
+// 长等待点（等用户输入、串行外部请求、重试退避等）向当前流上报，维持宿主空闲检测窗。
+// 空消息——语义为「本等待点有界且仍在推进」，未来携带等待状态表达时加字段即可，
+// 不动 CreateChunk/StreamChunk 的 oneof。
+message Heartbeat {}
+
 message Task {
   int64 id = 1;
   int64 createTime = 2;
@@ -168,6 +174,7 @@ message ActivateRequest {
   string rootPath = 3;
   uint32 hostServiceId = 4;
   uint64 main_window_handle = 5;
+  uint32 host_contract_version = 6; // 宿主契约版本；插件据此在运行时门控按版本开放的能力（如流等待期心跳），0=未下发
 }
 
 message ActivateResponse {}
@@ -230,6 +237,7 @@ message CreateChunk {
     CreateMode mode = 1;              // 首条消息：模式标记
     TaskCreateResponse task = 2;      // 后续消息：任务数据
     string error = 3;                 // 错误
+    Heartbeat heartbeat = 4;          // 等待期心跳：handler 执行期插件显式上报，仅先于 mode/error/task 出现；宿主跳过续等
   }
 }
 
@@ -292,6 +300,7 @@ message StreamChunk {
     bytes data = 2;
     bool eof = 3;
     string error = 4;
+    Heartbeat heartbeat = 7; // 等待期心跳：handler 执行期（首响应前）插件显式上报；pull 数据传输期结构性不存在
   }
 }
 

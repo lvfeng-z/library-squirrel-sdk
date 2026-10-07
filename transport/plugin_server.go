@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-plugin"
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
+	"github.com/lvfeng-z/library-squirrel-sdk/liveness"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,6 +25,9 @@ type lifecycleServer struct {
 }
 
 func (s *lifecycleServer) Activate(ctx context.Context, req *gen.ActivateRequest) (*gen.ActivateResponse, error) {
+	// 宿主契约版本落进程级原子值：心跳等按版本门控的能力据此判断
+	//（经 HostContractVersion 读取），未 Activate 时保持 0（心跳 no-op）
+	hostContractVersion.Store(req.HostContractVersion)
 	if s.onActivate != nil && req.HostServiceId != 0 {
 		conn, err := s.broker.Dial(req.HostServiceId)
 		if err != nil {
@@ -55,14 +59,29 @@ type workFetchServer struct {
 // （不发 mode 块）；正常返回时 mode 块在前，全部 task 块之后结果声明了 reason 时
 // 追加 error 块收尾。gRPC status 错误专属基础设施故障（进程崩溃/连接中断/传输异常），
 // 不承载插件业务错误。
+// handler 实现 dto.HeartbeatCreateFetcher 时走 CreateWithHeartbeat：handler 执行期
+// 心跳块可上线（handler 内长等待点显式上报），handler 返回后上报器关闭，
+// 结果块发送独占流；未实现时走 Create，行为零变化。
 func (s *workFetchServer) Create(req *gen.CreateRequest, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
-	result, err := s.handler.Create(req.Url)
+	var result *dto.TaskCreateResult
+	var err error
+	if hf, ok := s.handler.(dto.HeartbeatCreateFetcher); ok {
+		reporter := newCreateHeartbeatReporter(stream.Send, liveness.HeartbeatInterval)
+		result, err = hf.CreateWithHeartbeat(req.Url, reporter)
+		reporter.Close()
+	} else {
+		result, err = s.handler.Create(req.Url)
+	}
 	if err != nil {
 		return stream.Send(&gen.CreateChunk{
 			Payload: &gen.CreateChunk_Error{Error: err.Error()},
 		})
 	}
+	return sendCreateResult(result, stream)
+}
 
+// sendCreateResult 发送 Create 成功结果的块序列：mode → task… →（声明 reason 时）error
+func sendCreateResult(result *dto.TaskCreateResult, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
 	if err := stream.Send(&gen.CreateChunk{
 		Payload: &gen.CreateChunk_Mode{
 			Mode: &gen.CreateMode{IsStream: result.IsStream()},
@@ -123,7 +142,11 @@ func (s *workFetchServer) Start(stream gen.WorkFetchService_StartServer) error {
 		return status.Errorf(codes.InvalidArgument, "start: 首帧必须为 StartRequest")
 	}
 	task := startReq.Task
-	specs, workResp, err := s.handler.Start(ctx, task, startReq.StoreRoles)
+	// 心跳上报器随 ctx 注入（handler 内经 dto.HeartbeatFromContext 取用），
+	// handler 返回后立即关闭，serveSpecsPull 的首响应与数据块发送独占流
+	reporter := newStreamHeartbeatReporter(stream.Send, liveness.HeartbeatInterval)
+	specs, workResp, err := s.handler.Start(dto.WithHeartbeat(ctx, reporter), task, startReq.StoreRoles)
+	reporter.Close()
 	if err != nil {
 		return status.Errorf(codes.Internal, "start failed: %v", err)
 	}
@@ -173,7 +196,11 @@ func (s *workFetchServer) Resume(stream gen.WorkFetchService_ResumeServer) error
 		return status.Errorf(codes.InvalidArgument, "resume: 首帧必须为 TaskResumeParamMessage")
 	}
 	param := protoToTaskResumeParam(resumeReq.Param)
-	specs, workResp, err := s.handler.Resume(ctx, param)
+	// 心跳上报器随 ctx 注入，handler 返回后立即关闭，首响应与数据块发送独占流
+	//（语义同 Start，三流同一生命周期舞步）
+	reporter := newStreamHeartbeatReporter(stream.Send, liveness.HeartbeatInterval)
+	specs, workResp, err := s.handler.Resume(dto.WithHeartbeat(ctx, reporter), param)
+	reporter.Close()
 	if err != nil {
 		return status.Errorf(codes.Internal, "resume failed: %v", err)
 	}
