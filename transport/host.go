@@ -21,6 +21,7 @@ type HostDeps struct {
 	dto.FrontendEventProvider
 	dto.LibraryQueryProvider
 	dto.PreferenceProvider
+	dto.ProxyResolveProvider
 	LogFunc func(level int32, template string, args []string, loggerName string)
 }
 
@@ -116,6 +117,19 @@ func (s *HostServiceServer) ListMyPreferences(ctx context.Context, req *gen.Empt
 		return nil, err
 	}
 	return &gen.PreferenceListResponse{Keys: keys}, nil
+}
+
+// ResolveProxy 代理解析桥接：未注入 ProxyResolveProvider（宿主未装配代理解析）时以
+// Unimplemented 语义码拒绝，与偏好域未配置的降级形态一致
+func (s *HostServiceServer) ResolveProxy(ctx context.Context, req *gen.ResolveProxyRequest) (*gen.ResolveProxyResponse, error) {
+	if s.deps.ProxyResolveProvider == nil {
+		return nil, status.Error(codes.Unimplemented, "代理解析能力未配置")
+	}
+	proxyURL, source, err := s.deps.ProxyResolveProvider.ResolveProxy(ctx, req.ExplicitUrl, req.RequestUrl)
+	if err != nil {
+		return nil, err
+	}
+	return &gen.ResolveProxyResponse{ProxyUrl: proxyURL, Source: source}, nil
 }
 
 func (s *HostServiceServer) CreateTask(ctx context.Context, req *gen.CreateTaskRequest) (*gen.CreateTaskResponse, error) {

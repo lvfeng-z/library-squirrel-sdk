@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
@@ -96,6 +97,24 @@ func (c *PluginContextClient) ListMyPreferences() ([]string, error) {
 		return nil, err
 	}
 	return resp.Keys, nil
+}
+
+// resolveProxyTimeout 单次代理解析 RPC 的等待上限：决议是每个出网请求前的同步
+// 步骤，宿主繁忙或卡顿时慢挂起会拖住插件全部出网请求，超时即返回错误由调用方
+// 走降级链
+const resolveProxyTimeout = time.Second
+
+func (c *PluginContextClient) ResolveProxy(explicitURL, requestURL string) (string, string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), resolveProxyTimeout)
+	defer cancel()
+	resp, err := c.hostClient.ResolveProxy(ctx, &gen.ResolveProxyRequest{
+		ExplicitUrl: explicitURL,
+		RequestUrl:  requestURL,
+	})
+	if err != nil {
+		return "", "", err
+	}
+	return resp.ProxyUrl, resp.Source, nil
 }
 
 func (c *PluginContextClient) CreateTask(url string) (*dto.CreateTaskResult, error) {

@@ -705,6 +705,7 @@ const (
 	HostService_GetPreference_FullMethodName       = "/plugins.HostService/GetPreference"
 	HostService_SetPreference_FullMethodName       = "/plugins.HostService/SetPreference"
 	HostService_ListMyPreferences_FullMethodName   = "/plugins.HostService/ListMyPreferences"
+	HostService_ResolveProxy_FullMethodName        = "/plugins.HostService/ResolveProxy"
 	HostService_CreateTask_FullMethodName          = "/plugins.HostService/CreateTask"
 	HostService_GetPluginRoot_FullMethodName       = "/plugins.HostService/GetPluginRoot"
 	HostService_Log_FullMethodName                 = "/plugins.HostService/Log"
@@ -729,6 +730,10 @@ type HostServiceClient interface {
 	GetPreference(ctx context.Context, in *PreferenceKeyRequest, opts ...grpc.CallOption) (*PreferenceGetResponse, error)
 	SetPreference(ctx context.Context, in *PreferenceEntryRequest, opts ...grpc.CallOption) (*Empty, error)
 	ListMyPreferences(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*PreferenceListResponse, error)
+	// 代理解析：插件出网代理三级检测（显式 > 系统代理 > 环境变量）收归宿主统一实现，
+	// 逐请求现查（无缓存，代理开关对下一请求即时生效）；调用失败/超时由插件侧
+	// Transport 降级为显式 > 环境变量，请求不因解析失败或超时而失败
+	ResolveProxy(ctx context.Context, in *ResolveProxyRequest, opts ...grpc.CallOption) (*ResolveProxyResponse, error)
 	// 任务管理
 	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error)
 	// 路径
@@ -829,6 +834,16 @@ func (c *hostServiceClient) ListMyPreferences(ctx context.Context, in *Empty, op
 	return out, nil
 }
 
+func (c *hostServiceClient) ResolveProxy(ctx context.Context, in *ResolveProxyRequest, opts ...grpc.CallOption) (*ResolveProxyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResolveProxyResponse)
+	err := c.cc.Invoke(ctx, HostService_ResolveProxy_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateTaskResponse)
@@ -914,6 +929,10 @@ type HostServiceServer interface {
 	GetPreference(context.Context, *PreferenceKeyRequest) (*PreferenceGetResponse, error)
 	SetPreference(context.Context, *PreferenceEntryRequest) (*Empty, error)
 	ListMyPreferences(context.Context, *Empty) (*PreferenceListResponse, error)
+	// 代理解析：插件出网代理三级检测（显式 > 系统代理 > 环境变量）收归宿主统一实现，
+	// 逐请求现查（无缓存，代理开关对下一请求即时生效）；调用失败/超时由插件侧
+	// Transport 降级为显式 > 环境变量，请求不因解析失败或超时而失败
+	ResolveProxy(context.Context, *ResolveProxyRequest) (*ResolveProxyResponse, error)
 	// 任务管理
 	CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error)
 	// 路径
@@ -957,6 +976,9 @@ func (UnimplementedHostServiceServer) SetPreference(context.Context, *Preference
 }
 func (UnimplementedHostServiceServer) ListMyPreferences(context.Context, *Empty) (*PreferenceListResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListMyPreferences not implemented")
+}
+func (UnimplementedHostServiceServer) ResolveProxy(context.Context, *ResolveProxyRequest) (*ResolveProxyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResolveProxy not implemented")
 }
 func (UnimplementedHostServiceServer) CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateTask not implemented")
@@ -1141,6 +1163,24 @@ func _HostService_ListMyPreferences_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_ResolveProxy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveProxyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).ResolveProxy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_ResolveProxy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).ResolveProxy(ctx, req.(*ResolveProxyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_CreateTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateTaskRequest)
 	if err := dec(in); err != nil {
@@ -1280,6 +1320,10 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMyPreferences",
 			Handler:    _HostService_ListMyPreferences_Handler,
+		},
+		{
+			MethodName: "ResolveProxy",
+			Handler:    _HostService_ResolveProxy_Handler,
 		},
 		{
 			MethodName: "CreateTask",

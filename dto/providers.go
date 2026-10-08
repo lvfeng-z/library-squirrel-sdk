@@ -36,3 +36,11 @@ type PreferenceProvider interface {
 	SetPreference(ctx context.Context, key string, value *PreferenceValue) error
 	ListMyPreferences(ctx context.Context) ([]string, error)
 }
+
+// ProxyResolveProvider 宿主代理解析（插件出网代理三级检测收归宿主：显式 >
+// 系统代理 > 环境变量，逐请求现查无缓存）。proxyURL 空 = 直连；source 为来源
+// 标签（explicit/system/env/none，仅日志排障用，不驱动分支）；requestURL 供
+// env 层按请求 scheme/NO_PROXY 匹配
+type ProxyResolveProvider interface {
+	ResolveProxy(ctx context.Context, explicitURL, requestURL string) (proxyURL, source string, err error)
+}

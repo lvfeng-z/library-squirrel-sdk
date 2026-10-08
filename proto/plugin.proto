@@ -372,6 +372,11 @@ service HostService {
   rpc SetPreference(PreferenceEntryRequest) returns (Empty);
   rpc ListMyPreferences(Empty) returns (PreferenceListResponse);
 
+  // 代理解析：插件出网代理三级检测（显式 > 系统代理 > 环境变量）收归宿主统一实现，
+  // 逐请求现查（无缓存，代理开关对下一请求即时生效）；调用失败/超时由插件侧
+  // Transport 降级为显式 > 环境变量，请求不因解析失败或超时而失败
+  rpc ResolveProxy(ResolveProxyRequest) returns (ResolveProxyResponse);
+
   // 任务管理
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
 
@@ -451,6 +456,18 @@ message PreferenceGetResponse {
 
 message PreferenceListResponse {
   repeated string keys = 1;    // 本插件全部偏好键（插件自身域，跨插件键互不可见；pref_key 升序）
+}
+
+// ========== 代理解析消息类型 ==========
+
+message ResolveProxyRequest {
+  string explicit_url = 1;  // 调用方显式代理（插件设置 proxyUrl 透传；空 = 自动检测）
+  string request_url = 2;   // 本次请求目标（env 层按 scheme/NO_PROXY 匹配所需）
+}
+
+message ResolveProxyResponse {
+  string proxy_url = 1;     // 决议结果（空 = 直连）
+  string source = 2;        // 来源标签：explicit / system / env / none
 }
 
 message CreateTaskRequest {

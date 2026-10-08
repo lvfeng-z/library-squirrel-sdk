@@ -17,6 +17,11 @@ type PluginContext interface {
 	SetPreference(key string, value *PreferenceValue) error   // 整值覆写：同键已存在则整体重写
 	ListMyPreferences() ([]string, error)                     // 本插件全部偏好键（跨插件键互不可见）
 
+	// 代理解析：宿主三级检测（显式 > 系统代理 > 环境变量）逐请求现查，代理开关对
+	// 下一请求即时生效。proxyURL 空 = 直连；source 为来源标签（explicit/system/env/none，
+	// 仅日志排障用，不驱动分支）；旧宿主（无此 RPC）返回 gRPC Unimplemented
+	ResolveProxy(explicitURL, requestURL string) (proxyURL, source string, err error)
+
 	// 任务
 	CreateTask(url string) (*CreateTaskResult, error)
 

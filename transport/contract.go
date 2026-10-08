@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 14
+const ContractVersion = 15
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -79,3 +79,10 @@ const ContractVersion = 14
 //       的等待点自身有界」的 SDK 文档约定。加字段开启新能力族升版——心跳块由
 //       插件显式上报、旧插件零行为变化，线级新增非破坏，
 //       minSupportedContractVersion 维持 12
+//  15 — 宿主代理解析服务：HostService 线级新增 ResolveProxy RPC（插件出网代理
+//       三级检测收归宿主：显式 > 系统代理 > 环境变量，逐请求现查无缓存），SDK
+//       PluginContext 配套 ResolveProxy 方法 + proxy 包默认 Transport 构造器
+//       （RPC 决议每请求求值、每次调用 1 秒超时预算，失败/超时/Unimplemented
+//       降级为显式 > 环境变量）。线级新增非破坏（旧插件不调新 RPC，契约 12 插件
+//       在新宿主照常运行）——minSupportedContractVersion 维持 12；新插件对旧宿主
+//       调用解析面得 gRPC Unimplemented，SDK Transport 走降级链，既有面不受影响
