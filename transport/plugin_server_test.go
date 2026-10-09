@@ -1,15 +1,21 @@
 package transport
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
+	"log"
+	"os"
+	"strings"
 	"sync"
 	"testing"
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // fakeCreateStream 收集 Create 流发出的全部块。Create 只调用 Send，
@@ -459,5 +465,96 @@ func TestActivateStoresHostContractVersion(t *testing.T) {
 	t.Cleanup(func() { hostContractVersion.Store(0) })
 	if got := HostContractVersion(); got != 14 {
 		t.Fatalf("Activate 后协商版本应为 14, 实得 %d", got)
+	}
+}
+
+// ========== 设置变更通知分派面 ==========
+
+// fakePluginContext 占位插件上下文（嵌入 nil dto.PluginContext 满足接口，方法不被触达），
+// 指针身份供 SettingChanged 注入断言
+type fakePluginContext struct {
+	dto.PluginContext
+}
+
+// TestSettingChangedDispatchesToHandler 注册处置函数时 SettingChanged 分派：
+// 注入 Activate 保存的 PluginContext（指针身份一致）+ 透传 source/keys，返回 Empty
+func TestSettingChangedDispatchesToHandler(t *testing.T) {
+	ctxStub := &fakePluginContext{}
+	var gotCtx dto.PluginContext
+	var gotReq *dto.SettingChangedRequest
+	srv := &lifecycleServer{
+		onSettingChanged: func(ctx dto.PluginContext, req *dto.SettingChangedRequest) {
+			gotCtx, gotReq = ctx, req
+		},
+		pluginCtx: ctxStub,
+	}
+	resp, err := srv.SettingChanged(t.Context(), &gen.SettingChangedRequest{Source: "save", Keys: []string{"proxyUrl"}})
+	if err != nil {
+		t.Fatalf("SettingChanged 返回错误: %v", err)
+	}
+	if resp == nil {
+		t.Fatal("SettingChanged 应返回 Empty 响应")
+	}
+	if gotCtx != ctxStub {
+		t.Fatal("处置函数应注入 Activate 保存的 PluginContext")
+	}
+	if gotReq.GetSource() != "save" || len(gotReq.GetKeys()) != 1 || gotReq.GetKeys()[0] != "proxyUrl" {
+		t.Fatalf("source/keys 应透传, 实得 source=%q keys=%v", gotReq.GetSource(), gotReq.GetKeys())
+	}
+}
+
+// TestSettingChangedWithoutHandlerNoopAndLogs 未注册处置函数：空操作返回 Empty 无错误，
+// debug 日志路径可达（捕获标准 log 输出含通知标记与键）
+func TestSettingChangedWithoutHandlerNoopAndLogs(t *testing.T) {
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+	srv := &lifecycleServer{pluginCtx: &fakePluginContext{}}
+	resp, err := srv.SettingChanged(t.Context(), &gen.SettingChangedRequest{Source: "reset", Keys: []string{"downloadQuality"}})
+	if err != nil {
+		t.Fatalf("未注册处置函数应空操作, 实得错误: %v", err)
+	}
+	if resp == nil {
+		t.Fatal("空操作应返回 Empty 响应")
+	}
+	if !strings.Contains(buf.String(), "SettingChanged") || !strings.Contains(buf.String(), "downloadQuality") {
+		t.Fatalf("debug 日志应含通知标记与键, 实得: %q", buf.String())
+	}
+}
+
+// TestSettingChangedBeforeActivateErrors Activate 前收到 SettingChanged（无 PluginContext）：
+// 返回 FailedPrecondition 错误（时序防护），处置函数不被分派
+func TestSettingChangedBeforeActivateErrors(t *testing.T) {
+	srv := &lifecycleServer{
+		onSettingChanged: func(dto.PluginContext, *dto.SettingChangedRequest) {
+			t.Error("无 PluginContext 时不应分派处置函数")
+		},
+	}
+	_, err := srv.SettingChanged(t.Context(), &gen.SettingChangedRequest{Source: "save", Keys: []string{"k"}})
+	if err == nil {
+		t.Fatal("Activate 前收到 SettingChanged 应返回错误")
+	}
+	if status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("错误码应为 FailedPrecondition, 实得 %v (err=%v)", status.Code(err), err)
+	}
+}
+
+// TestGRPCSettingChangedEndToEnd 真实 gRPC 链路：宿主客户端 SettingChanged 调用经
+// 生成代码到达 lifecycleServer 并分派到处置函数（source/keys 跨线透传）
+func TestGRPCSettingChangedEndToEnd(t *testing.T) {
+	var gotReq *dto.SettingChangedRequest
+	srv := &lifecycleServer{
+		onSettingChanged: func(_ dto.PluginContext, req *dto.SettingChangedRequest) { gotReq = req },
+		pluginCtx:        &fakePluginContext{},
+	}
+	conn := serveGRPC(t, func(s *grpc.Server) {
+		gen.RegisterPluginLifecycleServer(s, srv)
+	})
+	client := gen.NewPluginLifecycleClient(conn)
+	if _, err := client.SettingChanged(context.Background(), &gen.SettingChangedRequest{Source: "save", Keys: []string{"proxyUrl", "downloadQuality"}}); err != nil {
+		t.Fatalf("SettingChanged 调用失败: %v", err)
+	}
+	if gotReq == nil || gotReq.GetSource() != "save" || len(gotReq.GetKeys()) != 2 {
+		t.Fatalf("处置函数应收到透传的 source/keys, 实得 %v", gotReq)
 	}
 }

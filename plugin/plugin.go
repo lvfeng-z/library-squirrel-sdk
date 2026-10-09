@@ -17,6 +17,7 @@ type serveConfig struct {
 	siteAuthorFetchers map[string]dto.SiteAuthorFetcher
 	onActivate         func(dto.PluginContext)
 	onShutdown         func()
+	onSettingChanged   dto.SettingChangeHandler
 }
 
 // WithWorkFetcher 注册 WorkFetcher 扩展点（作品拉取型插件）。未设置本选项时插件进程不注册
@@ -56,6 +57,14 @@ func WithShutdown(fn func()) ServeOption {
 	return func(c *serveConfig) { c.onShutdown = fn }
 }
 
+// WithSettingChangeHandler 注册设置变更处置函数：宿主在插件设置落库（保存/重置）
+// 成功后异步推送变更通知（来源 + 键），插件在此自行反应（如重载配置热生效——
+// 激活时快照的设置改后不重启进程即生效）。未设置本选项时通知为空操作（debug 日志）；
+// 处置函数在 RPC goroutine 执行，须快速返回、并发安全自理，错误自行记日志（无返回值）
+func WithSettingChangeHandler(handler dto.SettingChangeHandler) ServeOption {
+	return func(c *serveConfig) { c.onSettingChanged = handler }
+}
+
 // Serve 启动插件进程，由插件开发者调用。全部能力以选项提供，无必填参数：
 // 作品拉取型插件经 WithWorkFetcher 注册作品拉取扩展，工具型插件省略之
 func Serve(opts ...ServeOption) {
@@ -80,5 +89,6 @@ func newLSPlugin(opts ...ServeOption) *transport.LSPlugin {
 		SiteAuthorFetchers: cfg.siteAuthorFetchers,
 		OnActivate:         cfg.onActivate,
 		OnShutdown:         cfg.onShutdown,
+		OnSettingChanged:   cfg.onSettingChanged,
 	}
 }

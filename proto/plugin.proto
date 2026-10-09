@@ -166,6 +166,9 @@ message TaskResParam {
 service PluginLifecycle {
   rpc Activate(ActivateRequest) returns (ActivateResponse);
   rpc Shutdown(Empty) returns (Empty);
+  // 设置变更通知：宿主在插件设置落库（保存/重置）成功后向已激活插件异步推送，
+  // 纯通知无回执面（响应 Empty）——插件是否/如何反应由其处置函数自理
+  rpc SettingChanged(SettingChangedRequest) returns (Empty);
 }
 
 message ActivateRequest {
@@ -178,6 +181,14 @@ message ActivateRequest {
 }
 
 message ActivateResponse {}
+
+// SettingChangedRequest 设置变更通知载荷。source 为变更来源（"save"=保存更新 /
+// "reset"=重置回默认，操作语义由 source 决定）；keys 为本次变更的设置键集合
+//（单次保存/重置为一个键，repeated 留批量余量）
+message SettingChangedRequest {
+  string source = 1;
+  repeated string keys = 2;
+}
 
 // ========== 2. 作品拉取服务（主程序 → 插件）==========
 

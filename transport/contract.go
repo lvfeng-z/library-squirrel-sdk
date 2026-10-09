@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 15
+const ContractVersion = 16
 
 // 版本历史：
 //   1 — 初始契约：A 类 proto 单源、能力声明化、render.Context 断链契约（C 节点）
@@ -86,3 +86,10 @@ const ContractVersion = 15
 //       降级为显式 > 环境变量）。线级新增非破坏（旧插件不调新 RPC，契约 12 插件
 //       在新宿主照常运行）——minSupportedContractVersion 维持 12；新插件对旧宿主
 //       调用解析面得 gRPC Unimplemented，SDK Transport 走降级链，既有面不受影响
+//  16 — 插件设置变更通知：PluginLifecycle 线级新增 SettingChanged 一元 RPC
+//       （宿主在 SaveSetting/ResetSetting 落库成功后向已激活插件异步推送
+//       {source,keys} 纯通知，响应 Empty 无回执面——处置语义由插件处置函数
+//       自理），SDK 配套 WithSettingChangeHandler 启动选项与
+//       dto.SettingChangedRequest。线级新增非破坏（旧插件内嵌 Unimplemented
+//       兜底，宿主静默降级；新插件对旧宿主只是收不到通知）——
+//       minSupportedContractVersion 维持 12，既有面不受影响

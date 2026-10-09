@@ -18,14 +18,16 @@ type LSPlugin struct {
 	SiteAuthorFetchers map[string]dto.SiteAuthorFetcher
 	OnActivate         func(dto.PluginContext)
 	OnShutdown         func()
+	OnSettingChanged   dto.SettingChangeHandler
 	HostDeps           *HostDeps
 }
 
 func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
 	gen.RegisterPluginLifecycleServer(s, &lifecycleServer{
-		onActivate: p.OnActivate,
-		onShutdown: p.OnShutdown,
-		broker:     broker,
+		onActivate:       p.OnActivate,
+		onShutdown:       p.OnShutdown,
+		onSettingChanged: p.OnSettingChanged,
+		broker:           broker,
 	})
 	// 未提供 WorkFetcher 时不注册 WorkFetchService：gRPC 对未注册服务的调用返回
 	// codes.Unimplemented，工具型插件（仅库查询/前端扩展等宿主能力）无需注册假作品拉取扩展

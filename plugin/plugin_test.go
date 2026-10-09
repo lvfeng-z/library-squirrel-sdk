@@ -72,3 +72,20 @@ func TestNewLSPluginWithSiteAuthorFetcher(t *testing.T) {
 		t.Fatal("WithSiteAuthorFetcher 多次调用应按条目 id 累积落位（同 id 后调覆盖）")
 	}
 }
+
+// TestNewLSPluginWithSettingChangeHandler 设置变更处置选项落位：未设时为 nil；
+// 设置时处置函数随 LSPlugin 字段透出可分派
+func TestNewLSPluginWithSettingChangeHandler(t *testing.T) {
+	if p := newLSPlugin(WithActivate(func(dto.PluginContext) {})); p.OnSettingChanged != nil {
+		t.Fatal("未设 WithSettingChangeHandler 时 OnSettingChanged 应为 nil")
+	}
+	called := false
+	p := newLSPlugin(WithSettingChangeHandler(func(dto.PluginContext, *dto.SettingChangedRequest) { called = true }))
+	if p.OnSettingChanged == nil {
+		t.Fatal("WithSettingChangeHandler 应装配到位")
+	}
+	p.OnSettingChanged(nil, &dto.SettingChangedRequest{})
+	if !called {
+		t.Fatal("OnSettingChanged 应为所设处置函数")
+	}
+}

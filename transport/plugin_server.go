@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sync"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
@@ -21,21 +22,33 @@ type lifecycleServer struct {
 	gen.UnimplementedPluginLifecycleServer
 	onActivate func(pluginCtx dto.PluginContext)
 	onShutdown func()
-	broker     *plugin.GRPCBroker
+	// onSettingChanged 设置变更处置函数（可选）；SettingChanged 通知到达时分派到它
+	onSettingChanged dto.SettingChangeHandler
+	// pluginCtx Activate 时构造的插件上下文，供 SettingChanged 分派注入；
+	// mu 保护其 Activate 写入与 SettingChanged 读取（两 RPC 可并发到达）
+	pluginCtx dto.PluginContext
+	mu        sync.Mutex
+	broker    *plugin.GRPCBroker
 }
 
 func (s *lifecycleServer) Activate(ctx context.Context, req *gen.ActivateRequest) (*gen.ActivateResponse, error) {
 	// 宿主契约版本落进程级原子值：心跳等按版本门控的能力据此判断
 	//（经 HostContractVersion 读取），未 Activate 时保持 0（心跳 no-op）
 	hostContractVersion.Store(req.HostContractVersion)
-	if s.onActivate != nil && req.HostServiceId != 0 {
+	if req.HostServiceId != 0 {
 		conn, err := s.broker.Dial(req.HostServiceId)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "dial host service: %v", err)
 		}
 		pluginCtx := NewPluginContextClient(conn)
 		pluginCtx.SetMainWindowHandle(uintptr(req.MainWindowHandle))
-		s.onActivate(pluginCtx)
+		// 保存供 SettingChanged 分派注入（未注册 Activate 回调时同样保存）
+		s.mu.Lock()
+		s.pluginCtx = pluginCtx
+		s.mu.Unlock()
+		if s.onActivate != nil {
+			s.onActivate(pluginCtx)
+		}
 	}
 	return &gen.ActivateResponse{}, nil
 }
@@ -44,6 +57,25 @@ func (s *lifecycleServer) Shutdown(ctx context.Context, req *gen.Empty) (*gen.Em
 	if s.onShutdown != nil {
 		s.onShutdown()
 	}
+	return &gen.Empty{}, nil
+}
+
+// SettingChanged 宿主设置变更通知（保存/重置落库成功后异步推送）：分派到已注册的
+// 处置函数，注入 Activate 构造的插件上下文并透传来源与键。未注册处置函数时空操作
+// + debug 日志（宿主对全部已激活插件照发通知，未接入的插件静默忽略）；Activate 前
+// 到达（无插件上下文）属时序异常，返回 FailedPrecondition。
+func (s *lifecycleServer) SettingChanged(ctx context.Context, req *gen.SettingChangedRequest) (*gen.Empty, error) {
+	s.mu.Lock()
+	pluginCtx := s.pluginCtx
+	s.mu.Unlock()
+	if pluginCtx == nil {
+		return nil, status.Error(codes.FailedPrecondition, "setting changed: 插件尚未 Activate, 无可注入的 PluginContext")
+	}
+	if s.onSettingChanged == nil {
+		log.Printf("[lifecycleServer] 收到 SettingChanged 通知但未注册处置函数, 忽略: source=%s keys=%v", req.GetSource(), req.GetKeys())
+		return &gen.Empty{}, nil
+	}
+	s.onSettingChanged(pluginCtx, req)
 	return &gen.Empty{}, nil
 }
 

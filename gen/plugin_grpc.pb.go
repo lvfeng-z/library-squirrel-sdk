@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PluginLifecycle_Activate_FullMethodName = "/plugins.PluginLifecycle/Activate"
-	PluginLifecycle_Shutdown_FullMethodName = "/plugins.PluginLifecycle/Shutdown"
+	PluginLifecycle_Activate_FullMethodName       = "/plugins.PluginLifecycle/Activate"
+	PluginLifecycle_Shutdown_FullMethodName       = "/plugins.PluginLifecycle/Shutdown"
+	PluginLifecycle_SettingChanged_FullMethodName = "/plugins.PluginLifecycle/SettingChanged"
 )
 
 // PluginLifecycleClient is the client API for PluginLifecycle service.
@@ -29,6 +30,9 @@ const (
 type PluginLifecycleClient interface {
 	Activate(ctx context.Context, in *ActivateRequest, opts ...grpc.CallOption) (*ActivateResponse, error)
 	Shutdown(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	// 设置变更通知：宿主在插件设置落库（保存/重置）成功后向已激活插件异步推送，
+	// 纯通知无回执面（响应 Empty）——插件是否/如何反应由其处置函数自理
+	SettingChanged(ctx context.Context, in *SettingChangedRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type pluginLifecycleClient struct {
@@ -59,12 +63,25 @@ func (c *pluginLifecycleClient) Shutdown(ctx context.Context, in *Empty, opts ..
 	return out, nil
 }
 
+func (c *pluginLifecycleClient) SettingChanged(ctx context.Context, in *SettingChangedRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, PluginLifecycle_SettingChanged_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginLifecycleServer is the server API for PluginLifecycle service.
 // All implementations must embed UnimplementedPluginLifecycleServer
 // for forward compatibility.
 type PluginLifecycleServer interface {
 	Activate(context.Context, *ActivateRequest) (*ActivateResponse, error)
 	Shutdown(context.Context, *Empty) (*Empty, error)
+	// 设置变更通知：宿主在插件设置落库（保存/重置）成功后向已激活插件异步推送，
+	// 纯通知无回执面（响应 Empty）——插件是否/如何反应由其处置函数自理
+	SettingChanged(context.Context, *SettingChangedRequest) (*Empty, error)
 	mustEmbedUnimplementedPluginLifecycleServer()
 }
 
@@ -80,6 +97,9 @@ func (UnimplementedPluginLifecycleServer) Activate(context.Context, *ActivateReq
 }
 func (UnimplementedPluginLifecycleServer) Shutdown(context.Context, *Empty) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method Shutdown not implemented")
+}
+func (UnimplementedPluginLifecycleServer) SettingChanged(context.Context, *SettingChangedRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method SettingChanged not implemented")
 }
 func (UnimplementedPluginLifecycleServer) mustEmbedUnimplementedPluginLifecycleServer() {}
 func (UnimplementedPluginLifecycleServer) testEmbeddedByValue()                         {}
@@ -138,6 +158,24 @@ func _PluginLifecycle_Shutdown_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PluginLifecycle_SettingChanged_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SettingChangedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginLifecycleServer).SettingChanged(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PluginLifecycle_SettingChanged_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginLifecycleServer).SettingChanged(ctx, req.(*SettingChangedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PluginLifecycle_ServiceDesc is the grpc.ServiceDesc for PluginLifecycle service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +190,10 @@ var PluginLifecycle_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Shutdown",
 			Handler:    _PluginLifecycle_Shutdown_Handler,
+		},
+		{
+			MethodName: "SettingChanged",
+			Handler:    _PluginLifecycle_SettingChanged_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
