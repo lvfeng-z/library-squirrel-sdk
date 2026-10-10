@@ -24,7 +24,7 @@ var resolveTimeoutNanos atomic.Int64
 // proxyState Configure 注入的运行态。Configure（激活期一次）与 NewTransport /
 // 按请求求值（后续并发）以原子指针承载并发安全
 type proxyState struct {
-	ctx              dto.PluginContext
+	ctx              dto.ContextProxy // 收窄：本包只消费代理解析族
 	explicitProxyURL string
 	logger           dto.Logger
 	warned           atomic.Bool // 降级告警一次性标记
@@ -41,7 +41,7 @@ func resolveBudget() time.Duration {
 
 // Configure 注入宿主上下文与显式代理（激活期一次，早于任何网络请求）。
 // explicitProxyURL 为插件设置 proxyUrl 透传（空 = 纯自动检测）；打一条来源日志。
-func Configure(ctx dto.PluginContext, explicitProxyURL string, logger dto.Logger) {
+func Configure(ctx dto.ContextProxy, explicitProxyURL string, logger dto.Logger) {
 	state.Store(&proxyState{ctx: ctx, explicitProxyURL: explicitProxyURL, logger: logger})
 	if logger == nil {
 		return
@@ -98,7 +98,7 @@ func resolveProxy(req *http.Request) (*url.URL, error) {
 	return u, nil
 }
 
-// resolveWithBudget 在超时预算内等待宿主决议。PluginContext 的解析方法无 ctx 参数
+// resolveWithBudget 在超时预算内等待宿主决议。ContextProxy 的解析方法无 ctx 参数
 // （客户端实现内部另有 1 秒硬顶取消），此处竞速兜底超出预算的挂起：到点即放弃等待，
 // 迟到的决议写入带缓冲通道后被丢弃，决议 goroutine 自行退出不阻塞
 func resolveWithBudget(st *proxyState, requestURL string) (string, error) {
