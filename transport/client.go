@@ -201,13 +201,13 @@ func (c *PluginContextClient) UnsubscribeFrontend(topic string) error {
 // （族定义见 dto/context.go——任一族增改方法而客户端未跟进，此处编译期即失败，
 // 与 dto 包内 TestContextFamiliesPartition 的划分不变量互为表里）
 var (
-	_ dto.ContextKVStore        = (*PluginContextClient)(nil)
-	_ dto.ContextPreference     = (*PluginContextClient)(nil)
-	_ dto.ContextProxy          = (*PluginContextClient)(nil)
-	_ dto.ContextTaskTrigger    = (*PluginContextClient)(nil)
-	_ dto.ContextFrontendEvents = (*PluginContextClient)(nil)
-	_ dto.ContextEnvironment    = (*PluginContextClient)(nil)
-	_ dto.ContextLibraryQuery   = (*PluginContextClient)(nil)
-	_ dto.ContextLogging        = (*PluginContextClient)(nil)
-	_ dto.PluginContext         = (*PluginContextClient)(nil)
+	_ dto.KVStore        = (*PluginContextClient)(nil)
+	_ dto.Preference     = (*PluginContextClient)(nil)
+	_ dto.Proxy          = (*PluginContextClient)(nil)
+	_ dto.TaskTrigger    = (*PluginContextClient)(nil)
+	_ dto.FrontendEvents = (*PluginContextClient)(nil)
+	_ dto.Environment    = (*PluginContextClient)(nil)
+	_ dto.LibraryQuery   = (*PluginContextClient)(nil)
+	_ dto.LogSink        = (*PluginContextClient)(nil)
+	_ dto.PluginContext  = (*PluginContextClient)(nil)
 )

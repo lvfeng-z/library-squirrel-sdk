@@ -8,14 +8,14 @@ import (
 // contextFamilies 能力族登记表：新增族（或既有族的增删）时同步维护此表，
 // TestContextFamiliesPartition 据此锚定划分不变量
 var contextFamilies = []reflect.Type{
-	reflect.TypeOf((*ContextKVStore)(nil)).Elem(),
-	reflect.TypeOf((*ContextPreference)(nil)).Elem(),
-	reflect.TypeOf((*ContextProxy)(nil)).Elem(),
-	reflect.TypeOf((*ContextTaskTrigger)(nil)).Elem(),
-	reflect.TypeOf((*ContextFrontendEvents)(nil)).Elem(),
-	reflect.TypeOf((*ContextEnvironment)(nil)).Elem(),
-	reflect.TypeOf((*ContextLibraryQuery)(nil)).Elem(),
-	reflect.TypeOf((*ContextLogging)(nil)).Elem(),
+	reflect.TypeOf((*KVStore)(nil)).Elem(),
+	reflect.TypeOf((*Preference)(nil)).Elem(),
+	reflect.TypeOf((*Proxy)(nil)).Elem(),
+	reflect.TypeOf((*TaskTrigger)(nil)).Elem(),
+	reflect.TypeOf((*FrontendEvents)(nil)).Elem(),
+	reflect.TypeOf((*Environment)(nil)).Elem(),
+	reflect.TypeOf((*LibraryQuery)(nil)).Elem(),
+	reflect.TypeOf((*LogSink)(nil)).Elem(),
 }
 
 // TestContextFamiliesPartition 族划分结构不变量：①每族非空；②族间两两不相交
@@ -49,11 +49,11 @@ func TestContextFamiliesPartition(t *testing.T) {
 
 // preferenceKeys 窄消费者示例：参数收窄为族类型而非 PluginContext——本函数在
 // 编译期即无法触碰 KV/任务/库查询等其他能力族（能力面按族显形的消费侧收益）
-func preferenceKeys(c ContextPreference) ([]string, error) {
+func preferenceKeys(c Preference) ([]string, error) {
 	return c.ListMyPreferences()
 }
 
 // TestContextNarrowConsumer 窄消费形态编译期成立（无行为断言，作族用法的活文档）
 func TestContextNarrowConsumer(t *testing.T) {
-	var _ func(ContextPreference) ([]string, error) = preferenceKeys
+	var _ func(Preference) ([]string, error) = preferenceKeys
 }
