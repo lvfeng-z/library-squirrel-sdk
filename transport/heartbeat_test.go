@@ -16,7 +16,7 @@ func setHostContractVersionForTest(t *testing.T, v uint32) {
 }
 
 // countSendFn 构造计数发送函数；计数用原子变量以在 -race 下稳妥
-//（上报器互斥锁保证实际串行调用）
+// （上报器互斥锁保证实际串行调用）
 func countSendFn(err error) (send func() error, calls *atomic.Int64) {
 	var n atomic.Int64
 	send = func() error {
@@ -50,7 +50,7 @@ func TestHeartbeatThrottledWithinInterval(t *testing.T) {
 }
 
 // TestHeartbeatReportersIndependentThrottle 流程级限频隔离：两个上报器实例
-//（两条流各一）限频独立计——A 消耗掉自身限频窗后 B 首次发送不受影响，
+// （两条流各一）限频独立计——A 消耗掉自身限频窗后 B 首次发送不受影响，
 // 并发流程不互相饿死
 func TestHeartbeatReportersIndependentThrottle(t *testing.T) {
 	setHostContractVersionForTest(t, HeartbeatMinHostVersion)
@@ -71,7 +71,7 @@ func TestHeartbeatReportersIndependentThrottle(t *testing.T) {
 }
 
 // TestHeartbeatNoopBelowMinHostVersion 协商门控：宿主版本低于心跳能力版本
-//（含未 Activate 的 0）时 no-op，不发送
+// （含未 Activate 的 0）时 no-op，不发送
 func TestHeartbeatNoopBelowMinHostVersion(t *testing.T) {
 	for _, v := range []uint32{0, 1, HeartbeatMinHostVersion - 1} {
 		setHostContractVersionForTest(t, v)
@@ -121,14 +121,12 @@ func TestHeartbeatConcurrentCallAndCloseRace(t *testing.T) {
 
 	const workers = 8
 	var wg sync.WaitGroup
-	for i := 0; i < workers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for j := 0; j < 2000; j++ {
+	for range workers {
+		wg.Go(func() {
+			for range 2000 {
 				r.Heartbeat()
 			}
-		}()
+		})
 	}
 	r.Close()
 	wg.Wait()

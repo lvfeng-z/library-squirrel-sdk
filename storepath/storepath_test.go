@@ -229,7 +229,7 @@ func TestBucketSegmentStable(t *testing.T) {
 		{"local", "work-42"},
 	} {
 		first := BucketSegment(k[0], k[1])
-		for i := 0; i < 3; i++ {
+		for range 3 {
 			if got := BucketSegment(k[0], k[1]); got != first {
 				t.Errorf("BucketSegment(%q,%q) 多次调用返回不一致：%q vs %q", k[0], k[1], got, first)
 			}
@@ -262,7 +262,7 @@ func TestBucketSegmentHexForm(t *testing.T) {
 func TestBucketSegmentDistribution(t *testing.T) {
 	re := regexp.MustCompile(`^[0-9a-f]{2}$`)
 	seen := make(map[string]struct{})
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		got := BucketSegment("pixiv", fmt.Sprintf("work-%d", i))
 		if !re.MatchString(got) {
 			t.Errorf("BucketSegment(work-%d) = %q，不符 2 位小写 hex 格式", i, got)

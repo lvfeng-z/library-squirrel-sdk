@@ -59,7 +59,7 @@ func TestExecuteScriptKeepAliveLive(t *testing.T) {
 		t.Fatalf("单发 ExecuteScript: %v", err)
 	}
 
-	for i := 0; i < 300; i++ {
+	for i := range 300 {
 		runtime.GC()
 		gcSink = make([]byte, 1<<20) // 搅动堆,促使已回收内存被新分配覆写
 		if _, err := handle.ExecuteScript("1+1"); err != nil {

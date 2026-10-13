@@ -185,7 +185,7 @@ func TestLegacyHostFallbackExplicitThenEnv(t *testing.T) {
 	tr := NewTransport(true)
 
 	req := mustRequest(t, "https://www.example.com/a")
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		u, err := tr.Proxy(req)
 		if err != nil {
 			t.Fatalf("降级代理函数报错: %v", err)

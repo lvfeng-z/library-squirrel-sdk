@@ -49,7 +49,7 @@ func (p *LSPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
 	return nil
 }
 
-func (p *LSPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
+func (p *LSPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c *grpc.ClientConn) (any, error) {
 	var hostServiceId uint32
 	if p.HostDeps != nil {
 		deps := *p.HostDeps

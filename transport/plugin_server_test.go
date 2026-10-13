@@ -213,7 +213,7 @@ func TestCreateHeartbeatNoopBelowMinHostVersion(t *testing.T) {
 
 // TestCreateHeartbeatClosedAfterHandlerReturn 关闭舞步：handler 返回后上报器已
 // 关闭——handler 保存的上报器引用再调用不再上块，结果块发送独占流
-//（模拟消费方后台 ticker 未停的违约场景）
+// （模拟消费方后台 ticker 未停的违约场景）
 func TestCreateHeartbeatClosedAfterHandlerReturn(t *testing.T) {
 	setHostContractVersionForTest(t, HeartbeatMinHostVersion)
 	var saved dto.HeartbeatReporter
@@ -238,7 +238,7 @@ func TestCreateHeartbeatClosedAfterHandlerReturn(t *testing.T) {
 
 // TestConcurrentCreateFlowsIsolatedReporters 并发多流程隔离：两条并发 Create 流
 // 在对方等待期间各自上报心跳并返回结果，块序互不串扰——每条流独立上报器
-//（流程级生命周期，无跨流锁与共享限频计时），-race 锚定
+// （流程级生命周期，无跨流锁与共享限频计时），-race 锚定
 func TestConcurrentCreateFlowsIsolatedReporters(t *testing.T) {
 	setHostContractVersionForTest(t, HeartbeatMinHostVersion)
 	const flows = 2
@@ -249,7 +249,7 @@ func TestConcurrentCreateFlowsIsolatedReporters(t *testing.T) {
 	results := make([][]*gen.CreateChunk, flows)
 	errs := make([]error, flows)
 	var wg sync.WaitGroup
-	for i := 0; i < flows; i++ {
+	for i := range flows {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
@@ -265,13 +265,13 @@ func TestConcurrentCreateFlowsIsolatedReporters(t *testing.T) {
 			results[i] = stream.chunks
 		}(i)
 	}
-	for i := 0; i < flows; i++ {
+	for range flows {
 		<-entered
 	}
 	close(release)
 	wg.Wait()
 
-	for i := 0; i < flows; i++ {
+	for i := range flows {
 		if errs[i] != nil {
 			t.Fatalf("流程 %d Create 返回错误: %v", i, errs[i])
 		}
@@ -456,7 +456,7 @@ func TestResumeWithoutHeartbeatCallBlockOrderUnchanged(t *testing.T) {
 }
 
 // TestActivateStoresHostContractVersion Activate 时宿主契约版本落进程级原子值
-//（HostServiceId=0 时不 dial broker，仅记录版本），经 HostContractVersion 可读
+// （HostServiceId=0 时不 dial broker，仅记录版本），经 HostContractVersion 可读
 func TestActivateStoresHostContractVersion(t *testing.T) {
 	srv := &lifecycleServer{}
 	if _, err := srv.Activate(t.Context(), &gen.ActivateRequest{HostContractVersion: 14}); err != nil {
