@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 16
+const ContractVersion = 17
 
 // VersionEntry 契约版本史单条目。
 type VersionEntry struct {
@@ -50,4 +50,5 @@ var ContractHistory = []VersionEntry{
 	{14, "流等待期心跳（插件在流式 RPC 的 handler 执行期周期向该流发送的保活块，语义=「本等待点有界且仍在推进」，Create/Start/Resume 三流一次定形）：CreateChunk/StreamChunk 双流 oneof 各增 Heartbeat 态（共享空消息 Heartbeat，留字段扩展位），`ActivateRequest` 增 `host_contract_version` 协商字段（宿主随 Activate 下发自身契约版本，插件侧运行时门控心跳发送——旧宿主上心跳 no-op，线形态与升级前一致）；SDK 新增通用心跳上报器（并发安全+限频+handler 返回后关闭）与两条接入通道（Create 可选接口 HeartbeatCreateFetcher、Start/Resume ctx 注入 HeartbeatFromContext），维持宿主的流空闲检测窗（越过 Create 首块 / Start·Resume 首响应的 60 秒空闲超时，见 6.1「流等待期心跳」）。线级新增非破坏（不接入心跳的插件含全部旧插件线形态零变化）——`minSupportedContractVersion` 维持 12；作为能力标识升版的依据=proto 新增共享消息与两流新 payload 态，宿主据此认定对心跳块的容忍度；契约 14 的插件包对旧宿主仍在加载期被拒。"},
 	{15, "宿主代理解析服务：HostService 线级新增 `ResolveProxy` RPC（插件出网代理三级检测收归宿主：显式 > Windows 系统代理〔注册表〕> 环境变量，按请求目标地址匹配 scheme/NO_PROXY，逐请求现查无缓存；SDK `proxy` 包以默认 Transport 消费，见 7.1），SDK `PluginContext` 配套 `ResolveProxy` 方法 + `proxy` 包默认 Transport 构造器（RPC 决议每请求求值、每次调用 1 秒超时预算，失败/超时/Unimplemented 降级为「显式 > 环境变量」，请求不因解析失败或超时而失败）。线级新增、非破坏——旧插件不调新 RPC，契约 12 插件在新宿主照常运行，故 `minSupportedContractVersion` 维持 12；新插件对旧宿主调用解析面得 gRPC `Unimplemented`（SDK `proxy` 包走降级链，降级纪律见 5.1「Unimplemented 降级」），既有面不受影响。"},
 	{16, "插件设置变更通知：PluginLifecycle 线级新增 `SettingChanged` 一元 RPC——宿主在 SaveSetting/ResetSetting 落库成功后向已激活插件异步推送 {source, keys} 纯通知（source=save/reset + 变更键集），响应 Empty 无回执面（处置语义由插件处置函数自理，SDK 经 `WithSettingChangeHandler` 注册处置函数，见四节「插件入口」）。线级新增、非破坏、纯通知无回执——未注册处置函数时 SDK 空操作+debug 日志（旧插件内嵌 Unimplemented 兜底，宿主静默降级；新插件对旧宿主只是收不到通知），宿主侧通知尽力而为（插件未激活跳过、发送失败/超时降级为 debug 日志），不构成保存流程的失败面——`minSupportedContractVersion` 维持 12，既有面不受影响。"},
+	{17, "本地导入作者关联级角色声明面：`LocalAuthorDTO` 加可选 `RoleName` 字段——作品声明（`WorkResponse.localAuthors`）携带本地作者时随条目声明关联级 role，落点为作品-作者关联行、不写作者实体（语义与站点侧 `TaskSiteAuthorDTO.RoleName` 同构，空=无 role）。加字段向前兼容（旧插件不填该字段线形态零变化），作为本地导入解析新能力标识升版——主程序 `minSupportedContractVersion` 维持 12，既有插件混装载不受影响；声明契约 17 的插件包对 current<17 的旧宿主仍在加载期被拒。"},
 }

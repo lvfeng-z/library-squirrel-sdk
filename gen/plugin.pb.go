@@ -649,6 +649,7 @@ type LocalAuthorDTO struct {
 	LastUse       *int64                 `protobuf:"varint,4,opt,name=lastUse,proto3,oneof" json:"lastUse,omitempty"`
 	CreateTime    int64                  `protobuf:"varint,5,opt,name=createTime,proto3" json:"createTime,omitempty"`
 	UpdateTime    int64                  `protobuf:"varint,6,opt,name=updateTime,proto3" json:"updateTime,omitempty"`
+	RoleName      *string                `protobuf:"bytes,7,opt,name=roleName,proto3,oneof" json:"roleName,omitempty"` // 关联级 role:该作者在本作品关联行上的角色分工(原画/脚本/声优等开放字符串),落点为作品-作者关联行,不写作者实体;空=无 role
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -723,6 +724,13 @@ func (x *LocalAuthorDTO) GetUpdateTime() int64 {
 		return x.UpdateTime
 	}
 	return 0
+}
+
+func (x *LocalAuthorDTO) GetRoleName() string {
+	if x != nil && x.RoleName != nil {
+		return *x.RoleName
+	}
+	return ""
 }
 
 type LocalTagDTO struct {
@@ -6977,7 +6985,7 @@ const file_plugin_proto_rawDesc = "" +
 	"updateTime\x12\x18\n" +
 	"\asiteKey\x18\a \x01(\tR\asiteKeyB\v\n" +
 	"\t_siteNameB\v\n" +
-	"\t_homepageJ\x04\b\x03\x10\x04\"\xf0\x01\n" +
+	"\t_homepageJ\x04\b\x03\x10\x04\"\x9e\x02\n" +
 	"\x0eLocalAuthorDTO\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12#\n" +
 	"\n" +
@@ -6990,12 +6998,14 @@ const file_plugin_proto_rawDesc = "" +
 	"createTime\x12\x1e\n" +
 	"\n" +
 	"updateTime\x18\x06 \x01(\x03R\n" +
-	"updateTimeB\r\n" +
+	"updateTime\x12\x1f\n" +
+	"\broleName\x18\a \x01(\tH\x03R\broleName\x88\x01\x01B\r\n" +
 	"\v_authorNameB\f\n" +
 	"\n" +
 	"_introduceB\n" +
 	"\n" +
-	"\b_lastUse\"\xb9\x02\n" +
+	"\b_lastUseB\v\n" +
+	"\t_roleName\"\xb9\x02\n" +
 	"\vLocalTagDTO\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12'\n" +
 	"\flocalTagName\x18\x02 \x01(\tH\x00R\flocalTagName\x88\x01\x01\x12+\n" +
