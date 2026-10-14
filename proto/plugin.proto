@@ -250,11 +250,28 @@ message CreateChunk {
     TaskCreateResponse task = 2;      // 后续消息：任务数据
     string error = 3;                 // 错误
     Heartbeat heartbeat = 4;          // 等待期心跳：handler 执行期插件显式上报，仅先于 mode/error/task 出现；宿主跳过续等
+    CreateIntent intent = 5;          // 收尾意图信号：插件显式声明「本流不产出任务」的成功收尾（转入解析/已取消），必为流的最后一块
   }
 }
 
 message CreateMode {
   bool is_stream = 1;                 // true=流式, false=批量
+}
+
+// CreateIntentKind Create 流收尾意图两态（意图块 kind 字段取值）
+enum CreateIntentKind {
+  CREATE_INTENT_KIND_UNSPECIFIED = 0; // proto3 零值占位；意图块不得携带该值（宿主按非法块拒绝）
+  CREATE_INTENT_KIND_TO_PARSE = 1;    // 转入解析：本流零任务，控制权移交插件的解析交互面
+  CREATE_INTENT_KIND_CANCELLED = 2;   // 已取消：用户取消本次创建，本流零任务
+}
+
+// CreateIntent Create 流收尾意图信号块：插件经 Create 流显式声明「本流不产出任务」的
+// 成功收尾形态及面向用户的提示文案（如本地导入确认弹窗后转入解析工作台、用户取消）。
+// 必为流的最后一块（前面可有 mode/heartbeat 块，无 task 块）；与 error 块互斥——error 是
+// 失败收尾（宿主判失败并透传原因），intent 是成功收尾（宿主判成功零任务、Msg=文案）。
+message CreateIntent {
+  CreateIntentKind kind = 1;   // 收尾意图两态
+  string message = 2;          // 提示文案（用户可读）；宿主原样透传至建任务响应 Msg
 }
 
 message CreateWorkInfoRequest {

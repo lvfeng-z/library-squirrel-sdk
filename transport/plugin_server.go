@@ -88,9 +88,9 @@ type workFetchServer struct {
 
 // Create 处理插件任务创建请求的流式响应。协议语义：error 块承载插件业务失败原因
 // （用户可读文本），必为流的最后一块——Create 错误返回时仅发单个 error 块即结束流
-// （不发 mode 块）；正常返回时 mode 块在前，全部 task 块之后结果声明了 reason 时
-// 追加 error 块收尾。gRPC status 错误专属基础设施故障（进程崩溃/连接中断/传输异常），
-// 不承载插件业务错误。
+// （不发 mode 块）；正常返回时 mode 块在前，全部 task 块之后按结果声明追加收尾块——
+// 声明意图时为 intent 块（零任务的成功收尾），否则声明 reason 时为 error 块。
+// gRPC status 错误专属基础设施故障（进程崩溃/连接中断/传输异常），不承载插件业务错误。
 // handler 实现 dto.HeartbeatCreateFetcher 时走 CreateWithHeartbeat：handler 执行期
 // 心跳块可上线（handler 内长等待点显式上报），handler 返回后上报器关闭，
 // 结果块发送独占流；未实现时走 Create，行为零变化。
@@ -112,7 +112,8 @@ func (s *workFetchServer) Create(req *gen.CreateRequest, stream grpc.ServerStrea
 	return sendCreateResult(result, stream)
 }
 
-// sendCreateResult 发送 Create 成功结果的块序列：mode → task… →（声明 reason 时）error
+// sendCreateResult 发送 Create 成功结果的块序列：mode → task… → 收尾块（声明意图时为
+// intent 块，否则声明 reason 时为 error 块）
 func sendCreateResult(result *dto.TaskCreateResult, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
 	if err := stream.Send(&gen.CreateChunk{
 		Payload: &gen.CreateChunk_Mode{
@@ -144,13 +145,34 @@ func sendCreateResult(result *dto.TaskCreateResult, stream grpc.ServerStreamingS
 		}
 	}
 
-	// range 在 channel close 后退出，此处读取 reason 满足其「流消费完毕后调用」的时序约定
+	// range 在 channel close 后退出，此处读取意图/reason 满足其「流消费完毕后调用」的时序约定。
+	// 意图与 reason 同设时意图生效（意图=成功收尾、error=失败收尾，互斥语义，不发混杂块）
+	if kind, message := result.Intent(); kind != dto.CreateIntentNone {
+		return stream.Send(&gen.CreateChunk{
+			Payload: &gen.CreateChunk_Intent{
+				Intent: &gen.CreateIntent{Kind: createIntentKindToProto(kind), Message: message},
+			},
+		})
+	}
 	if reason := result.Reason(); reason != "" {
 		return stream.Send(&gen.CreateChunk{
 			Payload: &gen.CreateChunk_Error{Error: reason},
 		})
 	}
 	return nil
+}
+
+// createIntentKindToProto 意图信号两态 DTO → proto（未声明意图的 None 不到达此处：
+// 调用方已按 kind != CreateIntentNone 判定在场）
+func createIntentKindToProto(kind dto.CreateIntentKind) gen.CreateIntentKind {
+	switch kind {
+	case dto.CreateIntentToParse:
+		return gen.CreateIntentKind_CREATE_INTENT_KIND_TO_PARSE
+	case dto.CreateIntentCancelled:
+		return gen.CreateIntentKind_CREATE_INTENT_KIND_CANCELLED
+	default:
+		return gen.CreateIntentKind_CREATE_INTENT_KIND_UNSPECIFIED
+	}
 }
 
 func (s *workFetchServer) CreateWorkInfo(ctx context.Context, req *gen.CreateWorkInfoRequest) (*gen.WorkResponse, error) {

@@ -129,6 +129,57 @@ func TestCreateWithoutReasonNoErrorChunk(t *testing.T) {
 	}
 }
 
+// TestCreateIntentAppendIntentChunk SetIntent 声明形态：块序为 mode → intent，
+// intent 块必为最后一块、不混 error 块；两态（转入解析/已取消）各验一次
+func TestCreateIntentAppendIntentChunk(t *testing.T) {
+	for _, tc := range []struct {
+		kind    dto.CreateIntentKind
+		want    gen.CreateIntentKind
+		message string
+	}{
+		{dto.CreateIntentToParse, gen.CreateIntentKind_CREATE_INTENT_KIND_TO_PARSE, "已转入解析工作台"},
+		{dto.CreateIntentCancelled, gen.CreateIntentKind_CREATE_INTENT_KIND_CANCELLED, "已取消本次导入"},
+	} {
+		result := dto.BatchResult(nil)
+		result.SetIntent(tc.kind, tc.message)
+		chunks := runCreate(t, &fakeCreateHandler{result: result})
+		if len(chunks) != 2 {
+			t.Fatalf("kind=%d 期望 2 块(mode+intent), 实得 %d 块", tc.kind, len(chunks))
+		}
+		if mode := chunks[0].GetMode(); mode == nil || mode.GetIsStream() {
+			t.Fatalf("kind=%d 首块应为批量 mode 块(is_stream=false)", tc.kind)
+		}
+		intent := chunks[1].GetIntent()
+		if intent == nil {
+			t.Fatalf("kind=%d 末块应为 intent 块", tc.kind)
+		}
+		if intent.GetKind() != tc.want || intent.GetMessage() != tc.message {
+			t.Fatalf("kind=%d intent 块 = (%d, %q), 期望 (%d, %q)", tc.kind,
+				intent.GetKind(), intent.GetMessage(), tc.want, tc.message)
+		}
+	}
+}
+
+// TestCreateIntentOverridesReason 意图与 reason 同设时意图生效：仅发 intent 收尾块，
+// 不发 error 块（意图=成功收尾、error=失败收尾，互斥不混杂）
+func TestCreateIntentOverridesReason(t *testing.T) {
+	result := dto.BatchResult(nil)
+	result.SetReason("不会发出的失败原因")
+	result.SetIntent(dto.CreateIntentCancelled, "已取消本次导入")
+	chunks := runCreate(t, &fakeCreateHandler{result: result})
+	if len(chunks) != 2 {
+		t.Fatalf("期望 2 块(mode+intent), 实得 %d 块", len(chunks))
+	}
+	if intent := chunks[1].GetIntent(); intent == nil || intent.GetMessage() != "已取消本次导入" {
+		t.Fatalf("末块应为 intent 块且文案透传, 实得 %+v", chunks[1].GetIntent())
+	}
+	for i, c := range chunks {
+		if c.GetError() != "" {
+			t.Fatalf("第 %d 块不应为 error 块（意图收尾不混失败信号）", i)
+		}
+	}
+}
+
 // ========== Create 流等待期心跳接入面 ==========
 
 // fakeHeartbeatCreateHandler 实现 CreateWithHeartbeat 的替身：等待点行为经 onCreate

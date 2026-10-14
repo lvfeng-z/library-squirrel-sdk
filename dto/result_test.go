@@ -23,3 +23,23 @@ func TestTaskCreateResultReasonReadWrite(t *testing.T) {
 		t.Fatalf("流式结果 reason = %q, 期望 %q", got, "部分任务创建失败")
 	}
 }
+
+// TestTaskCreateResultIntentReadWrite intent 基础读写：
+// 未声明返回 (CreateIntentNone, "")，SetIntent 声明后 Intent 读回两态与文案
+//（批量与流式两种构造同形；两态各验一次）
+func TestTaskCreateResultIntentReadWrite(t *testing.T) {
+	batch := BatchResult(nil)
+	if kind, msg := batch.Intent(); kind != CreateIntentNone || msg != "" {
+		t.Fatalf("批量结果未声明 intent 应为 (None, \"\"), 实得 (%d, %q)", kind, msg)
+	}
+	batch.SetIntent(CreateIntentToParse, "已转入解析工作台")
+	if kind, msg := batch.Intent(); kind != CreateIntentToParse || msg != "已转入解析工作台" {
+		t.Fatalf("批量结果 intent = (%d, %q), 期望 (%d, %q)", kind, msg, CreateIntentToParse, "已转入解析工作台")
+	}
+
+	stream := StreamResult(nil)
+	stream.SetIntent(CreateIntentCancelled, "已取消本次导入")
+	if kind, msg := stream.Intent(); kind != CreateIntentCancelled || msg != "已取消本次导入" {
+		t.Fatalf("流式结果 intent = (%d, %q), 期望 (%d, %q)", kind, msg, CreateIntentCancelled, "已取消本次导入")
+	}
+}
