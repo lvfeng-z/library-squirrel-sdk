@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 18
+const ContractVersion = 19
 
 // VersionEntry 契约版本史单条目。
 type VersionEntry struct {
@@ -52,4 +52,5 @@ var ContractHistory = []VersionEntry{
 	{16, "插件设置变更通知：PluginLifecycle 线级新增 `SettingChanged` 一元 RPC——宿主在 SaveSetting/ResetSetting 落库成功后向已激活插件异步推送 {source, keys} 纯通知（source=save/reset + 变更键集），响应 Empty 无回执面（处置语义由插件处置函数自理，SDK 经 `WithSettingChangeHandler` 注册处置函数，见四节「插件入口」）。线级新增、非破坏、纯通知无回执——未注册处置函数时 SDK 空操作+debug 日志（旧插件内嵌 Unimplemented 兜底，宿主静默降级；新插件对旧宿主只是收不到通知），宿主侧通知尽力而为（插件未激活跳过、发送失败/超时降级为 debug 日志），不构成保存流程的失败面——`minSupportedContractVersion` 维持 12，既有面不受影响。"},
 	{17, "本地导入作者关联级角色声明面：`LocalAuthorDTO` 加可选 `RoleName` 字段——作品声明（`WorkResponse.localAuthors`）携带本地作者时随条目声明关联级 role，落点为作品-作者关联行、不写作者实体（语义与站点侧 `TaskSiteAuthorDTO.RoleName` 同构，空=无 role）。加字段向前兼容（旧插件不填该字段线形态零变化），作为本地导入解析新能力标识升版——主程序 `minSupportedContractVersion` 维持 12，既有插件混装载不受影响；声明契约 17 的插件包对 current<17 的旧宿主仍在加载期被拒。"},
 	{18, "Create 流意图信号收尾：CreateChunk oneof 新增 `CreateIntent` 块（`CreateIntentKind` 枚举两态：转入解析/已取消 + 提示文案）——插件经 Create 流显式声明「本流不产出任务」的成功收尾意图（如本地导入确认弹窗后转入解析视图、用户取消），块必为流的最后一块，宿主消费为成功零任务 + Msg=文案（区别于 error 块的失败收尾）；SDK `TaskCreateResult` 配套 `SetIntent`/`Intent`。加字段向前兼容（旧插件不发该块线形态零变化），作为意图信号新能力标识升版——主程序 `minSupportedContractVersion` 维持 12，既有插件混装载不受影响；声明契约 18 的插件包对 current<18 的旧宿主仍在加载期被拒。"},
+	{19, "子行归属键（跨站产出规范落地首期）：`TaskCreateChildResponse` 加可选 `siteKey` 字段——子任务声明自身归属域键（作品身份落库域，仍受宿主站点表存在性校验），空=继承父应答站点键（既有行为不变）。线级上字段本身可缺省（旧插件不填、形态零变化），但本版经裁定为破坏性分界升版：兼容矩阵按硬边界收紧、不留 12-18 混装载状态——主程序 `minSupportedContractVersion` 同步升 19（v18 及以下插件包在新宿主加载期拒载并提示升级，捆绑包随之重建）。"},
 }

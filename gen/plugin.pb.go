@@ -1112,6 +1112,7 @@ type TaskCreateChildResponse struct {
 	SiteName      string                 `protobuf:"bytes,5,opt,name=siteName,proto3" json:"siteName,omitempty"`
 	InvolvedRoles []string               `protobuf:"bytes,6,rep,name=involvedRoles,proto3" json:"involvedRoles,omitempty"` // 子任务涉及的 store_type 集合(创建期声明,universe);空=未确定
 	ResourceType  string                 `protobuf:"bytes,7,opt,name=resourceType,proto3" json:"resourceType,omitempty"`   // 子任务产生的 resource 的资源类型(预定义 image/video/article/document/audio/unknown);空=未声明
+	SiteKey       string                 `protobuf:"bytes,8,opt,name=siteKey,proto3" json:"siteKey,omitempty"`             // 站点唯一身份键(identity 注册表分配);子行归属键,非空=该子任务自身的归属域键(作品身份落库域,仍受宿主站点表存在性校验);空=继承父应答站点键(既有行为不变)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1191,6 +1192,13 @@ func (x *TaskCreateChildResponse) GetInvolvedRoles() []string {
 func (x *TaskCreateChildResponse) GetResourceType() string {
 	if x != nil {
 		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *TaskCreateChildResponse) GetSiteKey() string {
+	if x != nil {
+		return x.SiteKey
 	}
 	return ""
 }
@@ -7164,7 +7172,7 @@ const file_plugin_proto_rawDesc = "" +
 	"\x0eTaskWorkSetDTO\x12$\n" +
 	"\rsiteWorkSetId\x18\x01 \x01(\tR\rsiteWorkSetId\x12 \n" +
 	"\vworkSetName\x18\x02 \x01(\tR\vworkSetName\x12\x18\n" +
-	"\asiteKey\x18\x03 \x01(\tR\asiteKey\"\xed\x01\n" +
+	"\asiteKey\x18\x03 \x01(\tR\asiteKey\"\x87\x02\n" +
 	"\x17TaskCreateChildResponse\x12\x1a\n" +
 	"\btaskName\x18\x01 \x01(\tR\btaskName\x12\x1e\n" +
 	"\n" +
@@ -7176,7 +7184,8 @@ const file_plugin_proto_rawDesc = "" +
 	"pluginData\x12\x1a\n" +
 	"\bsiteName\x18\x05 \x01(\tR\bsiteName\x12$\n" +
 	"\rinvolvedRoles\x18\x06 \x03(\tR\rinvolvedRoles\x12\"\n" +
-	"\fresourceType\x18\a \x01(\tR\fresourceType\"\xe4\x02\n" +
+	"\fresourceType\x18\a \x01(\tR\fresourceType\x12\x18\n" +
+	"\asiteKey\x18\b \x01(\tR\asiteKey\"\xe4\x02\n" +
 	"\x12TaskCreateResponse\x12\"\n" +
 	"\fpluginTaskId\x18\x01 \x01(\tR\fpluginTaskId\x12\x1a\n" +
 	"\btaskName\x18\x02 \x01(\tR\btaskName\x12\x1e\n" +
