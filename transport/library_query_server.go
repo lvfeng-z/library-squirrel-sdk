@@ -101,6 +101,10 @@ func (s *libraryQueryServer) ListChildWorkSets(ctx context.Context, req *gen.Lis
 	return s.provider.ListChildWorkSets(ctx, req)
 }
 
+func (s *libraryQueryServer) QueryLocalWorkSets(ctx context.Context, req *gen.QueryLocalWorkSetsRequest) (*gen.QueryLocalWorkSetsResponse, error) {
+	return s.provider.QueryLocalWorkSets(ctx, req)
+}
+
 // ===== 站点（注册表投影，只读）=====
 
 func (s *libraryQueryServer) ListSites(ctx context.Context, req *gen.Empty) (*gen.ListSitesResponse, error) {

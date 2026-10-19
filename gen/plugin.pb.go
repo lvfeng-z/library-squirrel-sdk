@@ -6645,6 +6645,158 @@ func (x *ListChildWorkSetsResponse) GetItems() []*WorkSet {
 	return nil
 }
 
+// QueryLocalWorkSetsRequest 库内作品集名全集分页查询（互证索引用）：
+// 无过滤条件（全集），仅分页参数；按行 id 升序确定性分页
+type QueryLocalWorkSetsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          *PageRequest           `protobuf:"bytes,1,opt,name=page,proto3" json:"page,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QueryLocalWorkSetsRequest) Reset() {
+	*x = QueryLocalWorkSetsRequest{}
+	mi := &file_plugin_proto_msgTypes[106]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryLocalWorkSetsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryLocalWorkSetsRequest) ProtoMessage() {}
+
+func (x *QueryLocalWorkSetsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_proto_msgTypes[106]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryLocalWorkSetsRequest.ProtoReflect.Descriptor instead.
+func (*QueryLocalWorkSetsRequest) Descriptor() ([]byte, []int) {
+	return file_plugin_proto_rawDescGZIP(), []int{106}
+}
+
+func (x *QueryLocalWorkSetsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+// WorkSetNameEntry 库内作品集名条目：行 id + 展示名（site_work_set_name，
+// 站点侧名缺省时回退 nick_name，两名皆空不出条目）
+type WorkSetNameEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`    // 库内 work_set 行 id
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // 展示名（互证匹配用）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkSetNameEntry) Reset() {
+	*x = WorkSetNameEntry{}
+	mi := &file_plugin_proto_msgTypes[107]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkSetNameEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkSetNameEntry) ProtoMessage() {}
+
+func (x *WorkSetNameEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_proto_msgTypes[107]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkSetNameEntry.ProtoReflect.Descriptor instead.
+func (*WorkSetNameEntry) Descriptor() ([]byte, []int) {
+	return file_plugin_proto_rawDescGZIP(), []int{107}
+}
+
+func (x *WorkSetNameEntry) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *WorkSetNameEntry) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type QueryLocalWorkSetsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*WorkSetNameEntry    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"` // 当前页条目
+	Page          *PageInfo              `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`   // 分页回执
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QueryLocalWorkSetsResponse) Reset() {
+	*x = QueryLocalWorkSetsResponse{}
+	mi := &file_plugin_proto_msgTypes[108]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryLocalWorkSetsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryLocalWorkSetsResponse) ProtoMessage() {}
+
+func (x *QueryLocalWorkSetsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_proto_msgTypes[108]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryLocalWorkSetsResponse.ProtoReflect.Descriptor instead.
+func (*QueryLocalWorkSetsResponse) Descriptor() ([]byte, []int) {
+	return file_plugin_proto_rawDescGZIP(), []int{108}
+}
+
+func (x *QueryLocalWorkSetsResponse) GetItems() []*WorkSetNameEntry {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *QueryLocalWorkSetsResponse) GetPage() *PageInfo {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListSitesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*SiteDTO             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"` // 注册表投影全集
@@ -6654,7 +6806,7 @@ type ListSitesResponse struct {
 
 func (x *ListSitesResponse) Reset() {
 	*x = ListSitesResponse{}
-	mi := &file_plugin_proto_msgTypes[106]
+	mi := &file_plugin_proto_msgTypes[109]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6666,7 +6818,7 @@ func (x *ListSitesResponse) String() string {
 func (*ListSitesResponse) ProtoMessage() {}
 
 func (x *ListSitesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[106]
+	mi := &file_plugin_proto_msgTypes[109]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6679,7 +6831,7 @@ func (x *ListSitesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSitesResponse.ProtoReflect.Descriptor instead.
 func (*ListSitesResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{106}
+	return file_plugin_proto_rawDescGZIP(), []int{109}
 }
 
 func (x *ListSitesResponse) GetItems() []*SiteDTO {
@@ -6698,7 +6850,7 @@ type GetWorkDirResponse struct {
 
 func (x *GetWorkDirResponse) Reset() {
 	*x = GetWorkDirResponse{}
-	mi := &file_plugin_proto_msgTypes[107]
+	mi := &file_plugin_proto_msgTypes[110]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6710,7 +6862,7 @@ func (x *GetWorkDirResponse) String() string {
 func (*GetWorkDirResponse) ProtoMessage() {}
 
 func (x *GetWorkDirResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[107]
+	mi := &file_plugin_proto_msgTypes[110]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6723,7 +6875,7 @@ func (x *GetWorkDirResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkDirResponse.ProtoReflect.Descriptor instead.
 func (*GetWorkDirResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{107}
+	return file_plugin_proto_rawDescGZIP(), []int{110}
 }
 
 func (x *GetWorkDirResponse) GetPath() string {
@@ -6744,7 +6896,7 @@ type FetchSiteAuthorInfoRequest struct {
 
 func (x *FetchSiteAuthorInfoRequest) Reset() {
 	*x = FetchSiteAuthorInfoRequest{}
-	mi := &file_plugin_proto_msgTypes[108]
+	mi := &file_plugin_proto_msgTypes[111]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6756,7 +6908,7 @@ func (x *FetchSiteAuthorInfoRequest) String() string {
 func (*FetchSiteAuthorInfoRequest) ProtoMessage() {}
 
 func (x *FetchSiteAuthorInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[108]
+	mi := &file_plugin_proto_msgTypes[111]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6769,7 +6921,7 @@ func (x *FetchSiteAuthorInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchSiteAuthorInfoRequest.ProtoReflect.Descriptor instead.
 func (*FetchSiteAuthorInfoRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{108}
+	return file_plugin_proto_rawDescGZIP(), []int{111}
 }
 
 func (x *FetchSiteAuthorInfoRequest) GetSiteKey() string {
@@ -6806,7 +6958,7 @@ type AuthorInfoChunk struct {
 
 func (x *AuthorInfoChunk) Reset() {
 	*x = AuthorInfoChunk{}
-	mi := &file_plugin_proto_msgTypes[109]
+	mi := &file_plugin_proto_msgTypes[112]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6818,7 +6970,7 @@ func (x *AuthorInfoChunk) String() string {
 func (*AuthorInfoChunk) ProtoMessage() {}
 
 func (x *AuthorInfoChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[109]
+	mi := &file_plugin_proto_msgTypes[112]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6831,7 +6983,7 @@ func (x *AuthorInfoChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthorInfoChunk.ProtoReflect.Descriptor instead.
 func (*AuthorInfoChunk) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{109}
+	return file_plugin_proto_rawDescGZIP(), []int{112}
 }
 
 func (x *AuthorInfoChunk) GetPayload() isAuthorInfoChunk_Payload {
@@ -6888,7 +7040,7 @@ type AuthorInfoMeta struct {
 
 func (x *AuthorInfoMeta) Reset() {
 	*x = AuthorInfoMeta{}
-	mi := &file_plugin_proto_msgTypes[110]
+	mi := &file_plugin_proto_msgTypes[113]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6900,7 +7052,7 @@ func (x *AuthorInfoMeta) String() string {
 func (*AuthorInfoMeta) ProtoMessage() {}
 
 func (x *AuthorInfoMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[110]
+	mi := &file_plugin_proto_msgTypes[113]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6913,7 +7065,7 @@ func (x *AuthorInfoMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthorInfoMeta.ProtoReflect.Descriptor instead.
 func (*AuthorInfoMeta) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{110}
+	return file_plugin_proto_rawDescGZIP(), []int{113}
 }
 
 func (x *AuthorInfoMeta) GetAuthorName() string {
@@ -6960,7 +7112,7 @@ type AuthorResourceData struct {
 
 func (x *AuthorResourceData) Reset() {
 	*x = AuthorResourceData{}
-	mi := &file_plugin_proto_msgTypes[111]
+	mi := &file_plugin_proto_msgTypes[114]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6972,7 +7124,7 @@ func (x *AuthorResourceData) String() string {
 func (*AuthorResourceData) ProtoMessage() {}
 
 func (x *AuthorResourceData) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[111]
+	mi := &file_plugin_proto_msgTypes[114]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6985,7 +7137,7 @@ func (x *AuthorResourceData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthorResourceData.ProtoReflect.Descriptor instead.
 func (*AuthorResourceData) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{111}
+	return file_plugin_proto_rawDescGZIP(), []int{114}
 }
 
 func (x *AuthorResourceData) GetData() []byte {
@@ -7560,7 +7712,15 @@ const file_plugin_proto_rawDesc = "" +
 	"\x18ListChildWorkSetsRequest\x12\x1e\n" +
 	"\vwork_set_id\x18\x01 \x01(\x03R\tworkSetId\"C\n" +
 	"\x19ListChildWorkSetsResponse\x12&\n" +
-	"\x05items\x18\x01 \x03(\v2\x10.plugins.WorkSetR\x05items\";\n" +
+	"\x05items\x18\x01 \x03(\v2\x10.plugins.WorkSetR\x05items\"E\n" +
+	"\x19QueryLocalWorkSetsRequest\x12(\n" +
+	"\x04page\x18\x01 \x01(\v2\x14.plugins.PageRequestR\x04page\"6\n" +
+	"\x10WorkSetNameEntry\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"t\n" +
+	"\x1aQueryLocalWorkSetsResponse\x12/\n" +
+	"\x05items\x18\x01 \x03(\v2\x19.plugins.WorkSetNameEntryR\x05items\x12%\n" +
+	"\x04page\x18\x02 \x01(\v2\x11.plugins.PageInfoR\x04page\";\n" +
 	"\x11ListSitesResponse\x12&\n" +
 	"\x05items\x18\x01 \x03(\v2\x10.plugins.SiteDTOR\x05items\"(\n" +
 	"\x12GetWorkDirResponse\x12\x12\n" +
@@ -7620,7 +7780,7 @@ const file_plugin_proto_rawDesc = "" +
 	"\x03Log\x12\x13.plugins.LogRequest\x1a\x0e.plugins.Empty\x12F\n" +
 	"\x11PublishToFrontend\x12!.plugins.PublishToFrontendRequest\x1a\x0e.plugins.Empty\x12R\n" +
 	"\x11SubscribeFrontend\x12!.plugins.SubscribeFrontendRequest\x1a\x18.plugins.FrontendMessage0\x01\x12J\n" +
-	"\x13UnsubscribeFrontend\x12#.plugins.UnsubscribeFrontendRequest\x1a\x0e.plugins.Empty2\xd0\r\n" +
+	"\x13UnsubscribeFrontend\x12#.plugins.UnsubscribeFrontendRequest\x1a\x0e.plugins.Empty2\xaf\x0e\n" +
 	"\fLibraryQuery\x12A\n" +
 	"\vGetWorkById\x12\x1b.plugins.GetWorkByIdRequest\x1a\x15.plugins.WorkWithSite\x12K\n" +
 	"\x10GetWorkBySiteKey\x12 .plugins.GetWorkBySiteKeyRequest\x1a\x15.plugins.WorkWithSite\x12E\n" +
@@ -7641,7 +7801,8 @@ const file_plugin_proto_rawDesc = "" +
 	"\x13GetWorkSetBySiteKey\x12#.plugins.GetWorkSetBySiteKeyRequest\x1a\x10.plugins.WorkSet\x12c\n" +
 	"\x14ListWorkSetsByWorkId\x12$.plugins.ListWorkSetsByWorkIdRequest\x1a%.plugins.ListWorkSetsByWorkIdResponse\x12]\n" +
 	"\x12ListParentWorkSets\x12\".plugins.ListParentWorkSetsRequest\x1a#.plugins.ListParentWorkSetsResponse\x12Z\n" +
-	"\x11ListChildWorkSets\x12!.plugins.ListChildWorkSetsRequest\x1a\".plugins.ListChildWorkSetsResponse\x127\n" +
+	"\x11ListChildWorkSets\x12!.plugins.ListChildWorkSetsRequest\x1a\".plugins.ListChildWorkSetsResponse\x12]\n" +
+	"\x12QueryLocalWorkSets\x12\".plugins.QueryLocalWorkSetsRequest\x1a#.plugins.QueryLocalWorkSetsResponse\x127\n" +
 	"\tListSites\x12\x0e.plugins.Empty\x1a\x1a.plugins.ListSitesResponse\x129\n" +
 	"\n" +
 	"GetWorkDir\x12\x0e.plugins.Empty\x1a\x1b.plugins.GetWorkDirResponse2p\n" +
@@ -7661,7 +7822,7 @@ func file_plugin_proto_rawDescGZIP() []byte {
 }
 
 var file_plugin_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 113)
+var file_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 116)
 var file_plugin_proto_goTypes = []any{
 	(CreateIntentKind)(0),                 // 0: plugins.CreateIntentKind
 	(*Empty)(nil),                         // 1: plugins.Empty
@@ -7770,13 +7931,16 @@ var file_plugin_proto_goTypes = []any{
 	(*ListParentWorkSetsResponse)(nil),    // 104: plugins.ListParentWorkSetsResponse
 	(*ListChildWorkSetsRequest)(nil),      // 105: plugins.ListChildWorkSetsRequest
 	(*ListChildWorkSetsResponse)(nil),     // 106: plugins.ListChildWorkSetsResponse
-	(*ListSitesResponse)(nil),             // 107: plugins.ListSitesResponse
-	(*GetWorkDirResponse)(nil),            // 108: plugins.GetWorkDirResponse
-	(*FetchSiteAuthorInfoRequest)(nil),    // 109: plugins.FetchSiteAuthorInfoRequest
-	(*AuthorInfoChunk)(nil),               // 110: plugins.AuthorInfoChunk
-	(*AuthorInfoMeta)(nil),                // 111: plugins.AuthorInfoMeta
-	(*AuthorResourceData)(nil),            // 112: plugins.AuthorResourceData
-	nil,                                   // 113: plugins.AllStorageValuesResponse.ValuesEntry
+	(*QueryLocalWorkSetsRequest)(nil),     // 107: plugins.QueryLocalWorkSetsRequest
+	(*WorkSetNameEntry)(nil),              // 108: plugins.WorkSetNameEntry
+	(*QueryLocalWorkSetsResponse)(nil),    // 109: plugins.QueryLocalWorkSetsResponse
+	(*ListSitesResponse)(nil),             // 110: plugins.ListSitesResponse
+	(*GetWorkDirResponse)(nil),            // 111: plugins.GetWorkDirResponse
+	(*FetchSiteAuthorInfoRequest)(nil),    // 112: plugins.FetchSiteAuthorInfoRequest
+	(*AuthorInfoChunk)(nil),               // 113: plugins.AuthorInfoChunk
+	(*AuthorInfoMeta)(nil),                // 114: plugins.AuthorInfoMeta
+	(*AuthorResourceData)(nil),            // 115: plugins.AuthorResourceData
+	nil,                                   // 116: plugins.AllStorageValuesResponse.ValuesEntry
 }
 var file_plugin_proto_depIdxs = []int32{
 	12,  // 0: plugins.TaskCreateResponse.children:type_name -> plugins.TaskCreateChildResponse
@@ -7810,7 +7974,7 @@ var file_plugin_proto_depIdxs = []int32{
 	35,  // 28: plugins.ResumeFrame.resume:type_name -> plugins.TaskResumeParamMessage
 	39,  // 29: plugins.ResumeFrame.pull:type_name -> plugins.PullRequest
 	40,  // 30: plugins.StoreSpecs.items:type_name -> plugins.StoreSpecMeta
-	113, // 31: plugins.AllStorageValuesResponse.values:type_name -> plugins.AllStorageValuesResponse.ValuesEntry
+	116, // 31: plugins.AllStorageValuesResponse.values:type_name -> plugins.AllStorageValuesResponse.ValuesEntry
 	50,  // 32: plugins.PreferenceEntryRequest.value:type_name -> plugins.PreferenceValue
 	50,  // 33: plugins.PreferenceGetResponse.value:type_name -> plugins.PreferenceValue
 	4,   // 34: plugins.WorkWithSite.work:type_name -> plugins.Work
@@ -7843,117 +8007,122 @@ var file_plugin_proto_depIdxs = []int32{
 	5,   // 61: plugins.ListWorkSetsByWorkIdResponse.items:type_name -> plugins.WorkSet
 	5,   // 62: plugins.ListParentWorkSetsResponse.items:type_name -> plugins.WorkSet
 	5,   // 63: plugins.ListChildWorkSetsResponse.items:type_name -> plugins.WorkSet
-	6,   // 64: plugins.ListSitesResponse.items:type_name -> plugins.SiteDTO
-	111, // 65: plugins.AuthorInfoChunk.meta:type_name -> plugins.AuthorInfoMeta
-	112, // 66: plugins.AuthorInfoChunk.resource:type_name -> plugins.AuthorResourceData
-	46,  // 67: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
-	16,  // 68: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
-	1,   // 69: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
-	18,  // 70: plugins.PluginLifecycle.SettingChanged:input_type -> plugins.SettingChangedRequest
-	25,  // 71: plugins.WorkFetchService.Create:input_type -> plugins.CreateRequest
-	29,  // 72: plugins.WorkFetchService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
-	37,  // 73: plugins.WorkFetchService.Start:input_type -> plugins.StartFrame
-	31,  // 74: plugins.WorkFetchService.Retry:input_type -> plugins.RetryRequest
-	32,  // 75: plugins.WorkFetchService.Pause:input_type -> plugins.TaskResParamMessage
-	32,  // 76: plugins.WorkFetchService.Stop:input_type -> plugins.TaskResParamMessage
-	38,  // 77: plugins.WorkFetchService.Resume:input_type -> plugins.ResumeFrame
-	19,  // 78: plugins.WorkFetchService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
-	22,  // 79: plugins.WorkFetchService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
-	42,  // 80: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
-	42,  // 81: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
-	45,  // 82: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
-	48,  // 83: plugins.HostService.SetValue:input_type -> plugins.StorageEntryRequest
-	48,  // 84: plugins.HostService.SetValueEncrypted:input_type -> plugins.StorageEntryRequest
-	45,  // 85: plugins.HostService.DeleteValue:input_type -> plugins.StorageKeyRequest
-	1,   // 86: plugins.HostService.GetAllValues:input_type -> plugins.Empty
-	51,  // 87: plugins.HostService.GetPreference:input_type -> plugins.PreferenceKeyRequest
-	52,  // 88: plugins.HostService.SetPreference:input_type -> plugins.PreferenceEntryRequest
-	1,   // 89: plugins.HostService.ListMyPreferences:input_type -> plugins.Empty
-	55,  // 90: plugins.HostService.ResolveProxy:input_type -> plugins.ResolveProxyRequest
-	57,  // 91: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
-	59,  // 92: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
-	61,  // 93: plugins.HostService.Log:input_type -> plugins.LogRequest
-	62,  // 94: plugins.HostService.PublishToFrontend:input_type -> plugins.PublishToFrontendRequest
-	63,  // 95: plugins.HostService.SubscribeFrontend:input_type -> plugins.SubscribeFrontendRequest
-	65,  // 96: plugins.HostService.UnsubscribeFrontend:input_type -> plugins.UnsubscribeFrontendRequest
-	68,  // 97: plugins.LibraryQuery.GetWorkById:input_type -> plugins.GetWorkByIdRequest
-	69,  // 98: plugins.LibraryQuery.GetWorkBySiteKey:input_type -> plugins.GetWorkBySiteKeyRequest
-	71,  // 99: plugins.LibraryQuery.QueryWorks:input_type -> plugins.QueryWorksRequest
-	73,  // 100: plugins.LibraryQuery.ListResourcesByWorkId:input_type -> plugins.ListResourcesByWorkIdRequest
-	77,  // 101: plugins.LibraryQuery.GetLocalAuthorById:input_type -> plugins.GetLocalAuthorByIdRequest
-	78,  // 102: plugins.LibraryQuery.QueryLocalAuthors:input_type -> plugins.QueryLocalAuthorsRequest
-	80,  // 103: plugins.LibraryQuery.GetSiteAuthorBySiteKey:input_type -> plugins.GetSiteAuthorBySiteKeyRequest
-	82,  // 104: plugins.LibraryQuery.QuerySiteAuthors:input_type -> plugins.QuerySiteAuthorsRequest
-	84,  // 105: plugins.LibraryQuery.ListAuthorsByWorkId:input_type -> plugins.ListAuthorsByWorkIdRequest
-	88,  // 106: plugins.LibraryQuery.GetLocalTagById:input_type -> plugins.GetLocalTagByIdRequest
-	89,  // 107: plugins.LibraryQuery.QueryLocalTags:input_type -> plugins.QueryLocalTagsRequest
-	91,  // 108: plugins.LibraryQuery.GetSiteTagBySiteKey:input_type -> plugins.GetSiteTagBySiteKeyRequest
-	93,  // 109: plugins.LibraryQuery.QuerySiteTags:input_type -> plugins.QuerySiteTagsRequest
-	95,  // 110: plugins.LibraryQuery.ListTagsByWorkId:input_type -> plugins.ListTagsByWorkIdRequest
-	99,  // 111: plugins.LibraryQuery.GetWorkSetById:input_type -> plugins.GetWorkSetByIdRequest
-	100, // 112: plugins.LibraryQuery.GetWorkSetBySiteKey:input_type -> plugins.GetWorkSetBySiteKeyRequest
-	101, // 113: plugins.LibraryQuery.ListWorkSetsByWorkId:input_type -> plugins.ListWorkSetsByWorkIdRequest
-	103, // 114: plugins.LibraryQuery.ListParentWorkSets:input_type -> plugins.ListParentWorkSetsRequest
-	105, // 115: plugins.LibraryQuery.ListChildWorkSets:input_type -> plugins.ListChildWorkSetsRequest
-	1,   // 116: plugins.LibraryQuery.ListSites:input_type -> plugins.Empty
-	1,   // 117: plugins.LibraryQuery.GetWorkDir:input_type -> plugins.Empty
-	109, // 118: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:input_type -> plugins.FetchSiteAuthorInfoRequest
-	17,  // 119: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
-	1,   // 120: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
-	1,   // 121: plugins.PluginLifecycle.SettingChanged:output_type -> plugins.Empty
-	26,  // 122: plugins.WorkFetchService.Create:output_type -> plugins.CreateChunk
-	14,  // 123: plugins.WorkFetchService.CreateWorkInfo:output_type -> plugins.WorkResponse
-	36,  // 124: plugins.WorkFetchService.Start:output_type -> plugins.StreamChunk
-	14,  // 125: plugins.WorkFetchService.Retry:output_type -> plugins.WorkResponse
-	1,   // 126: plugins.WorkFetchService.Pause:output_type -> plugins.Empty
-	1,   // 127: plugins.WorkFetchService.Stop:output_type -> plugins.Empty
-	36,  // 128: plugins.WorkFetchService.Resume:output_type -> plugins.StreamChunk
-	20,  // 129: plugins.WorkFetchService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
-	23,  // 130: plugins.WorkFetchService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
-	1,   // 131: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
-	1,   // 132: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
-	47,  // 133: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse
-	1,   // 134: plugins.HostService.SetValue:output_type -> plugins.Empty
-	1,   // 135: plugins.HostService.SetValueEncrypted:output_type -> plugins.Empty
-	1,   // 136: plugins.HostService.DeleteValue:output_type -> plugins.Empty
-	49,  // 137: plugins.HostService.GetAllValues:output_type -> plugins.AllStorageValuesResponse
-	53,  // 138: plugins.HostService.GetPreference:output_type -> plugins.PreferenceGetResponse
-	1,   // 139: plugins.HostService.SetPreference:output_type -> plugins.Empty
-	54,  // 140: plugins.HostService.ListMyPreferences:output_type -> plugins.PreferenceListResponse
-	56,  // 141: plugins.HostService.ResolveProxy:output_type -> plugins.ResolveProxyResponse
-	58,  // 142: plugins.HostService.CreateTask:output_type -> plugins.CreateTaskResponse
-	60,  // 143: plugins.HostService.GetPluginRoot:output_type -> plugins.GetPluginRootResponse
-	1,   // 144: plugins.HostService.Log:output_type -> plugins.Empty
-	1,   // 145: plugins.HostService.PublishToFrontend:output_type -> plugins.Empty
-	64,  // 146: plugins.HostService.SubscribeFrontend:output_type -> plugins.FrontendMessage
-	1,   // 147: plugins.HostService.UnsubscribeFrontend:output_type -> plugins.Empty
-	70,  // 148: plugins.LibraryQuery.GetWorkById:output_type -> plugins.WorkWithSite
-	70,  // 149: plugins.LibraryQuery.GetWorkBySiteKey:output_type -> plugins.WorkWithSite
-	72,  // 150: plugins.LibraryQuery.QueryWorks:output_type -> plugins.QueryWorksResponse
-	74,  // 151: plugins.LibraryQuery.ListResourcesByWorkId:output_type -> plugins.ListResourcesByWorkIdResponse
-	7,   // 152: plugins.LibraryQuery.GetLocalAuthorById:output_type -> plugins.LocalAuthorDTO
-	79,  // 153: plugins.LibraryQuery.QueryLocalAuthors:output_type -> plugins.QueryLocalAuthorsResponse
-	81,  // 154: plugins.LibraryQuery.GetSiteAuthorBySiteKey:output_type -> plugins.SiteAuthorInfo
-	83,  // 155: plugins.LibraryQuery.QuerySiteAuthors:output_type -> plugins.QuerySiteAuthorsResponse
-	87,  // 156: plugins.LibraryQuery.ListAuthorsByWorkId:output_type -> plugins.ListAuthorsByWorkIdResponse
-	8,   // 157: plugins.LibraryQuery.GetLocalTagById:output_type -> plugins.LocalTagDTO
-	90,  // 158: plugins.LibraryQuery.QueryLocalTags:output_type -> plugins.QueryLocalTagsResponse
-	92,  // 159: plugins.LibraryQuery.GetSiteTagBySiteKey:output_type -> plugins.SiteTagInfo
-	94,  // 160: plugins.LibraryQuery.QuerySiteTags:output_type -> plugins.QuerySiteTagsResponse
-	98,  // 161: plugins.LibraryQuery.ListTagsByWorkId:output_type -> plugins.ListTagsByWorkIdResponse
-	5,   // 162: plugins.LibraryQuery.GetWorkSetById:output_type -> plugins.WorkSet
-	5,   // 163: plugins.LibraryQuery.GetWorkSetBySiteKey:output_type -> plugins.WorkSet
-	102, // 164: plugins.LibraryQuery.ListWorkSetsByWorkId:output_type -> plugins.ListWorkSetsByWorkIdResponse
-	104, // 165: plugins.LibraryQuery.ListParentWorkSets:output_type -> plugins.ListParentWorkSetsResponse
-	106, // 166: plugins.LibraryQuery.ListChildWorkSets:output_type -> plugins.ListChildWorkSetsResponse
-	107, // 167: plugins.LibraryQuery.ListSites:output_type -> plugins.ListSitesResponse
-	108, // 168: plugins.LibraryQuery.GetWorkDir:output_type -> plugins.GetWorkDirResponse
-	110, // 169: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:output_type -> plugins.AuthorInfoChunk
-	119, // [119:170] is the sub-list for method output_type
-	68,  // [68:119] is the sub-list for method input_type
-	68,  // [68:68] is the sub-list for extension type_name
-	68,  // [68:68] is the sub-list for extension extendee
-	0,   // [0:68] is the sub-list for field type_name
+	66,  // 64: plugins.QueryLocalWorkSetsRequest.page:type_name -> plugins.PageRequest
+	108, // 65: plugins.QueryLocalWorkSetsResponse.items:type_name -> plugins.WorkSetNameEntry
+	67,  // 66: plugins.QueryLocalWorkSetsResponse.page:type_name -> plugins.PageInfo
+	6,   // 67: plugins.ListSitesResponse.items:type_name -> plugins.SiteDTO
+	114, // 68: plugins.AuthorInfoChunk.meta:type_name -> plugins.AuthorInfoMeta
+	115, // 69: plugins.AuthorInfoChunk.resource:type_name -> plugins.AuthorResourceData
+	46,  // 70: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
+	16,  // 71: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
+	1,   // 72: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
+	18,  // 73: plugins.PluginLifecycle.SettingChanged:input_type -> plugins.SettingChangedRequest
+	25,  // 74: plugins.WorkFetchService.Create:input_type -> plugins.CreateRequest
+	29,  // 75: plugins.WorkFetchService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
+	37,  // 76: plugins.WorkFetchService.Start:input_type -> plugins.StartFrame
+	31,  // 77: plugins.WorkFetchService.Retry:input_type -> plugins.RetryRequest
+	32,  // 78: plugins.WorkFetchService.Pause:input_type -> plugins.TaskResParamMessage
+	32,  // 79: plugins.WorkFetchService.Stop:input_type -> plugins.TaskResParamMessage
+	38,  // 80: plugins.WorkFetchService.Resume:input_type -> plugins.ResumeFrame
+	19,  // 81: plugins.WorkFetchService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
+	22,  // 82: plugins.WorkFetchService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
+	42,  // 83: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
+	42,  // 84: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
+	45,  // 85: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
+	48,  // 86: plugins.HostService.SetValue:input_type -> plugins.StorageEntryRequest
+	48,  // 87: plugins.HostService.SetValueEncrypted:input_type -> plugins.StorageEntryRequest
+	45,  // 88: plugins.HostService.DeleteValue:input_type -> plugins.StorageKeyRequest
+	1,   // 89: plugins.HostService.GetAllValues:input_type -> plugins.Empty
+	51,  // 90: plugins.HostService.GetPreference:input_type -> plugins.PreferenceKeyRequest
+	52,  // 91: plugins.HostService.SetPreference:input_type -> plugins.PreferenceEntryRequest
+	1,   // 92: plugins.HostService.ListMyPreferences:input_type -> plugins.Empty
+	55,  // 93: plugins.HostService.ResolveProxy:input_type -> plugins.ResolveProxyRequest
+	57,  // 94: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
+	59,  // 95: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
+	61,  // 96: plugins.HostService.Log:input_type -> plugins.LogRequest
+	62,  // 97: plugins.HostService.PublishToFrontend:input_type -> plugins.PublishToFrontendRequest
+	63,  // 98: plugins.HostService.SubscribeFrontend:input_type -> plugins.SubscribeFrontendRequest
+	65,  // 99: plugins.HostService.UnsubscribeFrontend:input_type -> plugins.UnsubscribeFrontendRequest
+	68,  // 100: plugins.LibraryQuery.GetWorkById:input_type -> plugins.GetWorkByIdRequest
+	69,  // 101: plugins.LibraryQuery.GetWorkBySiteKey:input_type -> plugins.GetWorkBySiteKeyRequest
+	71,  // 102: plugins.LibraryQuery.QueryWorks:input_type -> plugins.QueryWorksRequest
+	73,  // 103: plugins.LibraryQuery.ListResourcesByWorkId:input_type -> plugins.ListResourcesByWorkIdRequest
+	77,  // 104: plugins.LibraryQuery.GetLocalAuthorById:input_type -> plugins.GetLocalAuthorByIdRequest
+	78,  // 105: plugins.LibraryQuery.QueryLocalAuthors:input_type -> plugins.QueryLocalAuthorsRequest
+	80,  // 106: plugins.LibraryQuery.GetSiteAuthorBySiteKey:input_type -> plugins.GetSiteAuthorBySiteKeyRequest
+	82,  // 107: plugins.LibraryQuery.QuerySiteAuthors:input_type -> plugins.QuerySiteAuthorsRequest
+	84,  // 108: plugins.LibraryQuery.ListAuthorsByWorkId:input_type -> plugins.ListAuthorsByWorkIdRequest
+	88,  // 109: plugins.LibraryQuery.GetLocalTagById:input_type -> plugins.GetLocalTagByIdRequest
+	89,  // 110: plugins.LibraryQuery.QueryLocalTags:input_type -> plugins.QueryLocalTagsRequest
+	91,  // 111: plugins.LibraryQuery.GetSiteTagBySiteKey:input_type -> plugins.GetSiteTagBySiteKeyRequest
+	93,  // 112: plugins.LibraryQuery.QuerySiteTags:input_type -> plugins.QuerySiteTagsRequest
+	95,  // 113: plugins.LibraryQuery.ListTagsByWorkId:input_type -> plugins.ListTagsByWorkIdRequest
+	99,  // 114: plugins.LibraryQuery.GetWorkSetById:input_type -> plugins.GetWorkSetByIdRequest
+	100, // 115: plugins.LibraryQuery.GetWorkSetBySiteKey:input_type -> plugins.GetWorkSetBySiteKeyRequest
+	101, // 116: plugins.LibraryQuery.ListWorkSetsByWorkId:input_type -> plugins.ListWorkSetsByWorkIdRequest
+	103, // 117: plugins.LibraryQuery.ListParentWorkSets:input_type -> plugins.ListParentWorkSetsRequest
+	105, // 118: plugins.LibraryQuery.ListChildWorkSets:input_type -> plugins.ListChildWorkSetsRequest
+	107, // 119: plugins.LibraryQuery.QueryLocalWorkSets:input_type -> plugins.QueryLocalWorkSetsRequest
+	1,   // 120: plugins.LibraryQuery.ListSites:input_type -> plugins.Empty
+	1,   // 121: plugins.LibraryQuery.GetWorkDir:input_type -> plugins.Empty
+	112, // 122: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:input_type -> plugins.FetchSiteAuthorInfoRequest
+	17,  // 123: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
+	1,   // 124: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
+	1,   // 125: plugins.PluginLifecycle.SettingChanged:output_type -> plugins.Empty
+	26,  // 126: plugins.WorkFetchService.Create:output_type -> plugins.CreateChunk
+	14,  // 127: plugins.WorkFetchService.CreateWorkInfo:output_type -> plugins.WorkResponse
+	36,  // 128: plugins.WorkFetchService.Start:output_type -> plugins.StreamChunk
+	14,  // 129: plugins.WorkFetchService.Retry:output_type -> plugins.WorkResponse
+	1,   // 130: plugins.WorkFetchService.Pause:output_type -> plugins.Empty
+	1,   // 131: plugins.WorkFetchService.Stop:output_type -> plugins.Empty
+	36,  // 132: plugins.WorkFetchService.Resume:output_type -> plugins.StreamChunk
+	20,  // 133: plugins.WorkFetchService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
+	23,  // 134: plugins.WorkFetchService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
+	1,   // 135: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
+	1,   // 136: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
+	47,  // 137: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse
+	1,   // 138: plugins.HostService.SetValue:output_type -> plugins.Empty
+	1,   // 139: plugins.HostService.SetValueEncrypted:output_type -> plugins.Empty
+	1,   // 140: plugins.HostService.DeleteValue:output_type -> plugins.Empty
+	49,  // 141: plugins.HostService.GetAllValues:output_type -> plugins.AllStorageValuesResponse
+	53,  // 142: plugins.HostService.GetPreference:output_type -> plugins.PreferenceGetResponse
+	1,   // 143: plugins.HostService.SetPreference:output_type -> plugins.Empty
+	54,  // 144: plugins.HostService.ListMyPreferences:output_type -> plugins.PreferenceListResponse
+	56,  // 145: plugins.HostService.ResolveProxy:output_type -> plugins.ResolveProxyResponse
+	58,  // 146: plugins.HostService.CreateTask:output_type -> plugins.CreateTaskResponse
+	60,  // 147: plugins.HostService.GetPluginRoot:output_type -> plugins.GetPluginRootResponse
+	1,   // 148: plugins.HostService.Log:output_type -> plugins.Empty
+	1,   // 149: plugins.HostService.PublishToFrontend:output_type -> plugins.Empty
+	64,  // 150: plugins.HostService.SubscribeFrontend:output_type -> plugins.FrontendMessage
+	1,   // 151: plugins.HostService.UnsubscribeFrontend:output_type -> plugins.Empty
+	70,  // 152: plugins.LibraryQuery.GetWorkById:output_type -> plugins.WorkWithSite
+	70,  // 153: plugins.LibraryQuery.GetWorkBySiteKey:output_type -> plugins.WorkWithSite
+	72,  // 154: plugins.LibraryQuery.QueryWorks:output_type -> plugins.QueryWorksResponse
+	74,  // 155: plugins.LibraryQuery.ListResourcesByWorkId:output_type -> plugins.ListResourcesByWorkIdResponse
+	7,   // 156: plugins.LibraryQuery.GetLocalAuthorById:output_type -> plugins.LocalAuthorDTO
+	79,  // 157: plugins.LibraryQuery.QueryLocalAuthors:output_type -> plugins.QueryLocalAuthorsResponse
+	81,  // 158: plugins.LibraryQuery.GetSiteAuthorBySiteKey:output_type -> plugins.SiteAuthorInfo
+	83,  // 159: plugins.LibraryQuery.QuerySiteAuthors:output_type -> plugins.QuerySiteAuthorsResponse
+	87,  // 160: plugins.LibraryQuery.ListAuthorsByWorkId:output_type -> plugins.ListAuthorsByWorkIdResponse
+	8,   // 161: plugins.LibraryQuery.GetLocalTagById:output_type -> plugins.LocalTagDTO
+	90,  // 162: plugins.LibraryQuery.QueryLocalTags:output_type -> plugins.QueryLocalTagsResponse
+	92,  // 163: plugins.LibraryQuery.GetSiteTagBySiteKey:output_type -> plugins.SiteTagInfo
+	94,  // 164: plugins.LibraryQuery.QuerySiteTags:output_type -> plugins.QuerySiteTagsResponse
+	98,  // 165: plugins.LibraryQuery.ListTagsByWorkId:output_type -> plugins.ListTagsByWorkIdResponse
+	5,   // 166: plugins.LibraryQuery.GetWorkSetById:output_type -> plugins.WorkSet
+	5,   // 167: plugins.LibraryQuery.GetWorkSetBySiteKey:output_type -> plugins.WorkSet
+	102, // 168: plugins.LibraryQuery.ListWorkSetsByWorkId:output_type -> plugins.ListWorkSetsByWorkIdResponse
+	104, // 169: plugins.LibraryQuery.ListParentWorkSets:output_type -> plugins.ListParentWorkSetsResponse
+	106, // 170: plugins.LibraryQuery.ListChildWorkSets:output_type -> plugins.ListChildWorkSetsResponse
+	109, // 171: plugins.LibraryQuery.QueryLocalWorkSets:output_type -> plugins.QueryLocalWorkSetsResponse
+	110, // 172: plugins.LibraryQuery.ListSites:output_type -> plugins.ListSitesResponse
+	111, // 173: plugins.LibraryQuery.GetWorkDir:output_type -> plugins.GetWorkDirResponse
+	113, // 174: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:output_type -> plugins.AuthorInfoChunk
+	123, // [123:175] is the sub-list for method output_type
+	71,  // [71:123] is the sub-list for method input_type
+	71,  // [71:71] is the sub-list for extension type_name
+	71,  // [71:71] is the sub-list for extension extendee
+	0,   // [0:71] is the sub-list for field type_name
 }
 
 func init() { file_plugin_proto_init() }
@@ -7995,7 +8164,7 @@ func file_plugin_proto_init() {
 	file_plugin_proto_msgTypes[75].OneofWrappers = []any{}
 	file_plugin_proto_msgTypes[80].OneofWrappers = []any{}
 	file_plugin_proto_msgTypes[91].OneofWrappers = []any{}
-	file_plugin_proto_msgTypes[109].OneofWrappers = []any{
+	file_plugin_proto_msgTypes[112].OneofWrappers = []any{
 		(*AuthorInfoChunk_Meta)(nil),
 		(*AuthorInfoChunk_Resource)(nil),
 	}
@@ -8005,7 +8174,7 @@ func file_plugin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_plugin_proto_rawDesc), len(file_plugin_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   113,
+			NumMessages:   116,
 			NumExtensions: 0,
 			NumServices:   6,
 		},

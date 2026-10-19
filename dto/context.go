@@ -101,6 +101,8 @@ type LibraryQuery interface {
 	ListWorkSetsByWorkId(workId int64) (*ListWorkSetsByWorkIdResponse, error)
 	ListParentWorkSets(workSetId int64) (*ListParentWorkSetsResponse, error)
 	ListChildWorkSets(workSetId int64) (*ListChildWorkSetsResponse, error)
+	// 库内作品集名全集分页（互证索引用：无过滤条件，按行 id 升序确定性分页）
+	QueryLocalWorkSets(req *QueryLocalWorkSetsRequest) (*QueryLocalWorkSetsResponse, error)
 	// 站点（注册表投影，只读）
 	ListSites() (*ListSitesResponse, error)
 	// 工作目录（绝对路径；未配置返回 FailedPrecondition）

@@ -1418,6 +1418,7 @@ const (
 	LibraryQuery_ListWorkSetsByWorkId_FullMethodName   = "/plugins.LibraryQuery/ListWorkSetsByWorkId"
 	LibraryQuery_ListParentWorkSets_FullMethodName     = "/plugins.LibraryQuery/ListParentWorkSets"
 	LibraryQuery_ListChildWorkSets_FullMethodName      = "/plugins.LibraryQuery/ListChildWorkSets"
+	LibraryQuery_QueryLocalWorkSets_FullMethodName     = "/plugins.LibraryQuery/QueryLocalWorkSets"
 	LibraryQuery_ListSites_FullMethodName              = "/plugins.LibraryQuery/ListSites"
 	LibraryQuery_GetWorkDir_FullMethodName             = "/plugins.LibraryQuery/GetWorkDir"
 )
@@ -1462,6 +1463,8 @@ type LibraryQueryClient interface {
 	ListWorkSetsByWorkId(ctx context.Context, in *ListWorkSetsByWorkIdRequest, opts ...grpc.CallOption) (*ListWorkSetsByWorkIdResponse, error)
 	ListParentWorkSets(ctx context.Context, in *ListParentWorkSetsRequest, opts ...grpc.CallOption) (*ListParentWorkSetsResponse, error)
 	ListChildWorkSets(ctx context.Context, in *ListChildWorkSetsRequest, opts ...grpc.CallOption) (*ListChildWorkSetsResponse, error)
+	// 库内作品集名全集分页（互证索引用：无过滤条件，按行 id 升序确定性分页拉全）
+	QueryLocalWorkSets(ctx context.Context, in *QueryLocalWorkSetsRequest, opts ...grpc.CallOption) (*QueryLocalWorkSetsResponse, error)
 	// 站点（注册表投影，只读）
 	ListSites(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListSitesResponse, error)
 	// 工作目录
@@ -1666,6 +1669,16 @@ func (c *libraryQueryClient) ListChildWorkSets(ctx context.Context, in *ListChil
 	return out, nil
 }
 
+func (c *libraryQueryClient) QueryLocalWorkSets(ctx context.Context, in *QueryLocalWorkSetsRequest, opts ...grpc.CallOption) (*QueryLocalWorkSetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryLocalWorkSetsResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_QueryLocalWorkSets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *libraryQueryClient) ListSites(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListSitesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListSitesResponse)
@@ -1726,6 +1739,8 @@ type LibraryQueryServer interface {
 	ListWorkSetsByWorkId(context.Context, *ListWorkSetsByWorkIdRequest) (*ListWorkSetsByWorkIdResponse, error)
 	ListParentWorkSets(context.Context, *ListParentWorkSetsRequest) (*ListParentWorkSetsResponse, error)
 	ListChildWorkSets(context.Context, *ListChildWorkSetsRequest) (*ListChildWorkSetsResponse, error)
+	// 库内作品集名全集分页（互证索引用：无过滤条件，按行 id 升序确定性分页拉全）
+	QueryLocalWorkSets(context.Context, *QueryLocalWorkSetsRequest) (*QueryLocalWorkSetsResponse, error)
 	// 站点（注册表投影，只读）
 	ListSites(context.Context, *Empty) (*ListSitesResponse, error)
 	// 工作目录
@@ -1796,6 +1811,9 @@ func (UnimplementedLibraryQueryServer) ListParentWorkSets(context.Context, *List
 }
 func (UnimplementedLibraryQueryServer) ListChildWorkSets(context.Context, *ListChildWorkSetsRequest) (*ListChildWorkSetsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListChildWorkSets not implemented")
+}
+func (UnimplementedLibraryQueryServer) QueryLocalWorkSets(context.Context, *QueryLocalWorkSetsRequest) (*QueryLocalWorkSetsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method QueryLocalWorkSets not implemented")
 }
 func (UnimplementedLibraryQueryServer) ListSites(context.Context, *Empty) (*ListSitesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListSites not implemented")
@@ -2166,6 +2184,24 @@ func _LibraryQuery_ListChildWorkSets_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LibraryQuery_QueryLocalWorkSets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLocalWorkSetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).QueryLocalWorkSets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_QueryLocalWorkSets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).QueryLocalWorkSets(ctx, req.(*QueryLocalWorkSetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _LibraryQuery_ListSites_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
@@ -2284,6 +2320,10 @@ var LibraryQuery_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListChildWorkSets",
 			Handler:    _LibraryQuery_ListChildWorkSets_Handler,
+		},
+		{
+			MethodName: "QueryLocalWorkSets",
+			Handler:    _LibraryQuery_QueryLocalWorkSets_Handler,
 		},
 		{
 			MethodName: "ListSites",

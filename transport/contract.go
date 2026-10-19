@@ -13,7 +13,7 @@ package transport
 //   - ContractVersion 是业务契约版本（插件 manifest 声明编译时锁定的契约版本，
 //     主程序加载时与 currentContractVersion / minSupportedContractVersion 比对，
 //     过新/过旧均拒绝加载）。
-const ContractVersion = 19
+const ContractVersion = 20
 
 // VersionEntry 契约版本史单条目。
 type VersionEntry struct {
@@ -53,4 +53,5 @@ var ContractHistory = []VersionEntry{
 	{17, "本地导入作者关联级角色声明面：`LocalAuthorDTO` 加可选 `RoleName` 字段——作品声明（`WorkResponse.localAuthors`）携带本地作者时随条目声明关联级 role，落点为作品-作者关联行、不写作者实体（语义与站点侧 `TaskSiteAuthorDTO.RoleName` 同构，空=无 role）。加字段向前兼容（旧插件不填该字段线形态零变化），作为本地导入解析新能力标识升版——主程序 `minSupportedContractVersion` 维持 12，既有插件混装载不受影响；声明契约 17 的插件包对 current<17 的旧宿主仍在加载期被拒。"},
 	{18, "Create 流意图信号收尾：CreateChunk oneof 新增 `CreateIntent` 块（`CreateIntentKind` 枚举两态：转入解析/已取消 + 提示文案）——插件经 Create 流显式声明「本流不产出任务」的成功收尾意图（如本地导入确认弹窗后转入解析视图、用户取消），块必为流的最后一块，宿主消费为成功零任务 + Msg=文案（区别于 error 块的失败收尾）；SDK `TaskCreateResult` 配套 `SetIntent`/`Intent`。加字段向前兼容（旧插件不发该块线形态零变化），作为意图信号新能力标识升版——主程序 `minSupportedContractVersion` 维持 12，既有插件混装载不受影响；声明契约 18 的插件包对 current<18 的旧宿主仍在加载期被拒。"},
 	{19, "子行归属键（跨站产出规范落地首期）：`TaskCreateChildResponse` 加可选 `siteKey` 字段——子任务声明自身归属域键（作品身份落库域，仍受宿主站点表存在性校验），空=继承父应答站点键（既有行为不变）。线级上字段本身可缺省（旧插件不填、形态零变化），但本版经裁定为破坏性分界升版：兼容矩阵按硬边界收紧、不留 12-18 混装载状态——主程序 `minSupportedContractVersion` 同步升 19（v18 及以下插件包在新宿主加载期拒载并提示升级，捆绑包随之重建）。"},
+	{20, "库内作品集名全集分页查询（集名互证索引）：LibraryQuery 线级新增 `QueryLocalWorkSets` RPC（互证索引用：无过滤条件、按行 id 升序确定性分页，响应条目=集行 id+展示名〔site_work_set_name 缺省回退 nick_name、两名皆空不出条目〕+分页回执），SDK `PluginContext` 查询方法组配套 `QueryLocalWorkSets`。线级新增 RPC 本身非破坏（旧插件不调用、形态零变化），但按契约 19 先例裁定为破坏性分界升版：兼容矩阵维持硬边界、不留 19-20 混装载状态——主程序 `minSupportedContractVersion` 同步升 20（v19 及以下插件包在新宿主加载期拒载并提示升级，捆绑包随之重建）。"},
 }

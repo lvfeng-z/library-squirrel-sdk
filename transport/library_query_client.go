@@ -111,6 +111,11 @@ func (c *PluginContextClient) ListChildWorkSets(workSetId int64) (*dto.ListChild
 	return c.queryClient.ListChildWorkSets(context.Background(), &gen.ListChildWorkSetsRequest{WorkSetId: workSetId})
 }
 
+// QueryLocalWorkSets 库内作品集名全集分页（互证索引用）
+func (c *PluginContextClient) QueryLocalWorkSets(req *dto.QueryLocalWorkSetsRequest) (*dto.QueryLocalWorkSetsResponse, error) {
+	return c.queryClient.QueryLocalWorkSets(context.Background(), req)
+}
+
 // ===== 站点（注册表投影，只读）=====
 
 func (c *PluginContextClient) ListSites() (*dto.ListSitesResponse, error) {

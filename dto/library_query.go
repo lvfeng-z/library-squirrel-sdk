@@ -74,6 +74,15 @@ type ListParentWorkSetsResponse = gen.ListParentWorkSetsResponse
 // ListChildWorkSetsResponse 作品集的子集全集（别名 gen.ListChildWorkSetsResponse，proto 单源）
 type ListChildWorkSetsResponse = gen.ListChildWorkSetsResponse
 
+// WorkSetNameEntry 库内作品集名条目：行 id + 展示名（site_work_set_name，缺省回退 nick_name）（别名 gen.WorkSetNameEntry，proto 单源）
+type WorkSetNameEntry = gen.WorkSetNameEntry
+
+// QueryLocalWorkSetsRequest 库内作品集名全集分页查询请求（互证索引用：无过滤条件，仅分页参数）（别名 gen.QueryLocalWorkSetsRequest，proto 单源）
+type QueryLocalWorkSetsRequest = gen.QueryLocalWorkSetsRequest
+
+// QueryLocalWorkSetsResponse 库内作品集名分页查询结果（别名 gen.QueryLocalWorkSetsResponse，proto 单源）
+type QueryLocalWorkSetsResponse = gen.QueryLocalWorkSetsResponse
+
 // ListSitesResponse 站点注册表投影全集（别名 gen.ListSitesResponse，proto 单源）
 type ListSitesResponse = gen.ListSitesResponse
 
@@ -130,7 +139,8 @@ type LibraryQueryProvider interface {
 	GetWorkSetBySiteKey(ctx context.Context, req *gen.GetWorkSetBySiteKeyRequest) (*gen.WorkSet, error)
 	ListWorkSetsByWorkId(ctx context.Context, req *gen.ListWorkSetsByWorkIdRequest) (*gen.ListWorkSetsByWorkIdResponse, error)
 	ListParentWorkSets(ctx context.Context, req *gen.ListParentWorkSetsRequest) (*gen.ListParentWorkSetsResponse, error)
-	ListChildWorkSets(ctx context.Context, req *gen.ListChildWorkSetsRequest) (*gen.ListChildWorkSetsResponse, error)
+	ListChildWorkSets(ctx context.Context, req *gen.ListChildWorkSetsRequest) (*ListChildWorkSetsResponse, error)
+	QueryLocalWorkSets(ctx context.Context, req *QueryLocalWorkSetsRequest) (*QueryLocalWorkSetsResponse, error)
 
 	// 站点（注册表投影，只读）
 	ListSites(ctx context.Context, req *gen.Empty) (*gen.ListSitesResponse, error)

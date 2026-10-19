@@ -585,6 +585,8 @@ service LibraryQuery {
   rpc ListWorkSetsByWorkId(ListWorkSetsByWorkIdRequest) returns (ListWorkSetsByWorkIdResponse);
   rpc ListParentWorkSets(ListParentWorkSetsRequest) returns (ListParentWorkSetsResponse);
   rpc ListChildWorkSets(ListChildWorkSetsRequest) returns (ListChildWorkSetsResponse);
+  // 库内作品集名全集分页（互证索引用：无过滤条件，按行 id 升序确定性分页拉全）
+  rpc QueryLocalWorkSets(QueryLocalWorkSetsRequest) returns (QueryLocalWorkSetsResponse);
 
   // 站点（注册表投影，只读）
   rpc ListSites(Empty) returns (ListSitesResponse);
@@ -824,6 +826,24 @@ message ListChildWorkSetsRequest {
 
 message ListChildWorkSetsResponse {
   repeated WorkSet items = 1;
+}
+
+// QueryLocalWorkSetsRequest 库内作品集名全集分页查询（互证索引用）：
+// 无过滤条件（全集），仅分页参数；按行 id 升序确定性分页
+message QueryLocalWorkSetsRequest {
+  PageRequest page = 1;
+}
+
+// WorkSetNameEntry 库内作品集名条目：行 id + 展示名（site_work_set_name，
+// 站点侧名缺省时回退 nick_name，两名皆空不出条目）
+message WorkSetNameEntry {
+  int64 id = 1;   // 库内 work_set 行 id
+  string name = 2; // 展示名（互证匹配用）
+}
+
+message QueryLocalWorkSetsResponse {
+  repeated WorkSetNameEntry items = 1; // 当前页条目
+  PageInfo page = 2;                   // 分页回执
 }
 
 message ListSitesResponse {
