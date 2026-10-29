@@ -88,8 +88,9 @@ type workFetchServer struct {
 
 // Create 处理插件任务创建请求的流式响应。协议语义：error 块承载插件业务失败原因
 // （用户可读文本），必为流的最后一块——Create 错误返回时仅发单个 error 块即结束流
-// （不发 mode 块）；正常返回时 mode 块在前，全部 task 块之后按结果声明追加收尾块——
-// 声明意图时为 intent 块（零任务的成功收尾），否则声明 reason 时为 error 块。
+// （不发 mode 块）；正常返回时 mode 块在前，全部数据块（task 块/子行批次块，契约 21
+// 条目形态可交错）之后按结果声明追加收尾块——声明意图时为 intent 块（零任务的成功
+// 收尾），否则声明 reason 时为 error 块。
 // gRPC status 错误专属基础设施故障（进程崩溃/连接中断/传输异常），不承载插件业务错误。
 // handler 实现 dto.HeartbeatCreateFetcher 时走 CreateWithHeartbeat：handler 执行期
 // 心跳块可上线（handler 内长等待点显式上报），handler 返回后上报器关闭，
@@ -112,8 +113,10 @@ func (s *workFetchServer) Create(req *gen.CreateRequest, stream grpc.ServerStrea
 	return sendCreateResult(result, stream)
 }
 
-// sendCreateResult 发送 Create 成功结果的块序列：mode → task… → 收尾块（声明意图时为
-// intent 块，否则声明 reason 时为 error 块）
+// sendCreateResult 发送 Create 成功结果的块序列：mode → 数据块… → 收尾块（声明意图时为
+// intent 块，否则声明 reason 时为 error 块）。流式结果双形态（契约 21）：条目形态
+//（Items）按条目顺序发 task 块/子行批次块（children_batch 仅流式 mode 合法——条目形态
+// 恒为流式，mode 块 is_stream=true）；旧应答形态（Stream）逐条发 task 块，行为零变化。
 func sendCreateResult(result *dto.TaskCreateResult, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
 	if err := stream.Send(&gen.CreateChunk{
 		Payload: &gen.CreateChunk_Mode{
@@ -124,14 +127,8 @@ func sendCreateResult(result *dto.TaskCreateResult, stream grpc.ServerStreamingS
 	}
 
 	if result.IsStream() {
-		for resp := range result.Stream() {
-			if err := stream.Send(&gen.CreateChunk{
-				Payload: &gen.CreateChunk_Task{
-					Task: resp,
-				},
-			}); err != nil {
-				return err
-			}
+		if err := sendCreateStreamItems(result, stream); err != nil {
+			return err
 		}
 	} else {
 		for _, resp := range result.Array() {
@@ -158,6 +155,42 @@ func sendCreateResult(result *dto.TaskCreateResult, stream grpc.ServerStreamingS
 		return stream.Send(&gen.CreateChunk{
 			Payload: &gen.CreateChunk_Error{Error: reason},
 		})
+	}
+	return nil
+}
+
+// sendCreateStreamItems 发送流式结果的数据块序列：条目形态（Items 非 nil）按条目形态发
+// task 块/children_batch 块（块序即条目序）；旧应答形态（Stream）逐条发 task 块。
+// 条目无有效形态（task/children_batch 皆空）属插件侧编程错误，中止流并返回错误
+//（不静默跳过——半途丢块会破坏按父 ID 聚合的收批语义）。
+func sendCreateStreamItems(result *dto.TaskCreateResult, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
+	if items := result.Items(); items != nil {
+		for it := range items {
+			var chunk *gen.CreateChunk
+			switch {
+			case it == nil:
+				return fmt.Errorf("create 流发射条目为 nil，流中止")
+			case it.Task() != nil:
+				chunk = &gen.CreateChunk{Payload: &gen.CreateChunk_Task{Task: it.Task()}}
+			case it.ChildrenBatch() != nil:
+				chunk = &gen.CreateChunk{Payload: &gen.CreateChunk_ChildrenBatch{ChildrenBatch: it.ChildrenBatch()}}
+			default:
+				return fmt.Errorf("create 流发射条目无有效形态（task/children_batch 皆空），流中止")
+			}
+			if err := stream.Send(chunk); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	for resp := range result.Stream() {
+		if err := stream.Send(&gen.CreateChunk{
+			Payload: &gen.CreateChunk_Task{
+				Task: resp,
+			},
+		}); err != nil {
+			return err
+		}
 	}
 	return nil
 }

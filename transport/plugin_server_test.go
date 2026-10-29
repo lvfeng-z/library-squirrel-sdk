@@ -115,6 +115,70 @@ func TestCreateStreamReasonAppendErrorChunk(t *testing.T) {
 	}
 }
 
+// TestCreateStreamItemsDualChunkEmission 条目形态双块型发射（契约 21）：
+// 块序为 mode(is_stream=true) → task 块与 children_batch 块按条目顺序交错，
+// 末批 last=true 落在该父批次序列的最后一块（本例即流的最后一块）
+func TestCreateStreamItemsDualChunkEmission(t *testing.T) {
+	items := make(chan *dto.CreateStreamItem)
+	result := dto.StreamItemsResult(items)
+	go func() {
+		defer close(items)
+		items <- dto.TaskItem(&dto.TaskCreateResponse{PluginTaskId: "parent-1"})
+		items <- dto.ChildrenBatchItem("parent-1", []*dto.TaskCreateChildResponse{
+			{TaskName: "子任务-1"}, {TaskName: "子任务-2"},
+		}, false)
+		items <- dto.TaskItem(&dto.TaskCreateResponse{PluginTaskId: "parent-2"})
+		items <- dto.ChildrenBatchItem("parent-1", []*dto.TaskCreateChildResponse{
+			{TaskName: "子任务-3"},
+		}, true)
+	}()
+	chunks := runCreate(t, &fakeCreateHandler{result: result})
+	if len(chunks) != 5 {
+		t.Fatalf("期望 5 块(mode+task+batch+task+batch), 实得 %d 块", len(chunks))
+	}
+	if mode := chunks[0].GetMode(); mode == nil || !mode.GetIsStream() {
+		t.Fatal("首块应为流式 mode 块(is_stream=true)")
+	}
+	if task := chunks[1].GetTask(); task == nil || task.GetPluginTaskId() != "parent-1" {
+		t.Fatalf("第 2 块应为 parent-1 的 task 块, 实得 %+v", chunks[1].GetTask())
+	}
+	if batch := chunks[2].GetChildrenBatch(); batch == nil || batch.GetPluginTaskId() != "parent-1" ||
+		len(batch.GetItems()) != 2 || batch.GetItems()[0].GetTaskName() != "子任务-1" || batch.GetLast() {
+		t.Fatalf("第 3 块应为 parent-1 的 2 行批次(非末批), 实得 %+v", chunks[2].GetChildrenBatch())
+	}
+	if task := chunks[3].GetTask(); task == nil || task.GetPluginTaskId() != "parent-2" {
+		t.Fatalf("第 4 块应为 parent-2 的 task 块, 实得 %+v", chunks[3].GetTask())
+	}
+	if batch := chunks[4].GetChildrenBatch(); batch == nil || batch.GetPluginTaskId() != "parent-1" ||
+		len(batch.GetItems()) != 1 || !batch.GetLast() {
+		t.Fatalf("末块应为 parent-1 的 1 行末批(last=true), 实得 %+v", chunks[4].GetChildrenBatch())
+	}
+}
+
+// TestCreateStreamItemsReasonAppendErrorChunk 条目形态 + SetReason 形态：
+// 块序为 mode → 数据块… → error，error 块必为最后一块——契约 21 部分完成语义的
+// SDK 侧形态：已发条目保留在流上，reason 经 error 块收流
+func TestCreateStreamItemsReasonAppendErrorChunk(t *testing.T) {
+	items := make(chan *dto.CreateStreamItem)
+	result := dto.StreamItemsResult(items)
+	go func() {
+		result.SetReason("批次中途失败, 已到子行保留")
+		defer close(items)
+		items <- dto.TaskItem(&dto.TaskCreateResponse{PluginTaskId: "parent-1"})
+		items <- dto.ChildrenBatchItem("parent-1", []*dto.TaskCreateChildResponse{{TaskName: "子任务-1"}}, true)
+	}()
+	chunks := runCreate(t, &fakeCreateHandler{result: result})
+	if len(chunks) != 4 {
+		t.Fatalf("期望 4 块(mode+task+batch+error), 实得 %d 块", len(chunks))
+	}
+	if batch := chunks[2].GetChildrenBatch(); batch == nil || !batch.GetLast() {
+		t.Fatalf("第 3 块应为末批 children_batch 块, 实得 %+v", chunks[2].GetChildrenBatch())
+	}
+	if e := chunks[3].GetError(); e != "批次中途失败, 已到子行保留" {
+		t.Fatalf("末块 error 文本 = %q, 期望 %q", e, "批次中途失败, 已到子行保留")
+	}
+}
+
 // TestCreateWithoutReasonNoErrorChunk 未声明 reason 时不追加 error 块
 func TestCreateWithoutReasonNoErrorChunk(t *testing.T) {
 	result := dto.BatchResult([]*dto.TaskCreateResponse{{}})

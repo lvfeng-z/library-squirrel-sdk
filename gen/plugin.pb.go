@@ -2024,6 +2024,7 @@ type CreateChunk struct {
 	//	*CreateChunk_Error
 	//	*CreateChunk_Heartbeat
 	//	*CreateChunk_Intent
+	//	*CreateChunk_ChildrenBatch
 	Payload       isCreateChunk_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2111,6 +2112,15 @@ func (x *CreateChunk) GetIntent() *CreateIntent {
 	return nil
 }
 
+func (x *CreateChunk) GetChildrenBatch() *TaskChildrenBatch {
+	if x != nil {
+		if x, ok := x.Payload.(*CreateChunk_ChildrenBatch); ok {
+			return x.ChildrenBatch
+		}
+	}
+	return nil
+}
+
 type isCreateChunk_Payload interface {
 	isCreateChunk_Payload()
 }
@@ -2135,6 +2145,10 @@ type CreateChunk_Intent struct {
 	Intent *CreateIntent `protobuf:"bytes,5,opt,name=intent,proto3,oneof"` // 收尾意图信号：插件显式声明「本流不产出任务」的成功收尾（转入解析/已取消），必为流的最后一块
 }
 
+type CreateChunk_ChildrenBatch struct {
+	ChildrenBatch *TaskChildrenBatch `protobuf:"bytes,6,opt,name=children_batch,json=childrenBatch,proto3,oneof"` // 子行批次块：大批次创建时子行拆块发射，仅流式 mode 合法（四条不变量见 TaskChildrenBatch 消息注释）
+}
+
 func (*CreateChunk_Mode) isCreateChunk_Payload() {}
 
 func (*CreateChunk_Task) isCreateChunk_Payload() {}
@@ -2144,6 +2158,8 @@ func (*CreateChunk_Error) isCreateChunk_Payload() {}
 func (*CreateChunk_Heartbeat) isCreateChunk_Payload() {}
 
 func (*CreateChunk_Intent) isCreateChunk_Payload() {}
+
+func (*CreateChunk_ChildrenBatch) isCreateChunk_Payload() {}
 
 type CreateMode struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -2245,6 +2261,75 @@ func (x *CreateIntent) GetMessage() string {
 	return ""
 }
 
+// TaskChildrenBatch Create 流子行批次块载荷（契约 21）：大批次创建时把单一父任务的
+// 子行集合拆为多块发射（父块 children 置空，批次块序列末块 last=true）。四条不变量：
+// ① 仅流式 mode（CreateMode.is_stream=true）合法——批量 mode 流上出现即协议违规，
+//
+//	宿主按 error 收流；
+//
+// ② 聚合按 plugin_task_id 指称归属父任务，不依赖块在流中的位置（不同任务的块可交错）；
+// ③ task 块的 children 内联在两种 mode 下继续有效，同一父的内联与批次混用=都计入该父；
+// ④ error 收流时已到子行与父行保留（部分完成语义）。
+type TaskChildrenBatch struct {
+	state         protoimpl.MessageState     `protogen:"open.v1"`
+	PluginTaskId  string                     `protobuf:"bytes,1,opt,name=plugin_task_id,json=pluginTaskId,proto3" json:"plugin_task_id,omitempty"` // 父任务指称键（=TaskCreateResponse.plugin_task_id）；父块未到先出批次块=悬空引用，宿主按协议违规收流
+	Items         []*TaskCreateChildResponse `protobuf:"bytes,2,rep,name=items,proto3" json:"items,omitempty"`                                     // 本批子行（序保持：同父子行按块序+块内序计入）
+	Last          bool                       `protobuf:"varint,3,opt,name=last,proto3" json:"last,omitempty"`                                      // true=该父的末批；宿主到齐即对该父收批
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TaskChildrenBatch) Reset() {
+	*x = TaskChildrenBatch{}
+	mi := &file_plugin_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TaskChildrenBatch) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TaskChildrenBatch) ProtoMessage() {}
+
+func (x *TaskChildrenBatch) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TaskChildrenBatch.ProtoReflect.Descriptor instead.
+func (*TaskChildrenBatch) Descriptor() ([]byte, []int) {
+	return file_plugin_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *TaskChildrenBatch) GetPluginTaskId() string {
+	if x != nil {
+		return x.PluginTaskId
+	}
+	return ""
+}
+
+func (x *TaskChildrenBatch) GetItems() []*TaskCreateChildResponse {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *TaskChildrenBatch) GetLast() bool {
+	if x != nil {
+		return x.Last
+	}
+	return false
+}
+
 type CreateWorkInfoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Task          *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
@@ -2255,7 +2340,7 @@ type CreateWorkInfoRequest struct {
 
 func (x *CreateWorkInfoRequest) Reset() {
 	*x = CreateWorkInfoRequest{}
-	mi := &file_plugin_proto_msgTypes[28]
+	mi := &file_plugin_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2267,7 +2352,7 @@ func (x *CreateWorkInfoRequest) String() string {
 func (*CreateWorkInfoRequest) ProtoMessage() {}
 
 func (x *CreateWorkInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[28]
+	mi := &file_plugin_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2280,7 +2365,7 @@ func (x *CreateWorkInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkInfoRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkInfoRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{28}
+	return file_plugin_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *CreateWorkInfoRequest) GetTask() *Task {
@@ -2308,7 +2393,7 @@ type StartRequest struct {
 
 func (x *StartRequest) Reset() {
 	*x = StartRequest{}
-	mi := &file_plugin_proto_msgTypes[29]
+	mi := &file_plugin_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2320,7 +2405,7 @@ func (x *StartRequest) String() string {
 func (*StartRequest) ProtoMessage() {}
 
 func (x *StartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[29]
+	mi := &file_plugin_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2333,7 +2418,7 @@ func (x *StartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartRequest.ProtoReflect.Descriptor instead.
 func (*StartRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{29}
+	return file_plugin_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *StartRequest) GetTask() *Task {
@@ -2367,7 +2452,7 @@ type RetryRequest struct {
 
 func (x *RetryRequest) Reset() {
 	*x = RetryRequest{}
-	mi := &file_plugin_proto_msgTypes[30]
+	mi := &file_plugin_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2379,7 +2464,7 @@ func (x *RetryRequest) String() string {
 func (*RetryRequest) ProtoMessage() {}
 
 func (x *RetryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[30]
+	mi := &file_plugin_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2392,7 +2477,7 @@ func (x *RetryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RetryRequest.ProtoReflect.Descriptor instead.
 func (*RetryRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{30}
+	return file_plugin_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *RetryRequest) GetTask() *Task {
@@ -2419,7 +2504,7 @@ type TaskResParamMessage struct {
 
 func (x *TaskResParamMessage) Reset() {
 	*x = TaskResParamMessage{}
-	mi := &file_plugin_proto_msgTypes[31]
+	mi := &file_plugin_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2431,7 +2516,7 @@ func (x *TaskResParamMessage) String() string {
 func (*TaskResParamMessage) ProtoMessage() {}
 
 func (x *TaskResParamMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[31]
+	mi := &file_plugin_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2444,7 +2529,7 @@ func (x *TaskResParamMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskResParamMessage.ProtoReflect.Descriptor instead.
 func (*TaskResParamMessage) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{31}
+	return file_plugin_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *TaskResParamMessage) GetParam() *TaskResParam {
@@ -2477,7 +2562,7 @@ type TaskResumeParam struct {
 
 func (x *TaskResumeParam) Reset() {
 	*x = TaskResumeParam{}
-	mi := &file_plugin_proto_msgTypes[32]
+	mi := &file_plugin_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2489,7 +2574,7 @@ func (x *TaskResumeParam) String() string {
 func (*TaskResumeParam) ProtoMessage() {}
 
 func (x *TaskResumeParam) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[32]
+	mi := &file_plugin_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2502,7 +2587,7 @@ func (x *TaskResumeParam) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskResumeParam.ProtoReflect.Descriptor instead.
 func (*TaskResumeParam) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{32}
+	return file_plugin_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *TaskResumeParam) GetTask() *Task {
@@ -2531,7 +2616,7 @@ type StoreResumeOffset struct {
 
 func (x *StoreResumeOffset) Reset() {
 	*x = StoreResumeOffset{}
-	mi := &file_plugin_proto_msgTypes[33]
+	mi := &file_plugin_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2543,7 +2628,7 @@ func (x *StoreResumeOffset) String() string {
 func (*StoreResumeOffset) ProtoMessage() {}
 
 func (x *StoreResumeOffset) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[33]
+	mi := &file_plugin_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2556,7 +2641,7 @@ func (x *StoreResumeOffset) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreResumeOffset.ProtoReflect.Descriptor instead.
 func (*StoreResumeOffset) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{33}
+	return file_plugin_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *StoreResumeOffset) GetRole() string {
@@ -2590,7 +2675,7 @@ type TaskResumeParamMessage struct {
 
 func (x *TaskResumeParamMessage) Reset() {
 	*x = TaskResumeParamMessage{}
-	mi := &file_plugin_proto_msgTypes[34]
+	mi := &file_plugin_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2602,7 +2687,7 @@ func (x *TaskResumeParamMessage) String() string {
 func (*TaskResumeParamMessage) ProtoMessage() {}
 
 func (x *TaskResumeParamMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[34]
+	mi := &file_plugin_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2615,7 +2700,7 @@ func (x *TaskResumeParamMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskResumeParamMessage.ProtoReflect.Descriptor instead.
 func (*TaskResumeParamMessage) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{34}
+	return file_plugin_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *TaskResumeParamMessage) GetParam() *TaskResumeParam {
@@ -2652,7 +2737,7 @@ type StreamChunk struct {
 
 func (x *StreamChunk) Reset() {
 	*x = StreamChunk{}
-	mi := &file_plugin_proto_msgTypes[35]
+	mi := &file_plugin_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2664,7 +2749,7 @@ func (x *StreamChunk) String() string {
 func (*StreamChunk) ProtoMessage() {}
 
 func (x *StreamChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[35]
+	mi := &file_plugin_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2677,7 +2762,7 @@ func (x *StreamChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamChunk.ProtoReflect.Descriptor instead.
 func (*StreamChunk) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{35}
+	return file_plugin_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *StreamChunk) GetRole() string {
@@ -2802,7 +2887,7 @@ type StartFrame struct {
 
 func (x *StartFrame) Reset() {
 	*x = StartFrame{}
-	mi := &file_plugin_proto_msgTypes[36]
+	mi := &file_plugin_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2814,7 +2899,7 @@ func (x *StartFrame) String() string {
 func (*StartFrame) ProtoMessage() {}
 
 func (x *StartFrame) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[36]
+	mi := &file_plugin_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2827,7 +2912,7 @@ func (x *StartFrame) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartFrame.ProtoReflect.Descriptor instead.
 func (*StartFrame) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{36}
+	return file_plugin_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *StartFrame) GetFrame() isStartFrame_Frame {
@@ -2885,7 +2970,7 @@ type ResumeFrame struct {
 
 func (x *ResumeFrame) Reset() {
 	*x = ResumeFrame{}
-	mi := &file_plugin_proto_msgTypes[37]
+	mi := &file_plugin_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2897,7 +2982,7 @@ func (x *ResumeFrame) String() string {
 func (*ResumeFrame) ProtoMessage() {}
 
 func (x *ResumeFrame) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[37]
+	mi := &file_plugin_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2910,7 +2995,7 @@ func (x *ResumeFrame) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeFrame.ProtoReflect.Descriptor instead.
 func (*ResumeFrame) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{37}
+	return file_plugin_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *ResumeFrame) GetFrame() isResumeFrame_Frame {
@@ -2965,7 +3050,7 @@ type PullRequest struct {
 
 func (x *PullRequest) Reset() {
 	*x = PullRequest{}
-	mi := &file_plugin_proto_msgTypes[38]
+	mi := &file_plugin_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2977,7 +3062,7 @@ func (x *PullRequest) String() string {
 func (*PullRequest) ProtoMessage() {}
 
 func (x *PullRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[38]
+	mi := &file_plugin_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2990,7 +3075,7 @@ func (x *PullRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PullRequest.ProtoReflect.Descriptor instead.
 func (*PullRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{38}
+	return file_plugin_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *PullRequest) GetRole() string {
@@ -3025,7 +3110,7 @@ type StoreSpecMeta struct {
 
 func (x *StoreSpecMeta) Reset() {
 	*x = StoreSpecMeta{}
-	mi := &file_plugin_proto_msgTypes[39]
+	mi := &file_plugin_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3037,7 +3122,7 @@ func (x *StoreSpecMeta) String() string {
 func (*StoreSpecMeta) ProtoMessage() {}
 
 func (x *StoreSpecMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[39]
+	mi := &file_plugin_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3050,7 +3135,7 @@ func (x *StoreSpecMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreSpecMeta.ProtoReflect.Descriptor instead.
 func (*StoreSpecMeta) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{39}
+	return file_plugin_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *StoreSpecMeta) GetRole() string {
@@ -3126,7 +3211,7 @@ type StoreSpecs struct {
 
 func (x *StoreSpecs) Reset() {
 	*x = StoreSpecs{}
-	mi := &file_plugin_proto_msgTypes[40]
+	mi := &file_plugin_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3138,7 +3223,7 @@ func (x *StoreSpecs) String() string {
 func (*StoreSpecs) ProtoMessage() {}
 
 func (x *StoreSpecs) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[40]
+	mi := &file_plugin_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3151,7 +3236,7 @@ func (x *StoreSpecs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreSpecs.ProtoReflect.Descriptor instead.
 func (*StoreSpecs) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{40}
+	return file_plugin_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *StoreSpecs) GetItems() []*StoreSpecMeta {
@@ -3170,7 +3255,7 @@ type BrowserRequest struct {
 
 func (x *BrowserRequest) Reset() {
 	*x = BrowserRequest{}
-	mi := &file_plugin_proto_msgTypes[41]
+	mi := &file_plugin_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3182,7 +3267,7 @@ func (x *BrowserRequest) String() string {
 func (*BrowserRequest) ProtoMessage() {}
 
 func (x *BrowserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[41]
+	mi := &file_plugin_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3195,7 +3280,7 @@ func (x *BrowserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BrowserRequest.ProtoReflect.Descriptor instead.
 func (*BrowserRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{41}
+	return file_plugin_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *BrowserRequest) GetExtensionId() string {
@@ -3216,7 +3301,7 @@ type RegisterExtensionRequest struct {
 
 func (x *RegisterExtensionRequest) Reset() {
 	*x = RegisterExtensionRequest{}
-	mi := &file_plugin_proto_msgTypes[42]
+	mi := &file_plugin_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3228,7 +3313,7 @@ func (x *RegisterExtensionRequest) String() string {
 func (*RegisterExtensionRequest) ProtoMessage() {}
 
 func (x *RegisterExtensionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[42]
+	mi := &file_plugin_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3241,7 +3326,7 @@ func (x *RegisterExtensionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterExtensionRequest.ProtoReflect.Descriptor instead.
 func (*RegisterExtensionRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{42}
+	return file_plugin_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *RegisterExtensionRequest) GetExtensionId() string {
@@ -3274,7 +3359,7 @@ type UnregisterRequest struct {
 
 func (x *UnregisterRequest) Reset() {
 	*x = UnregisterRequest{}
-	mi := &file_plugin_proto_msgTypes[43]
+	mi := &file_plugin_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3286,7 +3371,7 @@ func (x *UnregisterRequest) String() string {
 func (*UnregisterRequest) ProtoMessage() {}
 
 func (x *UnregisterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[43]
+	mi := &file_plugin_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3299,7 +3384,7 @@ func (x *UnregisterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnregisterRequest.ProtoReflect.Descriptor instead.
 func (*UnregisterRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{43}
+	return file_plugin_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *UnregisterRequest) GetExtensionId() string {
@@ -3318,7 +3403,7 @@ type StorageKeyRequest struct {
 
 func (x *StorageKeyRequest) Reset() {
 	*x = StorageKeyRequest{}
-	mi := &file_plugin_proto_msgTypes[44]
+	mi := &file_plugin_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3330,7 +3415,7 @@ func (x *StorageKeyRequest) String() string {
 func (*StorageKeyRequest) ProtoMessage() {}
 
 func (x *StorageKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[44]
+	mi := &file_plugin_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3343,7 +3428,7 @@ func (x *StorageKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageKeyRequest.ProtoReflect.Descriptor instead.
 func (*StorageKeyRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{44}
+	return file_plugin_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *StorageKeyRequest) GetKey() string {
@@ -3364,7 +3449,7 @@ type StorageValue struct {
 
 func (x *StorageValue) Reset() {
 	*x = StorageValue{}
-	mi := &file_plugin_proto_msgTypes[45]
+	mi := &file_plugin_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3376,7 +3461,7 @@ func (x *StorageValue) String() string {
 func (*StorageValue) ProtoMessage() {}
 
 func (x *StorageValue) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[45]
+	mi := &file_plugin_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3389,7 +3474,7 @@ func (x *StorageValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageValue.ProtoReflect.Descriptor instead.
 func (*StorageValue) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{45}
+	return file_plugin_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *StorageValue) GetValue() string {
@@ -3416,7 +3501,7 @@ type StorageValueResponse struct {
 
 func (x *StorageValueResponse) Reset() {
 	*x = StorageValueResponse{}
-	mi := &file_plugin_proto_msgTypes[46]
+	mi := &file_plugin_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3428,7 +3513,7 @@ func (x *StorageValueResponse) String() string {
 func (*StorageValueResponse) ProtoMessage() {}
 
 func (x *StorageValueResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[46]
+	mi := &file_plugin_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3441,7 +3526,7 @@ func (x *StorageValueResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageValueResponse.ProtoReflect.Descriptor instead.
 func (*StorageValueResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{46}
+	return file_plugin_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *StorageValueResponse) GetValue() string {
@@ -3468,7 +3553,7 @@ type StorageEntryRequest struct {
 
 func (x *StorageEntryRequest) Reset() {
 	*x = StorageEntryRequest{}
-	mi := &file_plugin_proto_msgTypes[47]
+	mi := &file_plugin_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3480,7 +3565,7 @@ func (x *StorageEntryRequest) String() string {
 func (*StorageEntryRequest) ProtoMessage() {}
 
 func (x *StorageEntryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[47]
+	mi := &file_plugin_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3493,7 +3578,7 @@ func (x *StorageEntryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageEntryRequest.ProtoReflect.Descriptor instead.
 func (*StorageEntryRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{47}
+	return file_plugin_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *StorageEntryRequest) GetKey() string {
@@ -3519,7 +3604,7 @@ type AllStorageValuesResponse struct {
 
 func (x *AllStorageValuesResponse) Reset() {
 	*x = AllStorageValuesResponse{}
-	mi := &file_plugin_proto_msgTypes[48]
+	mi := &file_plugin_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3531,7 +3616,7 @@ func (x *AllStorageValuesResponse) String() string {
 func (*AllStorageValuesResponse) ProtoMessage() {}
 
 func (x *AllStorageValuesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[48]
+	mi := &file_plugin_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3544,7 +3629,7 @@ func (x *AllStorageValuesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AllStorageValuesResponse.ProtoReflect.Descriptor instead.
 func (*AllStorageValuesResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{48}
+	return file_plugin_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *AllStorageValuesResponse) GetValues() map[string]*StorageValue {
@@ -3570,7 +3655,7 @@ type PreferenceValue struct {
 
 func (x *PreferenceValue) Reset() {
 	*x = PreferenceValue{}
-	mi := &file_plugin_proto_msgTypes[49]
+	mi := &file_plugin_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3582,7 +3667,7 @@ func (x *PreferenceValue) String() string {
 func (*PreferenceValue) ProtoMessage() {}
 
 func (x *PreferenceValue) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[49]
+	mi := &file_plugin_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3595,7 +3680,7 @@ func (x *PreferenceValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreferenceValue.ProtoReflect.Descriptor instead.
 func (*PreferenceValue) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{49}
+	return file_plugin_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *PreferenceValue) GetSchemaVersion() int32 {
@@ -3635,7 +3720,7 @@ type PreferenceKeyRequest struct {
 
 func (x *PreferenceKeyRequest) Reset() {
 	*x = PreferenceKeyRequest{}
-	mi := &file_plugin_proto_msgTypes[50]
+	mi := &file_plugin_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3647,7 +3732,7 @@ func (x *PreferenceKeyRequest) String() string {
 func (*PreferenceKeyRequest) ProtoMessage() {}
 
 func (x *PreferenceKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[50]
+	mi := &file_plugin_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3660,7 +3745,7 @@ func (x *PreferenceKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreferenceKeyRequest.ProtoReflect.Descriptor instead.
 func (*PreferenceKeyRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{50}
+	return file_plugin_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *PreferenceKeyRequest) GetKey() string {
@@ -3680,7 +3765,7 @@ type PreferenceEntryRequest struct {
 
 func (x *PreferenceEntryRequest) Reset() {
 	*x = PreferenceEntryRequest{}
-	mi := &file_plugin_proto_msgTypes[51]
+	mi := &file_plugin_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3692,7 +3777,7 @@ func (x *PreferenceEntryRequest) String() string {
 func (*PreferenceEntryRequest) ProtoMessage() {}
 
 func (x *PreferenceEntryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[51]
+	mi := &file_plugin_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3705,7 +3790,7 @@ func (x *PreferenceEntryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreferenceEntryRequest.ProtoReflect.Descriptor instead.
 func (*PreferenceEntryRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{51}
+	return file_plugin_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *PreferenceEntryRequest) GetKey() string {
@@ -3732,7 +3817,7 @@ type PreferenceGetResponse struct {
 
 func (x *PreferenceGetResponse) Reset() {
 	*x = PreferenceGetResponse{}
-	mi := &file_plugin_proto_msgTypes[52]
+	mi := &file_plugin_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3744,7 +3829,7 @@ func (x *PreferenceGetResponse) String() string {
 func (*PreferenceGetResponse) ProtoMessage() {}
 
 func (x *PreferenceGetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[52]
+	mi := &file_plugin_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3757,7 +3842,7 @@ func (x *PreferenceGetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreferenceGetResponse.ProtoReflect.Descriptor instead.
 func (*PreferenceGetResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{52}
+	return file_plugin_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *PreferenceGetResponse) GetOk() bool {
@@ -3783,7 +3868,7 @@ type PreferenceListResponse struct {
 
 func (x *PreferenceListResponse) Reset() {
 	*x = PreferenceListResponse{}
-	mi := &file_plugin_proto_msgTypes[53]
+	mi := &file_plugin_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3795,7 +3880,7 @@ func (x *PreferenceListResponse) String() string {
 func (*PreferenceListResponse) ProtoMessage() {}
 
 func (x *PreferenceListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[53]
+	mi := &file_plugin_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3808,7 +3893,7 @@ func (x *PreferenceListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreferenceListResponse.ProtoReflect.Descriptor instead.
 func (*PreferenceListResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{53}
+	return file_plugin_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *PreferenceListResponse) GetKeys() []string {
@@ -3828,7 +3913,7 @@ type ResolveProxyRequest struct {
 
 func (x *ResolveProxyRequest) Reset() {
 	*x = ResolveProxyRequest{}
-	mi := &file_plugin_proto_msgTypes[54]
+	mi := &file_plugin_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3840,7 +3925,7 @@ func (x *ResolveProxyRequest) String() string {
 func (*ResolveProxyRequest) ProtoMessage() {}
 
 func (x *ResolveProxyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[54]
+	mi := &file_plugin_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3853,7 +3938,7 @@ func (x *ResolveProxyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveProxyRequest.ProtoReflect.Descriptor instead.
 func (*ResolveProxyRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{54}
+	return file_plugin_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *ResolveProxyRequest) GetExplicitUrl() string {
@@ -3880,7 +3965,7 @@ type ResolveProxyResponse struct {
 
 func (x *ResolveProxyResponse) Reset() {
 	*x = ResolveProxyResponse{}
-	mi := &file_plugin_proto_msgTypes[55]
+	mi := &file_plugin_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3892,7 +3977,7 @@ func (x *ResolveProxyResponse) String() string {
 func (*ResolveProxyResponse) ProtoMessage() {}
 
 func (x *ResolveProxyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[55]
+	mi := &file_plugin_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3905,7 +3990,7 @@ func (x *ResolveProxyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveProxyResponse.ProtoReflect.Descriptor instead.
 func (*ResolveProxyResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{55}
+	return file_plugin_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *ResolveProxyResponse) GetProxyUrl() string {
@@ -3931,7 +4016,7 @@ type CreateTaskRequest struct {
 
 func (x *CreateTaskRequest) Reset() {
 	*x = CreateTaskRequest{}
-	mi := &file_plugin_proto_msgTypes[56]
+	mi := &file_plugin_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3943,7 +4028,7 @@ func (x *CreateTaskRequest) String() string {
 func (*CreateTaskRequest) ProtoMessage() {}
 
 func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[56]
+	mi := &file_plugin_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3956,7 +4041,7 @@ func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTaskRequest.ProtoReflect.Descriptor instead.
 func (*CreateTaskRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{56}
+	return file_plugin_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *CreateTaskRequest) GetUrl() string {
@@ -3977,7 +4062,7 @@ type CreateTaskResponse struct {
 
 func (x *CreateTaskResponse) Reset() {
 	*x = CreateTaskResponse{}
-	mi := &file_plugin_proto_msgTypes[57]
+	mi := &file_plugin_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3989,7 +4074,7 @@ func (x *CreateTaskResponse) String() string {
 func (*CreateTaskResponse) ProtoMessage() {}
 
 func (x *CreateTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[57]
+	mi := &file_plugin_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4002,7 +4087,7 @@ func (x *CreateTaskResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTaskResponse.ProtoReflect.Descriptor instead.
 func (*CreateTaskResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{57}
+	return file_plugin_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *CreateTaskResponse) GetSucceed() bool {
@@ -4035,7 +4120,7 @@ type GetPluginRootRequest struct {
 
 func (x *GetPluginRootRequest) Reset() {
 	*x = GetPluginRootRequest{}
-	mi := &file_plugin_proto_msgTypes[58]
+	mi := &file_plugin_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4047,7 +4132,7 @@ func (x *GetPluginRootRequest) String() string {
 func (*GetPluginRootRequest) ProtoMessage() {}
 
 func (x *GetPluginRootRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[58]
+	mi := &file_plugin_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4060,7 +4145,7 @@ func (x *GetPluginRootRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPluginRootRequest.ProtoReflect.Descriptor instead.
 func (*GetPluginRootRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{58}
+	return file_plugin_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *GetPluginRootRequest) GetIsRelative() bool {
@@ -4079,7 +4164,7 @@ type GetPluginRootResponse struct {
 
 func (x *GetPluginRootResponse) Reset() {
 	*x = GetPluginRootResponse{}
-	mi := &file_plugin_proto_msgTypes[59]
+	mi := &file_plugin_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4091,7 +4176,7 @@ func (x *GetPluginRootResponse) String() string {
 func (*GetPluginRootResponse) ProtoMessage() {}
 
 func (x *GetPluginRootResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[59]
+	mi := &file_plugin_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4104,7 +4189,7 @@ func (x *GetPluginRootResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPluginRootResponse.ProtoReflect.Descriptor instead.
 func (*GetPluginRootResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{59}
+	return file_plugin_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *GetPluginRootResponse) GetPath() string {
@@ -4126,7 +4211,7 @@ type LogRequest struct {
 
 func (x *LogRequest) Reset() {
 	*x = LogRequest{}
-	mi := &file_plugin_proto_msgTypes[60]
+	mi := &file_plugin_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4138,7 +4223,7 @@ func (x *LogRequest) String() string {
 func (*LogRequest) ProtoMessage() {}
 
 func (x *LogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[60]
+	mi := &file_plugin_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4151,7 +4236,7 @@ func (x *LogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogRequest.ProtoReflect.Descriptor instead.
 func (*LogRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{60}
+	return file_plugin_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *LogRequest) GetLevel() int32 {
@@ -4192,7 +4277,7 @@ type PublishToFrontendRequest struct {
 
 func (x *PublishToFrontendRequest) Reset() {
 	*x = PublishToFrontendRequest{}
-	mi := &file_plugin_proto_msgTypes[61]
+	mi := &file_plugin_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4204,7 +4289,7 @@ func (x *PublishToFrontendRequest) String() string {
 func (*PublishToFrontendRequest) ProtoMessage() {}
 
 func (x *PublishToFrontendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[61]
+	mi := &file_plugin_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4217,7 +4302,7 @@ func (x *PublishToFrontendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishToFrontendRequest.ProtoReflect.Descriptor instead.
 func (*PublishToFrontendRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{61}
+	return file_plugin_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *PublishToFrontendRequest) GetTopic() string {
@@ -4243,7 +4328,7 @@ type SubscribeFrontendRequest struct {
 
 func (x *SubscribeFrontendRequest) Reset() {
 	*x = SubscribeFrontendRequest{}
-	mi := &file_plugin_proto_msgTypes[62]
+	mi := &file_plugin_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4255,7 +4340,7 @@ func (x *SubscribeFrontendRequest) String() string {
 func (*SubscribeFrontendRequest) ProtoMessage() {}
 
 func (x *SubscribeFrontendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[62]
+	mi := &file_plugin_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4268,7 +4353,7 @@ func (x *SubscribeFrontendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeFrontendRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeFrontendRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{62}
+	return file_plugin_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *SubscribeFrontendRequest) GetTopic() string {
@@ -4288,7 +4373,7 @@ type FrontendMessage struct {
 
 func (x *FrontendMessage) Reset() {
 	*x = FrontendMessage{}
-	mi := &file_plugin_proto_msgTypes[63]
+	mi := &file_plugin_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4300,7 +4385,7 @@ func (x *FrontendMessage) String() string {
 func (*FrontendMessage) ProtoMessage() {}
 
 func (x *FrontendMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[63]
+	mi := &file_plugin_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4313,7 +4398,7 @@ func (x *FrontendMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FrontendMessage.ProtoReflect.Descriptor instead.
 func (*FrontendMessage) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{63}
+	return file_plugin_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *FrontendMessage) GetTopic() string {
@@ -4339,7 +4424,7 @@ type UnsubscribeFrontendRequest struct {
 
 func (x *UnsubscribeFrontendRequest) Reset() {
 	*x = UnsubscribeFrontendRequest{}
-	mi := &file_plugin_proto_msgTypes[64]
+	mi := &file_plugin_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4351,7 +4436,7 @@ func (x *UnsubscribeFrontendRequest) String() string {
 func (*UnsubscribeFrontendRequest) ProtoMessage() {}
 
 func (x *UnsubscribeFrontendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[64]
+	mi := &file_plugin_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4364,7 +4449,7 @@ func (x *UnsubscribeFrontendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnsubscribeFrontendRequest.ProtoReflect.Descriptor instead.
 func (*UnsubscribeFrontendRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{64}
+	return file_plugin_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *UnsubscribeFrontendRequest) GetTopic() string {
@@ -4385,7 +4470,7 @@ type PageRequest struct {
 
 func (x *PageRequest) Reset() {
 	*x = PageRequest{}
-	mi := &file_plugin_proto_msgTypes[65]
+	mi := &file_plugin_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4397,7 +4482,7 @@ func (x *PageRequest) String() string {
 func (*PageRequest) ProtoMessage() {}
 
 func (x *PageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[65]
+	mi := &file_plugin_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4410,7 +4495,7 @@ func (x *PageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PageRequest.ProtoReflect.Descriptor instead.
 func (*PageRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{65}
+	return file_plugin_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *PageRequest) GetPage() int32 {
@@ -4439,7 +4524,7 @@ type PageInfo struct {
 
 func (x *PageInfo) Reset() {
 	*x = PageInfo{}
-	mi := &file_plugin_proto_msgTypes[66]
+	mi := &file_plugin_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4451,7 +4536,7 @@ func (x *PageInfo) String() string {
 func (*PageInfo) ProtoMessage() {}
 
 func (x *PageInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[66]
+	mi := &file_plugin_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4464,7 +4549,7 @@ func (x *PageInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PageInfo.ProtoReflect.Descriptor instead.
 func (*PageInfo) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{66}
+	return file_plugin_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *PageInfo) GetTotal() int64 {
@@ -4497,7 +4582,7 @@ type GetWorkByIdRequest struct {
 
 func (x *GetWorkByIdRequest) Reset() {
 	*x = GetWorkByIdRequest{}
-	mi := &file_plugin_proto_msgTypes[67]
+	mi := &file_plugin_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4509,7 +4594,7 @@ func (x *GetWorkByIdRequest) String() string {
 func (*GetWorkByIdRequest) ProtoMessage() {}
 
 func (x *GetWorkByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[67]
+	mi := &file_plugin_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4522,7 +4607,7 @@ func (x *GetWorkByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkByIdRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkByIdRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{67}
+	return file_plugin_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *GetWorkByIdRequest) GetWorkId() int64 {
@@ -4542,7 +4627,7 @@ type GetWorkBySiteKeyRequest struct {
 
 func (x *GetWorkBySiteKeyRequest) Reset() {
 	*x = GetWorkBySiteKeyRequest{}
-	mi := &file_plugin_proto_msgTypes[68]
+	mi := &file_plugin_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4554,7 +4639,7 @@ func (x *GetWorkBySiteKeyRequest) String() string {
 func (*GetWorkBySiteKeyRequest) ProtoMessage() {}
 
 func (x *GetWorkBySiteKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[68]
+	mi := &file_plugin_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4567,7 +4652,7 @@ func (x *GetWorkBySiteKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkBySiteKeyRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkBySiteKeyRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{68}
+	return file_plugin_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *GetWorkBySiteKeyRequest) GetSiteKey() string {
@@ -4595,7 +4680,7 @@ type WorkWithSite struct {
 
 func (x *WorkWithSite) Reset() {
 	*x = WorkWithSite{}
-	mi := &file_plugin_proto_msgTypes[69]
+	mi := &file_plugin_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4607,7 +4692,7 @@ func (x *WorkWithSite) String() string {
 func (*WorkWithSite) ProtoMessage() {}
 
 func (x *WorkWithSite) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[69]
+	mi := &file_plugin_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4620,7 +4705,7 @@ func (x *WorkWithSite) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkWithSite.ProtoReflect.Descriptor instead.
 func (*WorkWithSite) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{69}
+	return file_plugin_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *WorkWithSite) GetWork() *Work {
@@ -4652,7 +4737,7 @@ type QueryWorksRequest struct {
 
 func (x *QueryWorksRequest) Reset() {
 	*x = QueryWorksRequest{}
-	mi := &file_plugin_proto_msgTypes[70]
+	mi := &file_plugin_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4664,7 +4749,7 @@ func (x *QueryWorksRequest) String() string {
 func (*QueryWorksRequest) ProtoMessage() {}
 
 func (x *QueryWorksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[70]
+	mi := &file_plugin_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4677,7 +4762,7 @@ func (x *QueryWorksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryWorksRequest.ProtoReflect.Descriptor instead.
 func (*QueryWorksRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{70}
+	return file_plugin_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *QueryWorksRequest) GetSiteKey() string {
@@ -4739,7 +4824,7 @@ type QueryWorksResponse struct {
 
 func (x *QueryWorksResponse) Reset() {
 	*x = QueryWorksResponse{}
-	mi := &file_plugin_proto_msgTypes[71]
+	mi := &file_plugin_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4751,7 +4836,7 @@ func (x *QueryWorksResponse) String() string {
 func (*QueryWorksResponse) ProtoMessage() {}
 
 func (x *QueryWorksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[71]
+	mi := &file_plugin_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4764,7 +4849,7 @@ func (x *QueryWorksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryWorksResponse.ProtoReflect.Descriptor instead.
 func (*QueryWorksResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{71}
+	return file_plugin_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *QueryWorksResponse) GetItems() []*WorkWithSite {
@@ -4790,7 +4875,7 @@ type ListResourcesByWorkIdRequest struct {
 
 func (x *ListResourcesByWorkIdRequest) Reset() {
 	*x = ListResourcesByWorkIdRequest{}
-	mi := &file_plugin_proto_msgTypes[72]
+	mi := &file_plugin_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4802,7 +4887,7 @@ func (x *ListResourcesByWorkIdRequest) String() string {
 func (*ListResourcesByWorkIdRequest) ProtoMessage() {}
 
 func (x *ListResourcesByWorkIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[72]
+	mi := &file_plugin_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4815,7 +4900,7 @@ func (x *ListResourcesByWorkIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListResourcesByWorkIdRequest.ProtoReflect.Descriptor instead.
 func (*ListResourcesByWorkIdRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{72}
+	return file_plugin_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *ListResourcesByWorkIdRequest) GetWorkId() int64 {
@@ -4834,7 +4919,7 @@ type ListResourcesByWorkIdResponse struct {
 
 func (x *ListResourcesByWorkIdResponse) Reset() {
 	*x = ListResourcesByWorkIdResponse{}
-	mi := &file_plugin_proto_msgTypes[73]
+	mi := &file_plugin_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4846,7 +4931,7 @@ func (x *ListResourcesByWorkIdResponse) String() string {
 func (*ListResourcesByWorkIdResponse) ProtoMessage() {}
 
 func (x *ListResourcesByWorkIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[73]
+	mi := &file_plugin_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4859,7 +4944,7 @@ func (x *ListResourcesByWorkIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListResourcesByWorkIdResponse.ProtoReflect.Descriptor instead.
 func (*ListResourcesByWorkIdResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{73}
+	return file_plugin_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *ListResourcesByWorkIdResponse) GetItems() []*ResourceInfo {
@@ -4886,7 +4971,7 @@ type ResourceInfo struct {
 
 func (x *ResourceInfo) Reset() {
 	*x = ResourceInfo{}
-	mi := &file_plugin_proto_msgTypes[74]
+	mi := &file_plugin_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4898,7 +4983,7 @@ func (x *ResourceInfo) String() string {
 func (*ResourceInfo) ProtoMessage() {}
 
 func (x *ResourceInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[74]
+	mi := &file_plugin_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4911,7 +4996,7 @@ func (x *ResourceInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceInfo.ProtoReflect.Descriptor instead.
 func (*ResourceInfo) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{74}
+	return file_plugin_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *ResourceInfo) GetId() int64 {
@@ -4987,7 +5072,7 @@ type StoreInfo struct {
 
 func (x *StoreInfo) Reset() {
 	*x = StoreInfo{}
-	mi := &file_plugin_proto_msgTypes[75]
+	mi := &file_plugin_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4999,7 +5084,7 @@ func (x *StoreInfo) String() string {
 func (*StoreInfo) ProtoMessage() {}
 
 func (x *StoreInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[75]
+	mi := &file_plugin_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5012,7 +5097,7 @@ func (x *StoreInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreInfo.ProtoReflect.Descriptor instead.
 func (*StoreInfo) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{75}
+	return file_plugin_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *StoreInfo) GetRole() string {
@@ -5080,7 +5165,7 @@ type GetLocalAuthorByIdRequest struct {
 
 func (x *GetLocalAuthorByIdRequest) Reset() {
 	*x = GetLocalAuthorByIdRequest{}
-	mi := &file_plugin_proto_msgTypes[76]
+	mi := &file_plugin_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5092,7 +5177,7 @@ func (x *GetLocalAuthorByIdRequest) String() string {
 func (*GetLocalAuthorByIdRequest) ProtoMessage() {}
 
 func (x *GetLocalAuthorByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[76]
+	mi := &file_plugin_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5105,7 +5190,7 @@ func (x *GetLocalAuthorByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLocalAuthorByIdRequest.ProtoReflect.Descriptor instead.
 func (*GetLocalAuthorByIdRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{76}
+	return file_plugin_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *GetLocalAuthorByIdRequest) GetLocalAuthorId() int64 {
@@ -5125,7 +5210,7 @@ type QueryLocalAuthorsRequest struct {
 
 func (x *QueryLocalAuthorsRequest) Reset() {
 	*x = QueryLocalAuthorsRequest{}
-	mi := &file_plugin_proto_msgTypes[77]
+	mi := &file_plugin_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5137,7 +5222,7 @@ func (x *QueryLocalAuthorsRequest) String() string {
 func (*QueryLocalAuthorsRequest) ProtoMessage() {}
 
 func (x *QueryLocalAuthorsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[77]
+	mi := &file_plugin_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5150,7 +5235,7 @@ func (x *QueryLocalAuthorsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLocalAuthorsRequest.ProtoReflect.Descriptor instead.
 func (*QueryLocalAuthorsRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{77}
+	return file_plugin_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *QueryLocalAuthorsRequest) GetNameKeyword() string {
@@ -5177,7 +5262,7 @@ type QueryLocalAuthorsResponse struct {
 
 func (x *QueryLocalAuthorsResponse) Reset() {
 	*x = QueryLocalAuthorsResponse{}
-	mi := &file_plugin_proto_msgTypes[78]
+	mi := &file_plugin_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5189,7 +5274,7 @@ func (x *QueryLocalAuthorsResponse) String() string {
 func (*QueryLocalAuthorsResponse) ProtoMessage() {}
 
 func (x *QueryLocalAuthorsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[78]
+	mi := &file_plugin_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5202,7 +5287,7 @@ func (x *QueryLocalAuthorsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLocalAuthorsResponse.ProtoReflect.Descriptor instead.
 func (*QueryLocalAuthorsResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{78}
+	return file_plugin_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *QueryLocalAuthorsResponse) GetItems() []*LocalAuthorDTO {
@@ -5229,7 +5314,7 @@ type GetSiteAuthorBySiteKeyRequest struct {
 
 func (x *GetSiteAuthorBySiteKeyRequest) Reset() {
 	*x = GetSiteAuthorBySiteKeyRequest{}
-	mi := &file_plugin_proto_msgTypes[79]
+	mi := &file_plugin_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5241,7 +5326,7 @@ func (x *GetSiteAuthorBySiteKeyRequest) String() string {
 func (*GetSiteAuthorBySiteKeyRequest) ProtoMessage() {}
 
 func (x *GetSiteAuthorBySiteKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[79]
+	mi := &file_plugin_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5254,7 +5339,7 @@ func (x *GetSiteAuthorBySiteKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSiteAuthorBySiteKeyRequest.ProtoReflect.Descriptor instead.
 func (*GetSiteAuthorBySiteKeyRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{79}
+	return file_plugin_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *GetSiteAuthorBySiteKeyRequest) GetSiteKey() string {
@@ -5288,7 +5373,7 @@ type SiteAuthorInfo struct {
 
 func (x *SiteAuthorInfo) Reset() {
 	*x = SiteAuthorInfo{}
-	mi := &file_plugin_proto_msgTypes[80]
+	mi := &file_plugin_proto_msgTypes[81]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5300,7 +5385,7 @@ func (x *SiteAuthorInfo) String() string {
 func (*SiteAuthorInfo) ProtoMessage() {}
 
 func (x *SiteAuthorInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[80]
+	mi := &file_plugin_proto_msgTypes[81]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5313,7 +5398,7 @@ func (x *SiteAuthorInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SiteAuthorInfo.ProtoReflect.Descriptor instead.
 func (*SiteAuthorInfo) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{80}
+	return file_plugin_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *SiteAuthorInfo) GetId() int64 {
@@ -5383,7 +5468,7 @@ type QuerySiteAuthorsRequest struct {
 
 func (x *QuerySiteAuthorsRequest) Reset() {
 	*x = QuerySiteAuthorsRequest{}
-	mi := &file_plugin_proto_msgTypes[81]
+	mi := &file_plugin_proto_msgTypes[82]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5395,7 +5480,7 @@ func (x *QuerySiteAuthorsRequest) String() string {
 func (*QuerySiteAuthorsRequest) ProtoMessage() {}
 
 func (x *QuerySiteAuthorsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[81]
+	mi := &file_plugin_proto_msgTypes[82]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5408,7 +5493,7 @@ func (x *QuerySiteAuthorsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuerySiteAuthorsRequest.ProtoReflect.Descriptor instead.
 func (*QuerySiteAuthorsRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{81}
+	return file_plugin_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *QuerySiteAuthorsRequest) GetSiteKey() string {
@@ -5442,7 +5527,7 @@ type QuerySiteAuthorsResponse struct {
 
 func (x *QuerySiteAuthorsResponse) Reset() {
 	*x = QuerySiteAuthorsResponse{}
-	mi := &file_plugin_proto_msgTypes[82]
+	mi := &file_plugin_proto_msgTypes[83]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5454,7 +5539,7 @@ func (x *QuerySiteAuthorsResponse) String() string {
 func (*QuerySiteAuthorsResponse) ProtoMessage() {}
 
 func (x *QuerySiteAuthorsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[82]
+	mi := &file_plugin_proto_msgTypes[83]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5467,7 +5552,7 @@ func (x *QuerySiteAuthorsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuerySiteAuthorsResponse.ProtoReflect.Descriptor instead.
 func (*QuerySiteAuthorsResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{82}
+	return file_plugin_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *QuerySiteAuthorsResponse) GetItems() []*SiteAuthorInfo {
@@ -5493,7 +5578,7 @@ type ListAuthorsByWorkIdRequest struct {
 
 func (x *ListAuthorsByWorkIdRequest) Reset() {
 	*x = ListAuthorsByWorkIdRequest{}
-	mi := &file_plugin_proto_msgTypes[83]
+	mi := &file_plugin_proto_msgTypes[84]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5505,7 +5590,7 @@ func (x *ListAuthorsByWorkIdRequest) String() string {
 func (*ListAuthorsByWorkIdRequest) ProtoMessage() {}
 
 func (x *ListAuthorsByWorkIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[83]
+	mi := &file_plugin_proto_msgTypes[84]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5518,7 +5603,7 @@ func (x *ListAuthorsByWorkIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAuthorsByWorkIdRequest.ProtoReflect.Descriptor instead.
 func (*ListAuthorsByWorkIdRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{83}
+	return file_plugin_proto_rawDescGZIP(), []int{84}
 }
 
 func (x *ListAuthorsByWorkIdRequest) GetWorkId() int64 {
@@ -5539,7 +5624,7 @@ type WorkLocalAuthorEntry struct {
 
 func (x *WorkLocalAuthorEntry) Reset() {
 	*x = WorkLocalAuthorEntry{}
-	mi := &file_plugin_proto_msgTypes[84]
+	mi := &file_plugin_proto_msgTypes[85]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5551,7 +5636,7 @@ func (x *WorkLocalAuthorEntry) String() string {
 func (*WorkLocalAuthorEntry) ProtoMessage() {}
 
 func (x *WorkLocalAuthorEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[84]
+	mi := &file_plugin_proto_msgTypes[85]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5564,7 +5649,7 @@ func (x *WorkLocalAuthorEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkLocalAuthorEntry.ProtoReflect.Descriptor instead.
 func (*WorkLocalAuthorEntry) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{84}
+	return file_plugin_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *WorkLocalAuthorEntry) GetAuthor() *LocalAuthorDTO {
@@ -5592,7 +5677,7 @@ type WorkSiteAuthorEntry struct {
 
 func (x *WorkSiteAuthorEntry) Reset() {
 	*x = WorkSiteAuthorEntry{}
-	mi := &file_plugin_proto_msgTypes[85]
+	mi := &file_plugin_proto_msgTypes[86]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5604,7 +5689,7 @@ func (x *WorkSiteAuthorEntry) String() string {
 func (*WorkSiteAuthorEntry) ProtoMessage() {}
 
 func (x *WorkSiteAuthorEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[85]
+	mi := &file_plugin_proto_msgTypes[86]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5617,7 +5702,7 @@ func (x *WorkSiteAuthorEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkSiteAuthorEntry.ProtoReflect.Descriptor instead.
 func (*WorkSiteAuthorEntry) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{85}
+	return file_plugin_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *WorkSiteAuthorEntry) GetAuthor() *SiteAuthorInfo {
@@ -5644,7 +5729,7 @@ type ListAuthorsByWorkIdResponse struct {
 
 func (x *ListAuthorsByWorkIdResponse) Reset() {
 	*x = ListAuthorsByWorkIdResponse{}
-	mi := &file_plugin_proto_msgTypes[86]
+	mi := &file_plugin_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5656,7 +5741,7 @@ func (x *ListAuthorsByWorkIdResponse) String() string {
 func (*ListAuthorsByWorkIdResponse) ProtoMessage() {}
 
 func (x *ListAuthorsByWorkIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[86]
+	mi := &file_plugin_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5669,7 +5754,7 @@ func (x *ListAuthorsByWorkIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAuthorsByWorkIdResponse.ProtoReflect.Descriptor instead.
 func (*ListAuthorsByWorkIdResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{86}
+	return file_plugin_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *ListAuthorsByWorkIdResponse) GetLocalAuthors() []*WorkLocalAuthorEntry {
@@ -5695,7 +5780,7 @@ type GetLocalTagByIdRequest struct {
 
 func (x *GetLocalTagByIdRequest) Reset() {
 	*x = GetLocalTagByIdRequest{}
-	mi := &file_plugin_proto_msgTypes[87]
+	mi := &file_plugin_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5707,7 +5792,7 @@ func (x *GetLocalTagByIdRequest) String() string {
 func (*GetLocalTagByIdRequest) ProtoMessage() {}
 
 func (x *GetLocalTagByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[87]
+	mi := &file_plugin_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5720,7 +5805,7 @@ func (x *GetLocalTagByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLocalTagByIdRequest.ProtoReflect.Descriptor instead.
 func (*GetLocalTagByIdRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{87}
+	return file_plugin_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *GetLocalTagByIdRequest) GetLocalTagId() int64 {
@@ -5740,7 +5825,7 @@ type QueryLocalTagsRequest struct {
 
 func (x *QueryLocalTagsRequest) Reset() {
 	*x = QueryLocalTagsRequest{}
-	mi := &file_plugin_proto_msgTypes[88]
+	mi := &file_plugin_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5752,7 +5837,7 @@ func (x *QueryLocalTagsRequest) String() string {
 func (*QueryLocalTagsRequest) ProtoMessage() {}
 
 func (x *QueryLocalTagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[88]
+	mi := &file_plugin_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5765,7 +5850,7 @@ func (x *QueryLocalTagsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLocalTagsRequest.ProtoReflect.Descriptor instead.
 func (*QueryLocalTagsRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{88}
+	return file_plugin_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *QueryLocalTagsRequest) GetNameKeyword() string {
@@ -5792,7 +5877,7 @@ type QueryLocalTagsResponse struct {
 
 func (x *QueryLocalTagsResponse) Reset() {
 	*x = QueryLocalTagsResponse{}
-	mi := &file_plugin_proto_msgTypes[89]
+	mi := &file_plugin_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5804,7 +5889,7 @@ func (x *QueryLocalTagsResponse) String() string {
 func (*QueryLocalTagsResponse) ProtoMessage() {}
 
 func (x *QueryLocalTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[89]
+	mi := &file_plugin_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5817,7 +5902,7 @@ func (x *QueryLocalTagsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLocalTagsResponse.ProtoReflect.Descriptor instead.
 func (*QueryLocalTagsResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{89}
+	return file_plugin_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *QueryLocalTagsResponse) GetItems() []*LocalTagDTO {
@@ -5844,7 +5929,7 @@ type GetSiteTagBySiteKeyRequest struct {
 
 func (x *GetSiteTagBySiteKeyRequest) Reset() {
 	*x = GetSiteTagBySiteKeyRequest{}
-	mi := &file_plugin_proto_msgTypes[90]
+	mi := &file_plugin_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5856,7 +5941,7 @@ func (x *GetSiteTagBySiteKeyRequest) String() string {
 func (*GetSiteTagBySiteKeyRequest) ProtoMessage() {}
 
 func (x *GetSiteTagBySiteKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[90]
+	mi := &file_plugin_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5869,7 +5954,7 @@ func (x *GetSiteTagBySiteKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSiteTagBySiteKeyRequest.ProtoReflect.Descriptor instead.
 func (*GetSiteTagBySiteKeyRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{90}
+	return file_plugin_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *GetSiteTagBySiteKeyRequest) GetSiteKey() string {
@@ -5901,7 +5986,7 @@ type SiteTagInfo struct {
 
 func (x *SiteTagInfo) Reset() {
 	*x = SiteTagInfo{}
-	mi := &file_plugin_proto_msgTypes[91]
+	mi := &file_plugin_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5913,7 +5998,7 @@ func (x *SiteTagInfo) String() string {
 func (*SiteTagInfo) ProtoMessage() {}
 
 func (x *SiteTagInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[91]
+	mi := &file_plugin_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5926,7 +6011,7 @@ func (x *SiteTagInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SiteTagInfo.ProtoReflect.Descriptor instead.
 func (*SiteTagInfo) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{91}
+	return file_plugin_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *SiteTagInfo) GetId() int64 {
@@ -5982,7 +6067,7 @@ type QuerySiteTagsRequest struct {
 
 func (x *QuerySiteTagsRequest) Reset() {
 	*x = QuerySiteTagsRequest{}
-	mi := &file_plugin_proto_msgTypes[92]
+	mi := &file_plugin_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5994,7 +6079,7 @@ func (x *QuerySiteTagsRequest) String() string {
 func (*QuerySiteTagsRequest) ProtoMessage() {}
 
 func (x *QuerySiteTagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[92]
+	mi := &file_plugin_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6007,7 +6092,7 @@ func (x *QuerySiteTagsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuerySiteTagsRequest.ProtoReflect.Descriptor instead.
 func (*QuerySiteTagsRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{92}
+	return file_plugin_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *QuerySiteTagsRequest) GetSiteKey() string {
@@ -6041,7 +6126,7 @@ type QuerySiteTagsResponse struct {
 
 func (x *QuerySiteTagsResponse) Reset() {
 	*x = QuerySiteTagsResponse{}
-	mi := &file_plugin_proto_msgTypes[93]
+	mi := &file_plugin_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6053,7 +6138,7 @@ func (x *QuerySiteTagsResponse) String() string {
 func (*QuerySiteTagsResponse) ProtoMessage() {}
 
 func (x *QuerySiteTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[93]
+	mi := &file_plugin_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6066,7 +6151,7 @@ func (x *QuerySiteTagsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuerySiteTagsResponse.ProtoReflect.Descriptor instead.
 func (*QuerySiteTagsResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{93}
+	return file_plugin_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *QuerySiteTagsResponse) GetItems() []*SiteTagInfo {
@@ -6092,7 +6177,7 @@ type ListTagsByWorkIdRequest struct {
 
 func (x *ListTagsByWorkIdRequest) Reset() {
 	*x = ListTagsByWorkIdRequest{}
-	mi := &file_plugin_proto_msgTypes[94]
+	mi := &file_plugin_proto_msgTypes[95]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6104,7 +6189,7 @@ func (x *ListTagsByWorkIdRequest) String() string {
 func (*ListTagsByWorkIdRequest) ProtoMessage() {}
 
 func (x *ListTagsByWorkIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[94]
+	mi := &file_plugin_proto_msgTypes[95]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6117,7 +6202,7 @@ func (x *ListTagsByWorkIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTagsByWorkIdRequest.ProtoReflect.Descriptor instead.
 func (*ListTagsByWorkIdRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{94}
+	return file_plugin_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *ListTagsByWorkIdRequest) GetWorkId() int64 {
@@ -6138,7 +6223,7 @@ type WorkLocalTagEntry struct {
 
 func (x *WorkLocalTagEntry) Reset() {
 	*x = WorkLocalTagEntry{}
-	mi := &file_plugin_proto_msgTypes[95]
+	mi := &file_plugin_proto_msgTypes[96]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6150,7 +6235,7 @@ func (x *WorkLocalTagEntry) String() string {
 func (*WorkLocalTagEntry) ProtoMessage() {}
 
 func (x *WorkLocalTagEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[95]
+	mi := &file_plugin_proto_msgTypes[96]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6163,7 +6248,7 @@ func (x *WorkLocalTagEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkLocalTagEntry.ProtoReflect.Descriptor instead.
 func (*WorkLocalTagEntry) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{95}
+	return file_plugin_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *WorkLocalTagEntry) GetTag() *LocalTagDTO {
@@ -6191,7 +6276,7 @@ type WorkSiteTagEntry struct {
 
 func (x *WorkSiteTagEntry) Reset() {
 	*x = WorkSiteTagEntry{}
-	mi := &file_plugin_proto_msgTypes[96]
+	mi := &file_plugin_proto_msgTypes[97]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6203,7 +6288,7 @@ func (x *WorkSiteTagEntry) String() string {
 func (*WorkSiteTagEntry) ProtoMessage() {}
 
 func (x *WorkSiteTagEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[96]
+	mi := &file_plugin_proto_msgTypes[97]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6216,7 +6301,7 @@ func (x *WorkSiteTagEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkSiteTagEntry.ProtoReflect.Descriptor instead.
 func (*WorkSiteTagEntry) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{96}
+	return file_plugin_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *WorkSiteTagEntry) GetTag() *SiteTagInfo {
@@ -6243,7 +6328,7 @@ type ListTagsByWorkIdResponse struct {
 
 func (x *ListTagsByWorkIdResponse) Reset() {
 	*x = ListTagsByWorkIdResponse{}
-	mi := &file_plugin_proto_msgTypes[97]
+	mi := &file_plugin_proto_msgTypes[98]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6255,7 +6340,7 @@ func (x *ListTagsByWorkIdResponse) String() string {
 func (*ListTagsByWorkIdResponse) ProtoMessage() {}
 
 func (x *ListTagsByWorkIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[97]
+	mi := &file_plugin_proto_msgTypes[98]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6268,7 +6353,7 @@ func (x *ListTagsByWorkIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTagsByWorkIdResponse.ProtoReflect.Descriptor instead.
 func (*ListTagsByWorkIdResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{97}
+	return file_plugin_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *ListTagsByWorkIdResponse) GetLocalTags() []*WorkLocalTagEntry {
@@ -6294,7 +6379,7 @@ type GetWorkSetByIdRequest struct {
 
 func (x *GetWorkSetByIdRequest) Reset() {
 	*x = GetWorkSetByIdRequest{}
-	mi := &file_plugin_proto_msgTypes[98]
+	mi := &file_plugin_proto_msgTypes[99]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6306,7 +6391,7 @@ func (x *GetWorkSetByIdRequest) String() string {
 func (*GetWorkSetByIdRequest) ProtoMessage() {}
 
 func (x *GetWorkSetByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[98]
+	mi := &file_plugin_proto_msgTypes[99]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6319,7 +6404,7 @@ func (x *GetWorkSetByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkSetByIdRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkSetByIdRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{98}
+	return file_plugin_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *GetWorkSetByIdRequest) GetWorkSetId() int64 {
@@ -6339,7 +6424,7 @@ type GetWorkSetBySiteKeyRequest struct {
 
 func (x *GetWorkSetBySiteKeyRequest) Reset() {
 	*x = GetWorkSetBySiteKeyRequest{}
-	mi := &file_plugin_proto_msgTypes[99]
+	mi := &file_plugin_proto_msgTypes[100]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6351,7 +6436,7 @@ func (x *GetWorkSetBySiteKeyRequest) String() string {
 func (*GetWorkSetBySiteKeyRequest) ProtoMessage() {}
 
 func (x *GetWorkSetBySiteKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[99]
+	mi := &file_plugin_proto_msgTypes[100]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6364,7 +6449,7 @@ func (x *GetWorkSetBySiteKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkSetBySiteKeyRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkSetBySiteKeyRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{99}
+	return file_plugin_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *GetWorkSetBySiteKeyRequest) GetSiteKey() string {
@@ -6390,7 +6475,7 @@ type ListWorkSetsByWorkIdRequest struct {
 
 func (x *ListWorkSetsByWorkIdRequest) Reset() {
 	*x = ListWorkSetsByWorkIdRequest{}
-	mi := &file_plugin_proto_msgTypes[100]
+	mi := &file_plugin_proto_msgTypes[101]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6402,7 +6487,7 @@ func (x *ListWorkSetsByWorkIdRequest) String() string {
 func (*ListWorkSetsByWorkIdRequest) ProtoMessage() {}
 
 func (x *ListWorkSetsByWorkIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[100]
+	mi := &file_plugin_proto_msgTypes[101]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6415,7 +6500,7 @@ func (x *ListWorkSetsByWorkIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkSetsByWorkIdRequest.ProtoReflect.Descriptor instead.
 func (*ListWorkSetsByWorkIdRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{100}
+	return file_plugin_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *ListWorkSetsByWorkIdRequest) GetWorkId() int64 {
@@ -6434,7 +6519,7 @@ type ListWorkSetsByWorkIdResponse struct {
 
 func (x *ListWorkSetsByWorkIdResponse) Reset() {
 	*x = ListWorkSetsByWorkIdResponse{}
-	mi := &file_plugin_proto_msgTypes[101]
+	mi := &file_plugin_proto_msgTypes[102]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6446,7 +6531,7 @@ func (x *ListWorkSetsByWorkIdResponse) String() string {
 func (*ListWorkSetsByWorkIdResponse) ProtoMessage() {}
 
 func (x *ListWorkSetsByWorkIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[101]
+	mi := &file_plugin_proto_msgTypes[102]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6459,7 +6544,7 @@ func (x *ListWorkSetsByWorkIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkSetsByWorkIdResponse.ProtoReflect.Descriptor instead.
 func (*ListWorkSetsByWorkIdResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{101}
+	return file_plugin_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *ListWorkSetsByWorkIdResponse) GetItems() []*WorkSet {
@@ -6478,7 +6563,7 @@ type ListParentWorkSetsRequest struct {
 
 func (x *ListParentWorkSetsRequest) Reset() {
 	*x = ListParentWorkSetsRequest{}
-	mi := &file_plugin_proto_msgTypes[102]
+	mi := &file_plugin_proto_msgTypes[103]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6490,7 +6575,7 @@ func (x *ListParentWorkSetsRequest) String() string {
 func (*ListParentWorkSetsRequest) ProtoMessage() {}
 
 func (x *ListParentWorkSetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[102]
+	mi := &file_plugin_proto_msgTypes[103]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6503,7 +6588,7 @@ func (x *ListParentWorkSetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListParentWorkSetsRequest.ProtoReflect.Descriptor instead.
 func (*ListParentWorkSetsRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{102}
+	return file_plugin_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *ListParentWorkSetsRequest) GetWorkSetId() int64 {
@@ -6522,7 +6607,7 @@ type ListParentWorkSetsResponse struct {
 
 func (x *ListParentWorkSetsResponse) Reset() {
 	*x = ListParentWorkSetsResponse{}
-	mi := &file_plugin_proto_msgTypes[103]
+	mi := &file_plugin_proto_msgTypes[104]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6534,7 +6619,7 @@ func (x *ListParentWorkSetsResponse) String() string {
 func (*ListParentWorkSetsResponse) ProtoMessage() {}
 
 func (x *ListParentWorkSetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[103]
+	mi := &file_plugin_proto_msgTypes[104]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6547,7 +6632,7 @@ func (x *ListParentWorkSetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListParentWorkSetsResponse.ProtoReflect.Descriptor instead.
 func (*ListParentWorkSetsResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{103}
+	return file_plugin_proto_rawDescGZIP(), []int{104}
 }
 
 func (x *ListParentWorkSetsResponse) GetItems() []*WorkSet {
@@ -6566,7 +6651,7 @@ type ListChildWorkSetsRequest struct {
 
 func (x *ListChildWorkSetsRequest) Reset() {
 	*x = ListChildWorkSetsRequest{}
-	mi := &file_plugin_proto_msgTypes[104]
+	mi := &file_plugin_proto_msgTypes[105]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6578,7 +6663,7 @@ func (x *ListChildWorkSetsRequest) String() string {
 func (*ListChildWorkSetsRequest) ProtoMessage() {}
 
 func (x *ListChildWorkSetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[104]
+	mi := &file_plugin_proto_msgTypes[105]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6591,7 +6676,7 @@ func (x *ListChildWorkSetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChildWorkSetsRequest.ProtoReflect.Descriptor instead.
 func (*ListChildWorkSetsRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{104}
+	return file_plugin_proto_rawDescGZIP(), []int{105}
 }
 
 func (x *ListChildWorkSetsRequest) GetWorkSetId() int64 {
@@ -6610,7 +6695,7 @@ type ListChildWorkSetsResponse struct {
 
 func (x *ListChildWorkSetsResponse) Reset() {
 	*x = ListChildWorkSetsResponse{}
-	mi := &file_plugin_proto_msgTypes[105]
+	mi := &file_plugin_proto_msgTypes[106]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6622,7 +6707,7 @@ func (x *ListChildWorkSetsResponse) String() string {
 func (*ListChildWorkSetsResponse) ProtoMessage() {}
 
 func (x *ListChildWorkSetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[105]
+	mi := &file_plugin_proto_msgTypes[106]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6635,7 +6720,7 @@ func (x *ListChildWorkSetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChildWorkSetsResponse.ProtoReflect.Descriptor instead.
 func (*ListChildWorkSetsResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{105}
+	return file_plugin_proto_rawDescGZIP(), []int{106}
 }
 
 func (x *ListChildWorkSetsResponse) GetItems() []*WorkSet {
@@ -6656,7 +6741,7 @@ type QueryLocalWorkSetsRequest struct {
 
 func (x *QueryLocalWorkSetsRequest) Reset() {
 	*x = QueryLocalWorkSetsRequest{}
-	mi := &file_plugin_proto_msgTypes[106]
+	mi := &file_plugin_proto_msgTypes[107]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6668,7 +6753,7 @@ func (x *QueryLocalWorkSetsRequest) String() string {
 func (*QueryLocalWorkSetsRequest) ProtoMessage() {}
 
 func (x *QueryLocalWorkSetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[106]
+	mi := &file_plugin_proto_msgTypes[107]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6681,7 +6766,7 @@ func (x *QueryLocalWorkSetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLocalWorkSetsRequest.ProtoReflect.Descriptor instead.
 func (*QueryLocalWorkSetsRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{106}
+	return file_plugin_proto_rawDescGZIP(), []int{107}
 }
 
 func (x *QueryLocalWorkSetsRequest) GetPage() *PageRequest {
@@ -6703,7 +6788,7 @@ type WorkSetNameEntry struct {
 
 func (x *WorkSetNameEntry) Reset() {
 	*x = WorkSetNameEntry{}
-	mi := &file_plugin_proto_msgTypes[107]
+	mi := &file_plugin_proto_msgTypes[108]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6715,7 +6800,7 @@ func (x *WorkSetNameEntry) String() string {
 func (*WorkSetNameEntry) ProtoMessage() {}
 
 func (x *WorkSetNameEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[107]
+	mi := &file_plugin_proto_msgTypes[108]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6728,7 +6813,7 @@ func (x *WorkSetNameEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkSetNameEntry.ProtoReflect.Descriptor instead.
 func (*WorkSetNameEntry) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{107}
+	return file_plugin_proto_rawDescGZIP(), []int{108}
 }
 
 func (x *WorkSetNameEntry) GetId() int64 {
@@ -6755,7 +6840,7 @@ type QueryLocalWorkSetsResponse struct {
 
 func (x *QueryLocalWorkSetsResponse) Reset() {
 	*x = QueryLocalWorkSetsResponse{}
-	mi := &file_plugin_proto_msgTypes[108]
+	mi := &file_plugin_proto_msgTypes[109]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6767,7 +6852,7 @@ func (x *QueryLocalWorkSetsResponse) String() string {
 func (*QueryLocalWorkSetsResponse) ProtoMessage() {}
 
 func (x *QueryLocalWorkSetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[108]
+	mi := &file_plugin_proto_msgTypes[109]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6780,7 +6865,7 @@ func (x *QueryLocalWorkSetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLocalWorkSetsResponse.ProtoReflect.Descriptor instead.
 func (*QueryLocalWorkSetsResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{108}
+	return file_plugin_proto_rawDescGZIP(), []int{109}
 }
 
 func (x *QueryLocalWorkSetsResponse) GetItems() []*WorkSetNameEntry {
@@ -6806,7 +6891,7 @@ type ListSitesResponse struct {
 
 func (x *ListSitesResponse) Reset() {
 	*x = ListSitesResponse{}
-	mi := &file_plugin_proto_msgTypes[109]
+	mi := &file_plugin_proto_msgTypes[110]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6818,7 +6903,7 @@ func (x *ListSitesResponse) String() string {
 func (*ListSitesResponse) ProtoMessage() {}
 
 func (x *ListSitesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[109]
+	mi := &file_plugin_proto_msgTypes[110]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6831,7 +6916,7 @@ func (x *ListSitesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSitesResponse.ProtoReflect.Descriptor instead.
 func (*ListSitesResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{109}
+	return file_plugin_proto_rawDescGZIP(), []int{110}
 }
 
 func (x *ListSitesResponse) GetItems() []*SiteDTO {
@@ -6850,7 +6935,7 @@ type GetWorkDirResponse struct {
 
 func (x *GetWorkDirResponse) Reset() {
 	*x = GetWorkDirResponse{}
-	mi := &file_plugin_proto_msgTypes[110]
+	mi := &file_plugin_proto_msgTypes[111]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6862,7 +6947,7 @@ func (x *GetWorkDirResponse) String() string {
 func (*GetWorkDirResponse) ProtoMessage() {}
 
 func (x *GetWorkDirResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[110]
+	mi := &file_plugin_proto_msgTypes[111]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6875,7 +6960,7 @@ func (x *GetWorkDirResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkDirResponse.ProtoReflect.Descriptor instead.
 func (*GetWorkDirResponse) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{110}
+	return file_plugin_proto_rawDescGZIP(), []int{111}
 }
 
 func (x *GetWorkDirResponse) GetPath() string {
@@ -6896,7 +6981,7 @@ type FetchSiteAuthorInfoRequest struct {
 
 func (x *FetchSiteAuthorInfoRequest) Reset() {
 	*x = FetchSiteAuthorInfoRequest{}
-	mi := &file_plugin_proto_msgTypes[111]
+	mi := &file_plugin_proto_msgTypes[112]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6908,7 +6993,7 @@ func (x *FetchSiteAuthorInfoRequest) String() string {
 func (*FetchSiteAuthorInfoRequest) ProtoMessage() {}
 
 func (x *FetchSiteAuthorInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[111]
+	mi := &file_plugin_proto_msgTypes[112]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6921,7 +7006,7 @@ func (x *FetchSiteAuthorInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchSiteAuthorInfoRequest.ProtoReflect.Descriptor instead.
 func (*FetchSiteAuthorInfoRequest) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{111}
+	return file_plugin_proto_rawDescGZIP(), []int{112}
 }
 
 func (x *FetchSiteAuthorInfoRequest) GetSiteKey() string {
@@ -6958,7 +7043,7 @@ type AuthorInfoChunk struct {
 
 func (x *AuthorInfoChunk) Reset() {
 	*x = AuthorInfoChunk{}
-	mi := &file_plugin_proto_msgTypes[112]
+	mi := &file_plugin_proto_msgTypes[113]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6970,7 +7055,7 @@ func (x *AuthorInfoChunk) String() string {
 func (*AuthorInfoChunk) ProtoMessage() {}
 
 func (x *AuthorInfoChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[112]
+	mi := &file_plugin_proto_msgTypes[113]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6983,7 +7068,7 @@ func (x *AuthorInfoChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthorInfoChunk.ProtoReflect.Descriptor instead.
 func (*AuthorInfoChunk) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{112}
+	return file_plugin_proto_rawDescGZIP(), []int{113}
 }
 
 func (x *AuthorInfoChunk) GetPayload() isAuthorInfoChunk_Payload {
@@ -7040,7 +7125,7 @@ type AuthorInfoMeta struct {
 
 func (x *AuthorInfoMeta) Reset() {
 	*x = AuthorInfoMeta{}
-	mi := &file_plugin_proto_msgTypes[113]
+	mi := &file_plugin_proto_msgTypes[114]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7052,7 +7137,7 @@ func (x *AuthorInfoMeta) String() string {
 func (*AuthorInfoMeta) ProtoMessage() {}
 
 func (x *AuthorInfoMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[113]
+	mi := &file_plugin_proto_msgTypes[114]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7065,7 +7150,7 @@ func (x *AuthorInfoMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthorInfoMeta.ProtoReflect.Descriptor instead.
 func (*AuthorInfoMeta) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{113}
+	return file_plugin_proto_rawDescGZIP(), []int{114}
 }
 
 func (x *AuthorInfoMeta) GetAuthorName() string {
@@ -7112,7 +7197,7 @@ type AuthorResourceData struct {
 
 func (x *AuthorResourceData) Reset() {
 	*x = AuthorResourceData{}
-	mi := &file_plugin_proto_msgTypes[114]
+	mi := &file_plugin_proto_msgTypes[115]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7124,7 +7209,7 @@ func (x *AuthorResourceData) String() string {
 func (*AuthorResourceData) ProtoMessage() {}
 
 func (x *AuthorResourceData) ProtoReflect() protoreflect.Message {
-	mi := &file_plugin_proto_msgTypes[114]
+	mi := &file_plugin_proto_msgTypes[115]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7137,7 +7222,7 @@ func (x *AuthorResourceData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthorResourceData.ProtoReflect.Descriptor instead.
 func (*AuthorResourceData) Descriptor() ([]byte, []int) {
-	return file_plugin_proto_rawDescGZIP(), []int{114}
+	return file_plugin_proto_rawDescGZIP(), []int{115}
 }
 
 func (x *AuthorResourceData) GetData() []byte {
@@ -7403,20 +7488,25 @@ const file_plugin_proto_rawDesc = "" +
 	"\tsortOrder\x18\x03 \x01(\x03R\tsortOrder\"C\n" +
 	"\rCreateRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12 \n" +
-	"\vextensionId\x18\x02 \x01(\tR\vextensionId\"\xf3\x01\n" +
+	"\vextensionId\x18\x02 \x01(\tR\vextensionId\"\xb8\x02\n" +
 	"\vCreateChunk\x12)\n" +
 	"\x04mode\x18\x01 \x01(\v2\x13.plugins.CreateModeH\x00R\x04mode\x121\n" +
 	"\x04task\x18\x02 \x01(\v2\x1b.plugins.TaskCreateResponseH\x00R\x04task\x12\x16\n" +
 	"\x05error\x18\x03 \x01(\tH\x00R\x05error\x122\n" +
 	"\theartbeat\x18\x04 \x01(\v2\x12.plugins.HeartbeatH\x00R\theartbeat\x12/\n" +
-	"\x06intent\x18\x05 \x01(\v2\x15.plugins.CreateIntentH\x00R\x06intentB\t\n" +
+	"\x06intent\x18\x05 \x01(\v2\x15.plugins.CreateIntentH\x00R\x06intent\x12C\n" +
+	"\x0echildren_batch\x18\x06 \x01(\v2\x1a.plugins.TaskChildrenBatchH\x00R\rchildrenBatchB\t\n" +
 	"\apayload\")\n" +
 	"\n" +
 	"CreateMode\x12\x1b\n" +
 	"\tis_stream\x18\x01 \x01(\bR\bisStream\"W\n" +
 	"\fCreateIntent\x12-\n" +
 	"\x04kind\x18\x01 \x01(\x0e2\x19.plugins.CreateIntentKindR\x04kind\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\\\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\x85\x01\n" +
+	"\x11TaskChildrenBatch\x12$\n" +
+	"\x0eplugin_task_id\x18\x01 \x01(\tR\fpluginTaskId\x126\n" +
+	"\x05items\x18\x02 \x03(\v2 .plugins.TaskCreateChildResponseR\x05items\x12\x12\n" +
+	"\x04last\x18\x03 \x01(\bR\x04last\"\\\n" +
 	"\x15CreateWorkInfoRequest\x12!\n" +
 	"\x04task\x18\x01 \x01(\v2\r.plugins.TaskR\x04task\x12 \n" +
 	"\vextensionId\x18\x02 \x01(\tR\vextensionId\"s\n" +
@@ -7822,7 +7912,7 @@ func file_plugin_proto_rawDescGZIP() []byte {
 }
 
 var file_plugin_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 116)
+var file_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 117)
 var file_plugin_proto_goTypes = []any{
 	(CreateIntentKind)(0),                 // 0: plugins.CreateIntentKind
 	(*Empty)(nil),                         // 1: plugins.Empty
@@ -7853,94 +7943,95 @@ var file_plugin_proto_goTypes = []any{
 	(*CreateChunk)(nil),                   // 26: plugins.CreateChunk
 	(*CreateMode)(nil),                    // 27: plugins.CreateMode
 	(*CreateIntent)(nil),                  // 28: plugins.CreateIntent
-	(*CreateWorkInfoRequest)(nil),         // 29: plugins.CreateWorkInfoRequest
-	(*StartRequest)(nil),                  // 30: plugins.StartRequest
-	(*RetryRequest)(nil),                  // 31: plugins.RetryRequest
-	(*TaskResParamMessage)(nil),           // 32: plugins.TaskResParamMessage
-	(*TaskResumeParam)(nil),               // 33: plugins.TaskResumeParam
-	(*StoreResumeOffset)(nil),             // 34: plugins.StoreResumeOffset
-	(*TaskResumeParamMessage)(nil),        // 35: plugins.TaskResumeParamMessage
-	(*StreamChunk)(nil),                   // 36: plugins.StreamChunk
-	(*StartFrame)(nil),                    // 37: plugins.StartFrame
-	(*ResumeFrame)(nil),                   // 38: plugins.ResumeFrame
-	(*PullRequest)(nil),                   // 39: plugins.PullRequest
-	(*StoreSpecMeta)(nil),                 // 40: plugins.StoreSpecMeta
-	(*StoreSpecs)(nil),                    // 41: plugins.StoreSpecs
-	(*BrowserRequest)(nil),                // 42: plugins.BrowserRequest
-	(*RegisterExtensionRequest)(nil),      // 43: plugins.RegisterExtensionRequest
-	(*UnregisterRequest)(nil),             // 44: plugins.UnregisterRequest
-	(*StorageKeyRequest)(nil),             // 45: plugins.StorageKeyRequest
-	(*StorageValue)(nil),                  // 46: plugins.StorageValue
-	(*StorageValueResponse)(nil),          // 47: plugins.StorageValueResponse
-	(*StorageEntryRequest)(nil),           // 48: plugins.StorageEntryRequest
-	(*AllStorageValuesResponse)(nil),      // 49: plugins.AllStorageValuesResponse
-	(*PreferenceValue)(nil),               // 50: plugins.PreferenceValue
-	(*PreferenceKeyRequest)(nil),          // 51: plugins.PreferenceKeyRequest
-	(*PreferenceEntryRequest)(nil),        // 52: plugins.PreferenceEntryRequest
-	(*PreferenceGetResponse)(nil),         // 53: plugins.PreferenceGetResponse
-	(*PreferenceListResponse)(nil),        // 54: plugins.PreferenceListResponse
-	(*ResolveProxyRequest)(nil),           // 55: plugins.ResolveProxyRequest
-	(*ResolveProxyResponse)(nil),          // 56: plugins.ResolveProxyResponse
-	(*CreateTaskRequest)(nil),             // 57: plugins.CreateTaskRequest
-	(*CreateTaskResponse)(nil),            // 58: plugins.CreateTaskResponse
-	(*GetPluginRootRequest)(nil),          // 59: plugins.GetPluginRootRequest
-	(*GetPluginRootResponse)(nil),         // 60: plugins.GetPluginRootResponse
-	(*LogRequest)(nil),                    // 61: plugins.LogRequest
-	(*PublishToFrontendRequest)(nil),      // 62: plugins.PublishToFrontendRequest
-	(*SubscribeFrontendRequest)(nil),      // 63: plugins.SubscribeFrontendRequest
-	(*FrontendMessage)(nil),               // 64: plugins.FrontendMessage
-	(*UnsubscribeFrontendRequest)(nil),    // 65: plugins.UnsubscribeFrontendRequest
-	(*PageRequest)(nil),                   // 66: plugins.PageRequest
-	(*PageInfo)(nil),                      // 67: plugins.PageInfo
-	(*GetWorkByIdRequest)(nil),            // 68: plugins.GetWorkByIdRequest
-	(*GetWorkBySiteKeyRequest)(nil),       // 69: plugins.GetWorkBySiteKeyRequest
-	(*WorkWithSite)(nil),                  // 70: plugins.WorkWithSite
-	(*QueryWorksRequest)(nil),             // 71: plugins.QueryWorksRequest
-	(*QueryWorksResponse)(nil),            // 72: plugins.QueryWorksResponse
-	(*ListResourcesByWorkIdRequest)(nil),  // 73: plugins.ListResourcesByWorkIdRequest
-	(*ListResourcesByWorkIdResponse)(nil), // 74: plugins.ListResourcesByWorkIdResponse
-	(*ResourceInfo)(nil),                  // 75: plugins.ResourceInfo
-	(*StoreInfo)(nil),                     // 76: plugins.StoreInfo
-	(*GetLocalAuthorByIdRequest)(nil),     // 77: plugins.GetLocalAuthorByIdRequest
-	(*QueryLocalAuthorsRequest)(nil),      // 78: plugins.QueryLocalAuthorsRequest
-	(*QueryLocalAuthorsResponse)(nil),     // 79: plugins.QueryLocalAuthorsResponse
-	(*GetSiteAuthorBySiteKeyRequest)(nil), // 80: plugins.GetSiteAuthorBySiteKeyRequest
-	(*SiteAuthorInfo)(nil),                // 81: plugins.SiteAuthorInfo
-	(*QuerySiteAuthorsRequest)(nil),       // 82: plugins.QuerySiteAuthorsRequest
-	(*QuerySiteAuthorsResponse)(nil),      // 83: plugins.QuerySiteAuthorsResponse
-	(*ListAuthorsByWorkIdRequest)(nil),    // 84: plugins.ListAuthorsByWorkIdRequest
-	(*WorkLocalAuthorEntry)(nil),          // 85: plugins.WorkLocalAuthorEntry
-	(*WorkSiteAuthorEntry)(nil),           // 86: plugins.WorkSiteAuthorEntry
-	(*ListAuthorsByWorkIdResponse)(nil),   // 87: plugins.ListAuthorsByWorkIdResponse
-	(*GetLocalTagByIdRequest)(nil),        // 88: plugins.GetLocalTagByIdRequest
-	(*QueryLocalTagsRequest)(nil),         // 89: plugins.QueryLocalTagsRequest
-	(*QueryLocalTagsResponse)(nil),        // 90: plugins.QueryLocalTagsResponse
-	(*GetSiteTagBySiteKeyRequest)(nil),    // 91: plugins.GetSiteTagBySiteKeyRequest
-	(*SiteTagInfo)(nil),                   // 92: plugins.SiteTagInfo
-	(*QuerySiteTagsRequest)(nil),          // 93: plugins.QuerySiteTagsRequest
-	(*QuerySiteTagsResponse)(nil),         // 94: plugins.QuerySiteTagsResponse
-	(*ListTagsByWorkIdRequest)(nil),       // 95: plugins.ListTagsByWorkIdRequest
-	(*WorkLocalTagEntry)(nil),             // 96: plugins.WorkLocalTagEntry
-	(*WorkSiteTagEntry)(nil),              // 97: plugins.WorkSiteTagEntry
-	(*ListTagsByWorkIdResponse)(nil),      // 98: plugins.ListTagsByWorkIdResponse
-	(*GetWorkSetByIdRequest)(nil),         // 99: plugins.GetWorkSetByIdRequest
-	(*GetWorkSetBySiteKeyRequest)(nil),    // 100: plugins.GetWorkSetBySiteKeyRequest
-	(*ListWorkSetsByWorkIdRequest)(nil),   // 101: plugins.ListWorkSetsByWorkIdRequest
-	(*ListWorkSetsByWorkIdResponse)(nil),  // 102: plugins.ListWorkSetsByWorkIdResponse
-	(*ListParentWorkSetsRequest)(nil),     // 103: plugins.ListParentWorkSetsRequest
-	(*ListParentWorkSetsResponse)(nil),    // 104: plugins.ListParentWorkSetsResponse
-	(*ListChildWorkSetsRequest)(nil),      // 105: plugins.ListChildWorkSetsRequest
-	(*ListChildWorkSetsResponse)(nil),     // 106: plugins.ListChildWorkSetsResponse
-	(*QueryLocalWorkSetsRequest)(nil),     // 107: plugins.QueryLocalWorkSetsRequest
-	(*WorkSetNameEntry)(nil),              // 108: plugins.WorkSetNameEntry
-	(*QueryLocalWorkSetsResponse)(nil),    // 109: plugins.QueryLocalWorkSetsResponse
-	(*ListSitesResponse)(nil),             // 110: plugins.ListSitesResponse
-	(*GetWorkDirResponse)(nil),            // 111: plugins.GetWorkDirResponse
-	(*FetchSiteAuthorInfoRequest)(nil),    // 112: plugins.FetchSiteAuthorInfoRequest
-	(*AuthorInfoChunk)(nil),               // 113: plugins.AuthorInfoChunk
-	(*AuthorInfoMeta)(nil),                // 114: plugins.AuthorInfoMeta
-	(*AuthorResourceData)(nil),            // 115: plugins.AuthorResourceData
-	nil,                                   // 116: plugins.AllStorageValuesResponse.ValuesEntry
+	(*TaskChildrenBatch)(nil),             // 29: plugins.TaskChildrenBatch
+	(*CreateWorkInfoRequest)(nil),         // 30: plugins.CreateWorkInfoRequest
+	(*StartRequest)(nil),                  // 31: plugins.StartRequest
+	(*RetryRequest)(nil),                  // 32: plugins.RetryRequest
+	(*TaskResParamMessage)(nil),           // 33: plugins.TaskResParamMessage
+	(*TaskResumeParam)(nil),               // 34: plugins.TaskResumeParam
+	(*StoreResumeOffset)(nil),             // 35: plugins.StoreResumeOffset
+	(*TaskResumeParamMessage)(nil),        // 36: plugins.TaskResumeParamMessage
+	(*StreamChunk)(nil),                   // 37: plugins.StreamChunk
+	(*StartFrame)(nil),                    // 38: plugins.StartFrame
+	(*ResumeFrame)(nil),                   // 39: plugins.ResumeFrame
+	(*PullRequest)(nil),                   // 40: plugins.PullRequest
+	(*StoreSpecMeta)(nil),                 // 41: plugins.StoreSpecMeta
+	(*StoreSpecs)(nil),                    // 42: plugins.StoreSpecs
+	(*BrowserRequest)(nil),                // 43: plugins.BrowserRequest
+	(*RegisterExtensionRequest)(nil),      // 44: plugins.RegisterExtensionRequest
+	(*UnregisterRequest)(nil),             // 45: plugins.UnregisterRequest
+	(*StorageKeyRequest)(nil),             // 46: plugins.StorageKeyRequest
+	(*StorageValue)(nil),                  // 47: plugins.StorageValue
+	(*StorageValueResponse)(nil),          // 48: plugins.StorageValueResponse
+	(*StorageEntryRequest)(nil),           // 49: plugins.StorageEntryRequest
+	(*AllStorageValuesResponse)(nil),      // 50: plugins.AllStorageValuesResponse
+	(*PreferenceValue)(nil),               // 51: plugins.PreferenceValue
+	(*PreferenceKeyRequest)(nil),          // 52: plugins.PreferenceKeyRequest
+	(*PreferenceEntryRequest)(nil),        // 53: plugins.PreferenceEntryRequest
+	(*PreferenceGetResponse)(nil),         // 54: plugins.PreferenceGetResponse
+	(*PreferenceListResponse)(nil),        // 55: plugins.PreferenceListResponse
+	(*ResolveProxyRequest)(nil),           // 56: plugins.ResolveProxyRequest
+	(*ResolveProxyResponse)(nil),          // 57: plugins.ResolveProxyResponse
+	(*CreateTaskRequest)(nil),             // 58: plugins.CreateTaskRequest
+	(*CreateTaskResponse)(nil),            // 59: plugins.CreateTaskResponse
+	(*GetPluginRootRequest)(nil),          // 60: plugins.GetPluginRootRequest
+	(*GetPluginRootResponse)(nil),         // 61: plugins.GetPluginRootResponse
+	(*LogRequest)(nil),                    // 62: plugins.LogRequest
+	(*PublishToFrontendRequest)(nil),      // 63: plugins.PublishToFrontendRequest
+	(*SubscribeFrontendRequest)(nil),      // 64: plugins.SubscribeFrontendRequest
+	(*FrontendMessage)(nil),               // 65: plugins.FrontendMessage
+	(*UnsubscribeFrontendRequest)(nil),    // 66: plugins.UnsubscribeFrontendRequest
+	(*PageRequest)(nil),                   // 67: plugins.PageRequest
+	(*PageInfo)(nil),                      // 68: plugins.PageInfo
+	(*GetWorkByIdRequest)(nil),            // 69: plugins.GetWorkByIdRequest
+	(*GetWorkBySiteKeyRequest)(nil),       // 70: plugins.GetWorkBySiteKeyRequest
+	(*WorkWithSite)(nil),                  // 71: plugins.WorkWithSite
+	(*QueryWorksRequest)(nil),             // 72: plugins.QueryWorksRequest
+	(*QueryWorksResponse)(nil),            // 73: plugins.QueryWorksResponse
+	(*ListResourcesByWorkIdRequest)(nil),  // 74: plugins.ListResourcesByWorkIdRequest
+	(*ListResourcesByWorkIdResponse)(nil), // 75: plugins.ListResourcesByWorkIdResponse
+	(*ResourceInfo)(nil),                  // 76: plugins.ResourceInfo
+	(*StoreInfo)(nil),                     // 77: plugins.StoreInfo
+	(*GetLocalAuthorByIdRequest)(nil),     // 78: plugins.GetLocalAuthorByIdRequest
+	(*QueryLocalAuthorsRequest)(nil),      // 79: plugins.QueryLocalAuthorsRequest
+	(*QueryLocalAuthorsResponse)(nil),     // 80: plugins.QueryLocalAuthorsResponse
+	(*GetSiteAuthorBySiteKeyRequest)(nil), // 81: plugins.GetSiteAuthorBySiteKeyRequest
+	(*SiteAuthorInfo)(nil),                // 82: plugins.SiteAuthorInfo
+	(*QuerySiteAuthorsRequest)(nil),       // 83: plugins.QuerySiteAuthorsRequest
+	(*QuerySiteAuthorsResponse)(nil),      // 84: plugins.QuerySiteAuthorsResponse
+	(*ListAuthorsByWorkIdRequest)(nil),    // 85: plugins.ListAuthorsByWorkIdRequest
+	(*WorkLocalAuthorEntry)(nil),          // 86: plugins.WorkLocalAuthorEntry
+	(*WorkSiteAuthorEntry)(nil),           // 87: plugins.WorkSiteAuthorEntry
+	(*ListAuthorsByWorkIdResponse)(nil),   // 88: plugins.ListAuthorsByWorkIdResponse
+	(*GetLocalTagByIdRequest)(nil),        // 89: plugins.GetLocalTagByIdRequest
+	(*QueryLocalTagsRequest)(nil),         // 90: plugins.QueryLocalTagsRequest
+	(*QueryLocalTagsResponse)(nil),        // 91: plugins.QueryLocalTagsResponse
+	(*GetSiteTagBySiteKeyRequest)(nil),    // 92: plugins.GetSiteTagBySiteKeyRequest
+	(*SiteTagInfo)(nil),                   // 93: plugins.SiteTagInfo
+	(*QuerySiteTagsRequest)(nil),          // 94: plugins.QuerySiteTagsRequest
+	(*QuerySiteTagsResponse)(nil),         // 95: plugins.QuerySiteTagsResponse
+	(*ListTagsByWorkIdRequest)(nil),       // 96: plugins.ListTagsByWorkIdRequest
+	(*WorkLocalTagEntry)(nil),             // 97: plugins.WorkLocalTagEntry
+	(*WorkSiteTagEntry)(nil),              // 98: plugins.WorkSiteTagEntry
+	(*ListTagsByWorkIdResponse)(nil),      // 99: plugins.ListTagsByWorkIdResponse
+	(*GetWorkSetByIdRequest)(nil),         // 100: plugins.GetWorkSetByIdRequest
+	(*GetWorkSetBySiteKeyRequest)(nil),    // 101: plugins.GetWorkSetBySiteKeyRequest
+	(*ListWorkSetsByWorkIdRequest)(nil),   // 102: plugins.ListWorkSetsByWorkIdRequest
+	(*ListWorkSetsByWorkIdResponse)(nil),  // 103: plugins.ListWorkSetsByWorkIdResponse
+	(*ListParentWorkSetsRequest)(nil),     // 104: plugins.ListParentWorkSetsRequest
+	(*ListParentWorkSetsResponse)(nil),    // 105: plugins.ListParentWorkSetsResponse
+	(*ListChildWorkSetsRequest)(nil),      // 106: plugins.ListChildWorkSetsRequest
+	(*ListChildWorkSetsResponse)(nil),     // 107: plugins.ListChildWorkSetsResponse
+	(*QueryLocalWorkSetsRequest)(nil),     // 108: plugins.QueryLocalWorkSetsRequest
+	(*WorkSetNameEntry)(nil),              // 109: plugins.WorkSetNameEntry
+	(*QueryLocalWorkSetsResponse)(nil),    // 110: plugins.QueryLocalWorkSetsResponse
+	(*ListSitesResponse)(nil),             // 111: plugins.ListSitesResponse
+	(*GetWorkDirResponse)(nil),            // 112: plugins.GetWorkDirResponse
+	(*FetchSiteAuthorInfoRequest)(nil),    // 113: plugins.FetchSiteAuthorInfoRequest
+	(*AuthorInfoChunk)(nil),               // 114: plugins.AuthorInfoChunk
+	(*AuthorInfoMeta)(nil),                // 115: plugins.AuthorInfoMeta
+	(*AuthorResourceData)(nil),            // 116: plugins.AuthorResourceData
+	nil,                                   // 117: plugins.AllStorageValuesResponse.ValuesEntry
 }
 var file_plugin_proto_depIdxs = []int32{
 	12,  // 0: plugins.TaskCreateResponse.children:type_name -> plugins.TaskCreateChildResponse
@@ -7958,171 +8049,173 @@ var file_plugin_proto_depIdxs = []int32{
 	13,  // 12: plugins.CreateChunk.task:type_name -> plugins.TaskCreateResponse
 	2,   // 13: plugins.CreateChunk.heartbeat:type_name -> plugins.Heartbeat
 	28,  // 14: plugins.CreateChunk.intent:type_name -> plugins.CreateIntent
-	0,   // 15: plugins.CreateIntent.kind:type_name -> plugins.CreateIntentKind
-	3,   // 16: plugins.CreateWorkInfoRequest.task:type_name -> plugins.Task
-	3,   // 17: plugins.StartRequest.task:type_name -> plugins.Task
-	3,   // 18: plugins.RetryRequest.task:type_name -> plugins.Task
-	15,  // 19: plugins.TaskResParamMessage.param:type_name -> plugins.TaskResParam
-	3,   // 20: plugins.TaskResumeParam.task:type_name -> plugins.Task
-	34,  // 21: plugins.TaskResumeParam.streamOffsets:type_name -> plugins.StoreResumeOffset
-	33,  // 22: plugins.TaskResumeParamMessage.param:type_name -> plugins.TaskResumeParam
-	14,  // 23: plugins.StreamChunk.workResponse:type_name -> plugins.WorkResponse
-	41,  // 24: plugins.StreamChunk.specs:type_name -> plugins.StoreSpecs
-	2,   // 25: plugins.StreamChunk.heartbeat:type_name -> plugins.Heartbeat
-	30,  // 26: plugins.StartFrame.start:type_name -> plugins.StartRequest
-	39,  // 27: plugins.StartFrame.pull:type_name -> plugins.PullRequest
-	35,  // 28: plugins.ResumeFrame.resume:type_name -> plugins.TaskResumeParamMessage
-	39,  // 29: plugins.ResumeFrame.pull:type_name -> plugins.PullRequest
-	40,  // 30: plugins.StoreSpecs.items:type_name -> plugins.StoreSpecMeta
-	116, // 31: plugins.AllStorageValuesResponse.values:type_name -> plugins.AllStorageValuesResponse.ValuesEntry
-	50,  // 32: plugins.PreferenceEntryRequest.value:type_name -> plugins.PreferenceValue
-	50,  // 33: plugins.PreferenceGetResponse.value:type_name -> plugins.PreferenceValue
-	4,   // 34: plugins.WorkWithSite.work:type_name -> plugins.Work
-	6,   // 35: plugins.WorkWithSite.site:type_name -> plugins.SiteDTO
-	66,  // 36: plugins.QueryWorksRequest.page:type_name -> plugins.PageRequest
-	70,  // 37: plugins.QueryWorksResponse.items:type_name -> plugins.WorkWithSite
-	67,  // 38: plugins.QueryWorksResponse.page:type_name -> plugins.PageInfo
-	75,  // 39: plugins.ListResourcesByWorkIdResponse.items:type_name -> plugins.ResourceInfo
-	76,  // 40: plugins.ResourceInfo.stores:type_name -> plugins.StoreInfo
-	66,  // 41: plugins.QueryLocalAuthorsRequest.page:type_name -> plugins.PageRequest
-	7,   // 42: plugins.QueryLocalAuthorsResponse.items:type_name -> plugins.LocalAuthorDTO
-	67,  // 43: plugins.QueryLocalAuthorsResponse.page:type_name -> plugins.PageInfo
-	66,  // 44: plugins.QuerySiteAuthorsRequest.page:type_name -> plugins.PageRequest
-	81,  // 45: plugins.QuerySiteAuthorsResponse.items:type_name -> plugins.SiteAuthorInfo
-	67,  // 46: plugins.QuerySiteAuthorsResponse.page:type_name -> plugins.PageInfo
-	7,   // 47: plugins.WorkLocalAuthorEntry.author:type_name -> plugins.LocalAuthorDTO
-	81,  // 48: plugins.WorkSiteAuthorEntry.author:type_name -> plugins.SiteAuthorInfo
-	85,  // 49: plugins.ListAuthorsByWorkIdResponse.local_authors:type_name -> plugins.WorkLocalAuthorEntry
-	86,  // 50: plugins.ListAuthorsByWorkIdResponse.site_authors:type_name -> plugins.WorkSiteAuthorEntry
-	66,  // 51: plugins.QueryLocalTagsRequest.page:type_name -> plugins.PageRequest
-	8,   // 52: plugins.QueryLocalTagsResponse.items:type_name -> plugins.LocalTagDTO
-	67,  // 53: plugins.QueryLocalTagsResponse.page:type_name -> plugins.PageInfo
-	66,  // 54: plugins.QuerySiteTagsRequest.page:type_name -> plugins.PageRequest
-	92,  // 55: plugins.QuerySiteTagsResponse.items:type_name -> plugins.SiteTagInfo
-	67,  // 56: plugins.QuerySiteTagsResponse.page:type_name -> plugins.PageInfo
-	8,   // 57: plugins.WorkLocalTagEntry.tag:type_name -> plugins.LocalTagDTO
-	92,  // 58: plugins.WorkSiteTagEntry.tag:type_name -> plugins.SiteTagInfo
-	96,  // 59: plugins.ListTagsByWorkIdResponse.local_tags:type_name -> plugins.WorkLocalTagEntry
-	97,  // 60: plugins.ListTagsByWorkIdResponse.site_tags:type_name -> plugins.WorkSiteTagEntry
-	5,   // 61: plugins.ListWorkSetsByWorkIdResponse.items:type_name -> plugins.WorkSet
-	5,   // 62: plugins.ListParentWorkSetsResponse.items:type_name -> plugins.WorkSet
-	5,   // 63: plugins.ListChildWorkSetsResponse.items:type_name -> plugins.WorkSet
-	66,  // 64: plugins.QueryLocalWorkSetsRequest.page:type_name -> plugins.PageRequest
-	108, // 65: plugins.QueryLocalWorkSetsResponse.items:type_name -> plugins.WorkSetNameEntry
-	67,  // 66: plugins.QueryLocalWorkSetsResponse.page:type_name -> plugins.PageInfo
-	6,   // 67: plugins.ListSitesResponse.items:type_name -> plugins.SiteDTO
-	114, // 68: plugins.AuthorInfoChunk.meta:type_name -> plugins.AuthorInfoMeta
-	115, // 69: plugins.AuthorInfoChunk.resource:type_name -> plugins.AuthorResourceData
-	46,  // 70: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
-	16,  // 71: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
-	1,   // 72: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
-	18,  // 73: plugins.PluginLifecycle.SettingChanged:input_type -> plugins.SettingChangedRequest
-	25,  // 74: plugins.WorkFetchService.Create:input_type -> plugins.CreateRequest
-	29,  // 75: plugins.WorkFetchService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
-	37,  // 76: plugins.WorkFetchService.Start:input_type -> plugins.StartFrame
-	31,  // 77: plugins.WorkFetchService.Retry:input_type -> plugins.RetryRequest
-	32,  // 78: plugins.WorkFetchService.Pause:input_type -> plugins.TaskResParamMessage
-	32,  // 79: plugins.WorkFetchService.Stop:input_type -> plugins.TaskResParamMessage
-	38,  // 80: plugins.WorkFetchService.Resume:input_type -> plugins.ResumeFrame
-	19,  // 81: plugins.WorkFetchService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
-	22,  // 82: plugins.WorkFetchService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
-	42,  // 83: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
-	42,  // 84: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
-	45,  // 85: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
-	48,  // 86: plugins.HostService.SetValue:input_type -> plugins.StorageEntryRequest
-	48,  // 87: plugins.HostService.SetValueEncrypted:input_type -> plugins.StorageEntryRequest
-	45,  // 88: plugins.HostService.DeleteValue:input_type -> plugins.StorageKeyRequest
-	1,   // 89: plugins.HostService.GetAllValues:input_type -> plugins.Empty
-	51,  // 90: plugins.HostService.GetPreference:input_type -> plugins.PreferenceKeyRequest
-	52,  // 91: plugins.HostService.SetPreference:input_type -> plugins.PreferenceEntryRequest
-	1,   // 92: plugins.HostService.ListMyPreferences:input_type -> plugins.Empty
-	55,  // 93: plugins.HostService.ResolveProxy:input_type -> plugins.ResolveProxyRequest
-	57,  // 94: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
-	59,  // 95: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
-	61,  // 96: plugins.HostService.Log:input_type -> plugins.LogRequest
-	62,  // 97: plugins.HostService.PublishToFrontend:input_type -> plugins.PublishToFrontendRequest
-	63,  // 98: plugins.HostService.SubscribeFrontend:input_type -> plugins.SubscribeFrontendRequest
-	65,  // 99: plugins.HostService.UnsubscribeFrontend:input_type -> plugins.UnsubscribeFrontendRequest
-	68,  // 100: plugins.LibraryQuery.GetWorkById:input_type -> plugins.GetWorkByIdRequest
-	69,  // 101: plugins.LibraryQuery.GetWorkBySiteKey:input_type -> plugins.GetWorkBySiteKeyRequest
-	71,  // 102: plugins.LibraryQuery.QueryWorks:input_type -> plugins.QueryWorksRequest
-	73,  // 103: plugins.LibraryQuery.ListResourcesByWorkId:input_type -> plugins.ListResourcesByWorkIdRequest
-	77,  // 104: plugins.LibraryQuery.GetLocalAuthorById:input_type -> plugins.GetLocalAuthorByIdRequest
-	78,  // 105: plugins.LibraryQuery.QueryLocalAuthors:input_type -> plugins.QueryLocalAuthorsRequest
-	80,  // 106: plugins.LibraryQuery.GetSiteAuthorBySiteKey:input_type -> plugins.GetSiteAuthorBySiteKeyRequest
-	82,  // 107: plugins.LibraryQuery.QuerySiteAuthors:input_type -> plugins.QuerySiteAuthorsRequest
-	84,  // 108: plugins.LibraryQuery.ListAuthorsByWorkId:input_type -> plugins.ListAuthorsByWorkIdRequest
-	88,  // 109: plugins.LibraryQuery.GetLocalTagById:input_type -> plugins.GetLocalTagByIdRequest
-	89,  // 110: plugins.LibraryQuery.QueryLocalTags:input_type -> plugins.QueryLocalTagsRequest
-	91,  // 111: plugins.LibraryQuery.GetSiteTagBySiteKey:input_type -> plugins.GetSiteTagBySiteKeyRequest
-	93,  // 112: plugins.LibraryQuery.QuerySiteTags:input_type -> plugins.QuerySiteTagsRequest
-	95,  // 113: plugins.LibraryQuery.ListTagsByWorkId:input_type -> plugins.ListTagsByWorkIdRequest
-	99,  // 114: plugins.LibraryQuery.GetWorkSetById:input_type -> plugins.GetWorkSetByIdRequest
-	100, // 115: plugins.LibraryQuery.GetWorkSetBySiteKey:input_type -> plugins.GetWorkSetBySiteKeyRequest
-	101, // 116: plugins.LibraryQuery.ListWorkSetsByWorkId:input_type -> plugins.ListWorkSetsByWorkIdRequest
-	103, // 117: plugins.LibraryQuery.ListParentWorkSets:input_type -> plugins.ListParentWorkSetsRequest
-	105, // 118: plugins.LibraryQuery.ListChildWorkSets:input_type -> plugins.ListChildWorkSetsRequest
-	107, // 119: plugins.LibraryQuery.QueryLocalWorkSets:input_type -> plugins.QueryLocalWorkSetsRequest
-	1,   // 120: plugins.LibraryQuery.ListSites:input_type -> plugins.Empty
-	1,   // 121: plugins.LibraryQuery.GetWorkDir:input_type -> plugins.Empty
-	112, // 122: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:input_type -> plugins.FetchSiteAuthorInfoRequest
-	17,  // 123: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
-	1,   // 124: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
-	1,   // 125: plugins.PluginLifecycle.SettingChanged:output_type -> plugins.Empty
-	26,  // 126: plugins.WorkFetchService.Create:output_type -> plugins.CreateChunk
-	14,  // 127: plugins.WorkFetchService.CreateWorkInfo:output_type -> plugins.WorkResponse
-	36,  // 128: plugins.WorkFetchService.Start:output_type -> plugins.StreamChunk
-	14,  // 129: plugins.WorkFetchService.Retry:output_type -> plugins.WorkResponse
-	1,   // 130: plugins.WorkFetchService.Pause:output_type -> plugins.Empty
-	1,   // 131: plugins.WorkFetchService.Stop:output_type -> plugins.Empty
-	36,  // 132: plugins.WorkFetchService.Resume:output_type -> plugins.StreamChunk
-	20,  // 133: plugins.WorkFetchService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
-	23,  // 134: plugins.WorkFetchService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
-	1,   // 135: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
-	1,   // 136: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
-	47,  // 137: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse
-	1,   // 138: plugins.HostService.SetValue:output_type -> plugins.Empty
-	1,   // 139: plugins.HostService.SetValueEncrypted:output_type -> plugins.Empty
-	1,   // 140: plugins.HostService.DeleteValue:output_type -> plugins.Empty
-	49,  // 141: plugins.HostService.GetAllValues:output_type -> plugins.AllStorageValuesResponse
-	53,  // 142: plugins.HostService.GetPreference:output_type -> plugins.PreferenceGetResponse
-	1,   // 143: plugins.HostService.SetPreference:output_type -> plugins.Empty
-	54,  // 144: plugins.HostService.ListMyPreferences:output_type -> plugins.PreferenceListResponse
-	56,  // 145: plugins.HostService.ResolveProxy:output_type -> plugins.ResolveProxyResponse
-	58,  // 146: plugins.HostService.CreateTask:output_type -> plugins.CreateTaskResponse
-	60,  // 147: plugins.HostService.GetPluginRoot:output_type -> plugins.GetPluginRootResponse
-	1,   // 148: plugins.HostService.Log:output_type -> plugins.Empty
-	1,   // 149: plugins.HostService.PublishToFrontend:output_type -> plugins.Empty
-	64,  // 150: plugins.HostService.SubscribeFrontend:output_type -> plugins.FrontendMessage
-	1,   // 151: plugins.HostService.UnsubscribeFrontend:output_type -> plugins.Empty
-	70,  // 152: plugins.LibraryQuery.GetWorkById:output_type -> plugins.WorkWithSite
-	70,  // 153: plugins.LibraryQuery.GetWorkBySiteKey:output_type -> plugins.WorkWithSite
-	72,  // 154: plugins.LibraryQuery.QueryWorks:output_type -> plugins.QueryWorksResponse
-	74,  // 155: plugins.LibraryQuery.ListResourcesByWorkId:output_type -> plugins.ListResourcesByWorkIdResponse
-	7,   // 156: plugins.LibraryQuery.GetLocalAuthorById:output_type -> plugins.LocalAuthorDTO
-	79,  // 157: plugins.LibraryQuery.QueryLocalAuthors:output_type -> plugins.QueryLocalAuthorsResponse
-	81,  // 158: plugins.LibraryQuery.GetSiteAuthorBySiteKey:output_type -> plugins.SiteAuthorInfo
-	83,  // 159: plugins.LibraryQuery.QuerySiteAuthors:output_type -> plugins.QuerySiteAuthorsResponse
-	87,  // 160: plugins.LibraryQuery.ListAuthorsByWorkId:output_type -> plugins.ListAuthorsByWorkIdResponse
-	8,   // 161: plugins.LibraryQuery.GetLocalTagById:output_type -> plugins.LocalTagDTO
-	90,  // 162: plugins.LibraryQuery.QueryLocalTags:output_type -> plugins.QueryLocalTagsResponse
-	92,  // 163: plugins.LibraryQuery.GetSiteTagBySiteKey:output_type -> plugins.SiteTagInfo
-	94,  // 164: plugins.LibraryQuery.QuerySiteTags:output_type -> plugins.QuerySiteTagsResponse
-	98,  // 165: plugins.LibraryQuery.ListTagsByWorkId:output_type -> plugins.ListTagsByWorkIdResponse
-	5,   // 166: plugins.LibraryQuery.GetWorkSetById:output_type -> plugins.WorkSet
-	5,   // 167: plugins.LibraryQuery.GetWorkSetBySiteKey:output_type -> plugins.WorkSet
-	102, // 168: plugins.LibraryQuery.ListWorkSetsByWorkId:output_type -> plugins.ListWorkSetsByWorkIdResponse
-	104, // 169: plugins.LibraryQuery.ListParentWorkSets:output_type -> plugins.ListParentWorkSetsResponse
-	106, // 170: plugins.LibraryQuery.ListChildWorkSets:output_type -> plugins.ListChildWorkSetsResponse
-	109, // 171: plugins.LibraryQuery.QueryLocalWorkSets:output_type -> plugins.QueryLocalWorkSetsResponse
-	110, // 172: plugins.LibraryQuery.ListSites:output_type -> plugins.ListSitesResponse
-	111, // 173: plugins.LibraryQuery.GetWorkDir:output_type -> plugins.GetWorkDirResponse
-	113, // 174: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:output_type -> plugins.AuthorInfoChunk
-	123, // [123:175] is the sub-list for method output_type
-	71,  // [71:123] is the sub-list for method input_type
-	71,  // [71:71] is the sub-list for extension type_name
-	71,  // [71:71] is the sub-list for extension extendee
-	0,   // [0:71] is the sub-list for field type_name
+	29,  // 15: plugins.CreateChunk.children_batch:type_name -> plugins.TaskChildrenBatch
+	0,   // 16: plugins.CreateIntent.kind:type_name -> plugins.CreateIntentKind
+	12,  // 17: plugins.TaskChildrenBatch.items:type_name -> plugins.TaskCreateChildResponse
+	3,   // 18: plugins.CreateWorkInfoRequest.task:type_name -> plugins.Task
+	3,   // 19: plugins.StartRequest.task:type_name -> plugins.Task
+	3,   // 20: plugins.RetryRequest.task:type_name -> plugins.Task
+	15,  // 21: plugins.TaskResParamMessage.param:type_name -> plugins.TaskResParam
+	3,   // 22: plugins.TaskResumeParam.task:type_name -> plugins.Task
+	35,  // 23: plugins.TaskResumeParam.streamOffsets:type_name -> plugins.StoreResumeOffset
+	34,  // 24: plugins.TaskResumeParamMessage.param:type_name -> plugins.TaskResumeParam
+	14,  // 25: plugins.StreamChunk.workResponse:type_name -> plugins.WorkResponse
+	42,  // 26: plugins.StreamChunk.specs:type_name -> plugins.StoreSpecs
+	2,   // 27: plugins.StreamChunk.heartbeat:type_name -> plugins.Heartbeat
+	31,  // 28: plugins.StartFrame.start:type_name -> plugins.StartRequest
+	40,  // 29: plugins.StartFrame.pull:type_name -> plugins.PullRequest
+	36,  // 30: plugins.ResumeFrame.resume:type_name -> plugins.TaskResumeParamMessage
+	40,  // 31: plugins.ResumeFrame.pull:type_name -> plugins.PullRequest
+	41,  // 32: plugins.StoreSpecs.items:type_name -> plugins.StoreSpecMeta
+	117, // 33: plugins.AllStorageValuesResponse.values:type_name -> plugins.AllStorageValuesResponse.ValuesEntry
+	51,  // 34: plugins.PreferenceEntryRequest.value:type_name -> plugins.PreferenceValue
+	51,  // 35: plugins.PreferenceGetResponse.value:type_name -> plugins.PreferenceValue
+	4,   // 36: plugins.WorkWithSite.work:type_name -> plugins.Work
+	6,   // 37: plugins.WorkWithSite.site:type_name -> plugins.SiteDTO
+	67,  // 38: plugins.QueryWorksRequest.page:type_name -> plugins.PageRequest
+	71,  // 39: plugins.QueryWorksResponse.items:type_name -> plugins.WorkWithSite
+	68,  // 40: plugins.QueryWorksResponse.page:type_name -> plugins.PageInfo
+	76,  // 41: plugins.ListResourcesByWorkIdResponse.items:type_name -> plugins.ResourceInfo
+	77,  // 42: plugins.ResourceInfo.stores:type_name -> plugins.StoreInfo
+	67,  // 43: plugins.QueryLocalAuthorsRequest.page:type_name -> plugins.PageRequest
+	7,   // 44: plugins.QueryLocalAuthorsResponse.items:type_name -> plugins.LocalAuthorDTO
+	68,  // 45: plugins.QueryLocalAuthorsResponse.page:type_name -> plugins.PageInfo
+	67,  // 46: plugins.QuerySiteAuthorsRequest.page:type_name -> plugins.PageRequest
+	82,  // 47: plugins.QuerySiteAuthorsResponse.items:type_name -> plugins.SiteAuthorInfo
+	68,  // 48: plugins.QuerySiteAuthorsResponse.page:type_name -> plugins.PageInfo
+	7,   // 49: plugins.WorkLocalAuthorEntry.author:type_name -> plugins.LocalAuthorDTO
+	82,  // 50: plugins.WorkSiteAuthorEntry.author:type_name -> plugins.SiteAuthorInfo
+	86,  // 51: plugins.ListAuthorsByWorkIdResponse.local_authors:type_name -> plugins.WorkLocalAuthorEntry
+	87,  // 52: plugins.ListAuthorsByWorkIdResponse.site_authors:type_name -> plugins.WorkSiteAuthorEntry
+	67,  // 53: plugins.QueryLocalTagsRequest.page:type_name -> plugins.PageRequest
+	8,   // 54: plugins.QueryLocalTagsResponse.items:type_name -> plugins.LocalTagDTO
+	68,  // 55: plugins.QueryLocalTagsResponse.page:type_name -> plugins.PageInfo
+	67,  // 56: plugins.QuerySiteTagsRequest.page:type_name -> plugins.PageRequest
+	93,  // 57: plugins.QuerySiteTagsResponse.items:type_name -> plugins.SiteTagInfo
+	68,  // 58: plugins.QuerySiteTagsResponse.page:type_name -> plugins.PageInfo
+	8,   // 59: plugins.WorkLocalTagEntry.tag:type_name -> plugins.LocalTagDTO
+	93,  // 60: plugins.WorkSiteTagEntry.tag:type_name -> plugins.SiteTagInfo
+	97,  // 61: plugins.ListTagsByWorkIdResponse.local_tags:type_name -> plugins.WorkLocalTagEntry
+	98,  // 62: plugins.ListTagsByWorkIdResponse.site_tags:type_name -> plugins.WorkSiteTagEntry
+	5,   // 63: plugins.ListWorkSetsByWorkIdResponse.items:type_name -> plugins.WorkSet
+	5,   // 64: plugins.ListParentWorkSetsResponse.items:type_name -> plugins.WorkSet
+	5,   // 65: plugins.ListChildWorkSetsResponse.items:type_name -> plugins.WorkSet
+	67,  // 66: plugins.QueryLocalWorkSetsRequest.page:type_name -> plugins.PageRequest
+	109, // 67: plugins.QueryLocalWorkSetsResponse.items:type_name -> plugins.WorkSetNameEntry
+	68,  // 68: plugins.QueryLocalWorkSetsResponse.page:type_name -> plugins.PageInfo
+	6,   // 69: plugins.ListSitesResponse.items:type_name -> plugins.SiteDTO
+	115, // 70: plugins.AuthorInfoChunk.meta:type_name -> plugins.AuthorInfoMeta
+	116, // 71: plugins.AuthorInfoChunk.resource:type_name -> plugins.AuthorResourceData
+	47,  // 72: plugins.AllStorageValuesResponse.ValuesEntry.value:type_name -> plugins.StorageValue
+	16,  // 73: plugins.PluginLifecycle.Activate:input_type -> plugins.ActivateRequest
+	1,   // 74: plugins.PluginLifecycle.Shutdown:input_type -> plugins.Empty
+	18,  // 75: plugins.PluginLifecycle.SettingChanged:input_type -> plugins.SettingChangedRequest
+	25,  // 76: plugins.WorkFetchService.Create:input_type -> plugins.CreateRequest
+	30,  // 77: plugins.WorkFetchService.CreateWorkInfo:input_type -> plugins.CreateWorkInfoRequest
+	38,  // 78: plugins.WorkFetchService.Start:input_type -> plugins.StartFrame
+	32,  // 79: plugins.WorkFetchService.Retry:input_type -> plugins.RetryRequest
+	33,  // 80: plugins.WorkFetchService.Pause:input_type -> plugins.TaskResParamMessage
+	33,  // 81: plugins.WorkFetchService.Stop:input_type -> plugins.TaskResParamMessage
+	39,  // 82: plugins.WorkFetchService.Resume:input_type -> plugins.ResumeFrame
+	19,  // 83: plugins.WorkFetchService.QueryWorkSetOrder:input_type -> plugins.QueryWorkSetOrderRequest
+	22,  // 84: plugins.WorkFetchService.QueryWorkSetRelations:input_type -> plugins.QueryWorkSetRelationsRequest
+	43,  // 85: plugins.SiteBrowserService.Open:input_type -> plugins.BrowserRequest
+	43,  // 86: plugins.SiteBrowserService.Close:input_type -> plugins.BrowserRequest
+	46,  // 87: plugins.HostService.GetValue:input_type -> plugins.StorageKeyRequest
+	49,  // 88: plugins.HostService.SetValue:input_type -> plugins.StorageEntryRequest
+	49,  // 89: plugins.HostService.SetValueEncrypted:input_type -> plugins.StorageEntryRequest
+	46,  // 90: plugins.HostService.DeleteValue:input_type -> plugins.StorageKeyRequest
+	1,   // 91: plugins.HostService.GetAllValues:input_type -> plugins.Empty
+	52,  // 92: plugins.HostService.GetPreference:input_type -> plugins.PreferenceKeyRequest
+	53,  // 93: plugins.HostService.SetPreference:input_type -> plugins.PreferenceEntryRequest
+	1,   // 94: plugins.HostService.ListMyPreferences:input_type -> plugins.Empty
+	56,  // 95: plugins.HostService.ResolveProxy:input_type -> plugins.ResolveProxyRequest
+	58,  // 96: plugins.HostService.CreateTask:input_type -> plugins.CreateTaskRequest
+	60,  // 97: plugins.HostService.GetPluginRoot:input_type -> plugins.GetPluginRootRequest
+	62,  // 98: plugins.HostService.Log:input_type -> plugins.LogRequest
+	63,  // 99: plugins.HostService.PublishToFrontend:input_type -> plugins.PublishToFrontendRequest
+	64,  // 100: plugins.HostService.SubscribeFrontend:input_type -> plugins.SubscribeFrontendRequest
+	66,  // 101: plugins.HostService.UnsubscribeFrontend:input_type -> plugins.UnsubscribeFrontendRequest
+	69,  // 102: plugins.LibraryQuery.GetWorkById:input_type -> plugins.GetWorkByIdRequest
+	70,  // 103: plugins.LibraryQuery.GetWorkBySiteKey:input_type -> plugins.GetWorkBySiteKeyRequest
+	72,  // 104: plugins.LibraryQuery.QueryWorks:input_type -> plugins.QueryWorksRequest
+	74,  // 105: plugins.LibraryQuery.ListResourcesByWorkId:input_type -> plugins.ListResourcesByWorkIdRequest
+	78,  // 106: plugins.LibraryQuery.GetLocalAuthorById:input_type -> plugins.GetLocalAuthorByIdRequest
+	79,  // 107: plugins.LibraryQuery.QueryLocalAuthors:input_type -> plugins.QueryLocalAuthorsRequest
+	81,  // 108: plugins.LibraryQuery.GetSiteAuthorBySiteKey:input_type -> plugins.GetSiteAuthorBySiteKeyRequest
+	83,  // 109: plugins.LibraryQuery.QuerySiteAuthors:input_type -> plugins.QuerySiteAuthorsRequest
+	85,  // 110: plugins.LibraryQuery.ListAuthorsByWorkId:input_type -> plugins.ListAuthorsByWorkIdRequest
+	89,  // 111: plugins.LibraryQuery.GetLocalTagById:input_type -> plugins.GetLocalTagByIdRequest
+	90,  // 112: plugins.LibraryQuery.QueryLocalTags:input_type -> plugins.QueryLocalTagsRequest
+	92,  // 113: plugins.LibraryQuery.GetSiteTagBySiteKey:input_type -> plugins.GetSiteTagBySiteKeyRequest
+	94,  // 114: plugins.LibraryQuery.QuerySiteTags:input_type -> plugins.QuerySiteTagsRequest
+	96,  // 115: plugins.LibraryQuery.ListTagsByWorkId:input_type -> plugins.ListTagsByWorkIdRequest
+	100, // 116: plugins.LibraryQuery.GetWorkSetById:input_type -> plugins.GetWorkSetByIdRequest
+	101, // 117: plugins.LibraryQuery.GetWorkSetBySiteKey:input_type -> plugins.GetWorkSetBySiteKeyRequest
+	102, // 118: plugins.LibraryQuery.ListWorkSetsByWorkId:input_type -> plugins.ListWorkSetsByWorkIdRequest
+	104, // 119: plugins.LibraryQuery.ListParentWorkSets:input_type -> plugins.ListParentWorkSetsRequest
+	106, // 120: plugins.LibraryQuery.ListChildWorkSets:input_type -> plugins.ListChildWorkSetsRequest
+	108, // 121: plugins.LibraryQuery.QueryLocalWorkSets:input_type -> plugins.QueryLocalWorkSetsRequest
+	1,   // 122: plugins.LibraryQuery.ListSites:input_type -> plugins.Empty
+	1,   // 123: plugins.LibraryQuery.GetWorkDir:input_type -> plugins.Empty
+	113, // 124: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:input_type -> plugins.FetchSiteAuthorInfoRequest
+	17,  // 125: plugins.PluginLifecycle.Activate:output_type -> plugins.ActivateResponse
+	1,   // 126: plugins.PluginLifecycle.Shutdown:output_type -> plugins.Empty
+	1,   // 127: plugins.PluginLifecycle.SettingChanged:output_type -> plugins.Empty
+	26,  // 128: plugins.WorkFetchService.Create:output_type -> plugins.CreateChunk
+	14,  // 129: plugins.WorkFetchService.CreateWorkInfo:output_type -> plugins.WorkResponse
+	37,  // 130: plugins.WorkFetchService.Start:output_type -> plugins.StreamChunk
+	14,  // 131: plugins.WorkFetchService.Retry:output_type -> plugins.WorkResponse
+	1,   // 132: plugins.WorkFetchService.Pause:output_type -> plugins.Empty
+	1,   // 133: plugins.WorkFetchService.Stop:output_type -> plugins.Empty
+	37,  // 134: plugins.WorkFetchService.Resume:output_type -> plugins.StreamChunk
+	20,  // 135: plugins.WorkFetchService.QueryWorkSetOrder:output_type -> plugins.QueryWorkSetOrderResponse
+	23,  // 136: plugins.WorkFetchService.QueryWorkSetRelations:output_type -> plugins.QueryWorkSetRelationsResponse
+	1,   // 137: plugins.SiteBrowserService.Open:output_type -> plugins.Empty
+	1,   // 138: plugins.SiteBrowserService.Close:output_type -> plugins.Empty
+	48,  // 139: plugins.HostService.GetValue:output_type -> plugins.StorageValueResponse
+	1,   // 140: plugins.HostService.SetValue:output_type -> plugins.Empty
+	1,   // 141: plugins.HostService.SetValueEncrypted:output_type -> plugins.Empty
+	1,   // 142: plugins.HostService.DeleteValue:output_type -> plugins.Empty
+	50,  // 143: plugins.HostService.GetAllValues:output_type -> plugins.AllStorageValuesResponse
+	54,  // 144: plugins.HostService.GetPreference:output_type -> plugins.PreferenceGetResponse
+	1,   // 145: plugins.HostService.SetPreference:output_type -> plugins.Empty
+	55,  // 146: plugins.HostService.ListMyPreferences:output_type -> plugins.PreferenceListResponse
+	57,  // 147: plugins.HostService.ResolveProxy:output_type -> plugins.ResolveProxyResponse
+	59,  // 148: plugins.HostService.CreateTask:output_type -> plugins.CreateTaskResponse
+	61,  // 149: plugins.HostService.GetPluginRoot:output_type -> plugins.GetPluginRootResponse
+	1,   // 150: plugins.HostService.Log:output_type -> plugins.Empty
+	1,   // 151: plugins.HostService.PublishToFrontend:output_type -> plugins.Empty
+	65,  // 152: plugins.HostService.SubscribeFrontend:output_type -> plugins.FrontendMessage
+	1,   // 153: plugins.HostService.UnsubscribeFrontend:output_type -> plugins.Empty
+	71,  // 154: plugins.LibraryQuery.GetWorkById:output_type -> plugins.WorkWithSite
+	71,  // 155: plugins.LibraryQuery.GetWorkBySiteKey:output_type -> plugins.WorkWithSite
+	73,  // 156: plugins.LibraryQuery.QueryWorks:output_type -> plugins.QueryWorksResponse
+	75,  // 157: plugins.LibraryQuery.ListResourcesByWorkId:output_type -> plugins.ListResourcesByWorkIdResponse
+	7,   // 158: plugins.LibraryQuery.GetLocalAuthorById:output_type -> plugins.LocalAuthorDTO
+	80,  // 159: plugins.LibraryQuery.QueryLocalAuthors:output_type -> plugins.QueryLocalAuthorsResponse
+	82,  // 160: plugins.LibraryQuery.GetSiteAuthorBySiteKey:output_type -> plugins.SiteAuthorInfo
+	84,  // 161: plugins.LibraryQuery.QuerySiteAuthors:output_type -> plugins.QuerySiteAuthorsResponse
+	88,  // 162: plugins.LibraryQuery.ListAuthorsByWorkId:output_type -> plugins.ListAuthorsByWorkIdResponse
+	8,   // 163: plugins.LibraryQuery.GetLocalTagById:output_type -> plugins.LocalTagDTO
+	91,  // 164: plugins.LibraryQuery.QueryLocalTags:output_type -> plugins.QueryLocalTagsResponse
+	93,  // 165: plugins.LibraryQuery.GetSiteTagBySiteKey:output_type -> plugins.SiteTagInfo
+	95,  // 166: plugins.LibraryQuery.QuerySiteTags:output_type -> plugins.QuerySiteTagsResponse
+	99,  // 167: plugins.LibraryQuery.ListTagsByWorkId:output_type -> plugins.ListTagsByWorkIdResponse
+	5,   // 168: plugins.LibraryQuery.GetWorkSetById:output_type -> plugins.WorkSet
+	5,   // 169: plugins.LibraryQuery.GetWorkSetBySiteKey:output_type -> plugins.WorkSet
+	103, // 170: plugins.LibraryQuery.ListWorkSetsByWorkId:output_type -> plugins.ListWorkSetsByWorkIdResponse
+	105, // 171: plugins.LibraryQuery.ListParentWorkSets:output_type -> plugins.ListParentWorkSetsResponse
+	107, // 172: plugins.LibraryQuery.ListChildWorkSets:output_type -> plugins.ListChildWorkSetsResponse
+	110, // 173: plugins.LibraryQuery.QueryLocalWorkSets:output_type -> plugins.QueryLocalWorkSetsResponse
+	111, // 174: plugins.LibraryQuery.ListSites:output_type -> plugins.ListSitesResponse
+	112, // 175: plugins.LibraryQuery.GetWorkDir:output_type -> plugins.GetWorkDirResponse
+	114, // 176: plugins.SiteAuthorFetchService.FetchSiteAuthorInfo:output_type -> plugins.AuthorInfoChunk
+	125, // [125:177] is the sub-list for method output_type
+	73,  // [73:125] is the sub-list for method input_type
+	73,  // [73:73] is the sub-list for extension type_name
+	73,  // [73:73] is the sub-list for extension extendee
+	0,   // [0:73] is the sub-list for field type_name
 }
 
 func init() { file_plugin_proto_init() }
@@ -8142,8 +8235,9 @@ func file_plugin_proto_init() {
 		(*CreateChunk_Error)(nil),
 		(*CreateChunk_Heartbeat)(nil),
 		(*CreateChunk_Intent)(nil),
+		(*CreateChunk_ChildrenBatch)(nil),
 	}
-	file_plugin_proto_msgTypes[35].OneofWrappers = []any{
+	file_plugin_proto_msgTypes[36].OneofWrappers = []any{
 		(*StreamChunk_WorkResponse)(nil),
 		(*StreamChunk_Specs)(nil),
 		(*StreamChunk_Data)(nil),
@@ -8151,20 +8245,20 @@ func file_plugin_proto_init() {
 		(*StreamChunk_Error)(nil),
 		(*StreamChunk_Heartbeat)(nil),
 	}
-	file_plugin_proto_msgTypes[36].OneofWrappers = []any{
+	file_plugin_proto_msgTypes[37].OneofWrappers = []any{
 		(*StartFrame_Start)(nil),
 		(*StartFrame_Pull)(nil),
 	}
-	file_plugin_proto_msgTypes[37].OneofWrappers = []any{
+	file_plugin_proto_msgTypes[38].OneofWrappers = []any{
 		(*ResumeFrame_Resume)(nil),
 		(*ResumeFrame_Pull)(nil),
 	}
-	file_plugin_proto_msgTypes[39].OneofWrappers = []any{}
-	file_plugin_proto_msgTypes[74].OneofWrappers = []any{}
+	file_plugin_proto_msgTypes[40].OneofWrappers = []any{}
 	file_plugin_proto_msgTypes[75].OneofWrappers = []any{}
-	file_plugin_proto_msgTypes[80].OneofWrappers = []any{}
-	file_plugin_proto_msgTypes[91].OneofWrappers = []any{}
-	file_plugin_proto_msgTypes[112].OneofWrappers = []any{
+	file_plugin_proto_msgTypes[76].OneofWrappers = []any{}
+	file_plugin_proto_msgTypes[81].OneofWrappers = []any{}
+	file_plugin_proto_msgTypes[92].OneofWrappers = []any{}
+	file_plugin_proto_msgTypes[113].OneofWrappers = []any{
 		(*AuthorInfoChunk_Meta)(nil),
 		(*AuthorInfoChunk_Resource)(nil),
 	}
@@ -8174,7 +8268,7 @@ func file_plugin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_plugin_proto_rawDesc), len(file_plugin_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   116,
+			NumMessages:   117,
 			NumExtensions: 0,
 			NumServices:   6,
 		},

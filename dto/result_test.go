@@ -24,6 +24,30 @@ func TestTaskCreateResultReasonReadWrite(t *testing.T) {
 	}
 }
 
+// TestCreateStreamItemForms 发射条目两形态恰居其一；流式双形态互斥——
+// 条目形态 Items() 携 channel 而 Stream() 为 nil，旧应答形态反之（零改动兼容）
+func TestCreateStreamItemForms(t *testing.T) {
+	task := TaskItem(&TaskCreateResponse{PluginTaskId: "p"})
+	if task.Task() == nil || task.Task().PluginTaskId != "p" || task.ChildrenBatch() != nil {
+		t.Fatalf("TaskItem 应仅携 task 形态, 实得 task=%v children=%v", task.Task(), task.ChildrenBatch())
+	}
+	batch := ChildrenBatchItem("p", []*TaskCreateChildResponse{{TaskName: "c"}}, true)
+	cb := batch.ChildrenBatch()
+	if batch.Task() != nil || cb == nil || cb.PluginTaskId != "p" || len(cb.Items) != 1 || !cb.Last {
+		t.Fatalf("ChildrenBatchItem 应仅携子行批次形态(1 行, last=true), 实得 %+v", cb)
+	}
+
+	itemCh := make(chan *CreateStreamItem)
+	items := StreamItemsResult(itemCh)
+	if !items.IsStream() || items.Items() == nil || items.Stream() != nil {
+		t.Fatal("条目形态结果应为流式且 Items() 非 nil、Stream() 为 nil")
+	}
+	legacy := StreamResult(make(chan *TaskCreateResponse))
+	if !legacy.IsStream() || legacy.Stream() == nil || legacy.Items() != nil {
+		t.Fatal("旧应答形态结果应为流式且 Stream() 非 nil、Items() 为 nil")
+	}
+}
+
 // TestTaskCreateResultIntentReadWrite intent 基础读写：
 // 未声明返回 (CreateIntentNone, "")，SetIntent 声明后 Intent 读回两态与文案
 //（批量与流式两种构造同形；两态各验一次）

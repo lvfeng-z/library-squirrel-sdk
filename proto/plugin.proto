@@ -252,6 +252,7 @@ message CreateChunk {
     string error = 3;                 // 错误
     Heartbeat heartbeat = 4;          // 等待期心跳：handler 执行期插件显式上报，仅先于 mode/error/task 出现；宿主跳过续等
     CreateIntent intent = 5;          // 收尾意图信号：插件显式声明「本流不产出任务」的成功收尾（转入解析/已取消），必为流的最后一块
+    TaskChildrenBatch children_batch = 6; // 子行批次块：大批次创建时子行拆块发射，仅流式 mode 合法（四条不变量见 TaskChildrenBatch 消息注释）
   }
 }
 
@@ -273,6 +274,19 @@ enum CreateIntentKind {
 message CreateIntent {
   CreateIntentKind kind = 1;   // 收尾意图两态
   string message = 2;          // 提示文案（用户可读）；宿主原样透传至建任务响应 Msg
+}
+
+// TaskChildrenBatch Create 流子行批次块载荷（契约 21）：大批次创建时把单一父任务的
+// 子行集合拆为多块发射（父块 children 置空，批次块序列末块 last=true）。四条不变量：
+// ① 仅流式 mode（CreateMode.is_stream=true）合法——批量 mode 流上出现即协议违规，
+//    宿主按 error 收流；
+// ② 聚合按 plugin_task_id 指称归属父任务，不依赖块在流中的位置（不同任务的块可交错）；
+// ③ task 块的 children 内联在两种 mode 下继续有效，同一父的内联与批次混用=都计入该父；
+// ④ error 收流时已到子行与父行保留（部分完成语义）。
+message TaskChildrenBatch {
+  string plugin_task_id = 1;                  // 父任务指称键（=TaskCreateResponse.plugin_task_id）；父块未到先出批次块=悬空引用，宿主按协议违规收流
+  repeated TaskCreateChildResponse items = 2; // 本批子行（序保持：同父子行按块序+块内序计入）
+  bool last = 3;                              // true=该父的末批；宿主到齐即对该父收批
 }
 
 message CreateWorkInfoRequest {
