@@ -8,6 +8,7 @@ import (
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
+	"github.com/lvfeng-z/library-squirrel-sdk/liveness"
 )
 
 // LSPlugin 实现 hashicorp/go-plugin 的 GRPCPlugin 接口
@@ -55,7 +56,9 @@ func (p *LSPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c 
 		deps := *p.HostDeps
 		hostServiceId = broker.NextId()
 		go broker.AcceptAndServe(hostServiceId, func(opts []grpc.ServerOption) *grpc.Server {
-			s := grpc.NewServer(opts...)
+			// opts 含 go-plugin 注入的框架必需项(TLS/拦截器等),必须追加而非覆盖;
+			// 追加消息接收上限覆盖插件→宿主方向的大消息(如大库会话快照写库)
+			s := grpc.NewServer(append(opts, grpc.MaxRecvMsgSize(liveness.MaxRecvMsgSize))...)
 			RegisterHostService(s, deps)
 			return s
 		})

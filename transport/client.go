@@ -7,8 +7,14 @@ import (
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
+	"github.com/lvfeng-z/library-squirrel-sdk/liveness"
 	"google.golang.org/grpc"
 )
+
+// callOpts 插件侧向宿主发起调用时的 per-call 选项:放开单条消息接收上限,使插件收宿主
+// 响应(GetValue/GetAllValues 等,如大库会话快照)不受 grpc-go 客户端 4MB 默认值限制。
+// 与 liveness.MaxRecvMsgSize 同源,宿主与插件双向通道使用同一常量。
+var callOpts = []grpc.CallOption{grpc.MaxCallRecvMsgSize(liveness.MaxRecvMsgSize)}
 
 // PluginContextClient 插件侧的 PluginContext 实现，通过 gRPC 调用主程序的 HostService 与 LibraryQuery
 type PluginContextClient struct {
@@ -35,7 +41,7 @@ func (c *PluginContextClient) SetMainWindowHandle(hwnd uintptr) {
 }
 
 func (c *PluginContextClient) GetValue(key string) (*dto.StorageValue, error) {
-	resp, err := c.hostClient.GetValue(context.Background(), &gen.StorageKeyRequest{Key: key})
+	resp, err := c.hostClient.GetValue(context.Background(), &gen.StorageKeyRequest{Key: key}, callOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +52,7 @@ func (c *PluginContextClient) SetValue(key string, value string) error {
 	_, err := c.hostClient.SetValue(context.Background(), &gen.StorageEntryRequest{
 		Key:   key,
 		Value: value,
-	})
+	}, callOpts...)
 	return err
 }
 
@@ -54,17 +60,17 @@ func (c *PluginContextClient) SetValueEncrypted(key string, value string) error 
 	_, err := c.hostClient.SetValueEncrypted(context.Background(), &gen.StorageEntryRequest{
 		Key:   key,
 		Value: value,
-	})
+	}, callOpts...)
 	return err
 }
 
 func (c *PluginContextClient) DeleteValue(key string) error {
-	_, err := c.hostClient.DeleteValue(context.Background(), &gen.StorageKeyRequest{Key: key})
+	_, err := c.hostClient.DeleteValue(context.Background(), &gen.StorageKeyRequest{Key: key}, callOpts...)
 	return err
 }
 
 func (c *PluginContextClient) GetAllValues() (map[string]*dto.StorageValue, error) {
-	resp, err := c.hostClient.GetAllValues(context.Background(), &gen.Empty{})
+	resp, err := c.hostClient.GetAllValues(context.Background(), &gen.Empty{}, callOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +78,7 @@ func (c *PluginContextClient) GetAllValues() (map[string]*dto.StorageValue, erro
 }
 
 func (c *PluginContextClient) GetPreference(key string) (*dto.PreferenceValue, bool, error) {
-	resp, err := c.hostClient.GetPreference(context.Background(), &gen.PreferenceKeyRequest{Key: key})
+	resp, err := c.hostClient.GetPreference(context.Background(), &gen.PreferenceKeyRequest{Key: key}, callOpts...)
 	if err != nil {
 		return nil, false, err
 	}
@@ -87,12 +93,12 @@ func (c *PluginContextClient) SetPreference(key string, value *dto.PreferenceVal
 	_, err := c.hostClient.SetPreference(context.Background(), &gen.PreferenceEntryRequest{
 		Key:   key,
 		Value: value,
-	})
+	}, callOpts...)
 	return err
 }
 
 func (c *PluginContextClient) ListMyPreferences() ([]string, error) {
-	resp, err := c.hostClient.ListMyPreferences(context.Background(), &gen.Empty{})
+	resp, err := c.hostClient.ListMyPreferences(context.Background(), &gen.Empty{}, callOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +116,7 @@ func (c *PluginContextClient) ResolveProxy(explicitURL, requestURL string) (stri
 	resp, err := c.hostClient.ResolveProxy(ctx, &gen.ResolveProxyRequest{
 		ExplicitUrl: explicitURL,
 		RequestUrl:  requestURL,
-	})
+	}, callOpts...)
 	if err != nil {
 		return "", "", err
 	}
@@ -118,7 +124,7 @@ func (c *PluginContextClient) ResolveProxy(explicitURL, requestURL string) (stri
 }
 
 func (c *PluginContextClient) CreateTask(url string) (*dto.CreateTaskResult, error) {
-	resp, err := c.hostClient.CreateTask(context.Background(), &gen.CreateTaskRequest{Url: url})
+	resp, err := c.hostClient.CreateTask(context.Background(), &gen.CreateTaskRequest{Url: url}, callOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +138,7 @@ func (c *PluginContextClient) CreateTask(url string) (*dto.CreateTaskResult, err
 func (c *PluginContextClient) GetPluginRoot(isRelative bool) string {
 	resp, err := c.hostClient.GetPluginRoot(context.Background(), &gen.GetPluginRootRequest{
 		IsRelative: isRelative,
-	})
+	}, callOpts...)
 	if err != nil {
 		return ""
 	}
@@ -157,13 +163,13 @@ func (c *PluginContextClient) PublishToFrontend(topic string, data []byte) error
 	_, err := c.hostClient.PublishToFrontend(context.Background(), &gen.PublishToFrontendRequest{
 		Topic: topic,
 		Data:  data,
-	})
+	}, callOpts...)
 	return err
 }
 
 func (c *PluginContextClient) SubscribeFrontend(topic string) (<-chan []byte, error) {
 	ctx, cancel := context.WithCancel(context.Background())
-	stream, err := c.hostClient.SubscribeFrontend(ctx, &gen.SubscribeFrontendRequest{Topic: topic})
+	stream, err := c.hostClient.SubscribeFrontend(ctx, &gen.SubscribeFrontendRequest{Topic: topic}, callOpts...)
 	if err != nil {
 		cancel()
 		return nil, err
@@ -193,7 +199,7 @@ func (c *PluginContextClient) UnsubscribeFrontend(topic string) error {
 		cancel()
 		delete(c.subCancelFuncs, topic)
 	}
-	_, err := c.hostClient.UnsubscribeFrontend(context.Background(), &gen.UnsubscribeFrontendRequest{Topic: topic})
+	_, err := c.hostClient.UnsubscribeFrontend(context.Background(), &gen.UnsubscribeFrontendRequest{Topic: topic}, callOpts...)
 	return err
 }
 

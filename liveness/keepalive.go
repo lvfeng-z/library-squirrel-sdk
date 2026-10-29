@@ -31,10 +31,18 @@ const (
 	//(ReaderIdleTimeout 量级);间隔取窗的 1/3,窗内 3 次机会,单次丢失不致超时。
 	// 上报器按此间隔限频,消费方可任意 tick 频率调用而不产生线上噪音
 	HeartbeatInterval = 20 * time.Second
+
+	// MaxRecvMsgSize gRPC 单条消息接收上限。grpc-go 默认 4MB 是公网多租户服务的防护值;
+	// 插件与主程序是本机同用户进程间通信,该威胁模型不成立,而合法大消息(如大批次任务
+	// 创建的单条应答)可达数十 MB。取 64MB 作为「偶发消息膨胀的断路器」而非容纳任意大
+	// blob:超出即报错暴露架构问题,不得再上调。宿主与插件、双向通道的四处 gRPC 触点
+	// (server 收、client 拨号默认收、per-call 收)均引用此常量
+	MaxRecvMsgSize = 64 << 20 // 67108864 字节(64MB)
 )
 
 // ClientDialOptions 返回主程序连接插件子进程时注入的 gRPC dial options,启用 client 主动 keepalive 探测。
 // PermitWithoutStream=true 使 client 在无活动 stream 时也发 ping:unary 调用间隙连接无活动 stream,需开启此项才持续探测进程存活。
+// 同时以默认 call option 放开单条消息接收上限(见 MaxRecvMsgSize):宿主收插件响应(含大消息)不再受 4MB 默认值限制。
 func ClientDialOptions() []grpc.DialOption {
 	return []grpc.DialOption{
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
@@ -42,6 +50,7 @@ func ClientDialOptions() []grpc.DialOption {
 			Timeout:             KeepalivePingTimeout,
 			PermitWithoutStream: true,
 		}),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
 	}
 }
 
@@ -62,7 +71,8 @@ func ServerOptions() []grpc.ServerOption {
 
 // GRPCServerFactory 供 go-plugin 的 ServeConfig.GRPCServer 字段使用:在 go-plugin 传入的 opts
 // (含 TLS、内部 stream 拦截器等框架必需 option)基础上追加 keepalive server options,再创建 server。
-// 保留传入的 opts——框架注入的 option 为 server 正常工作所必需。
+// 保留传入的 opts——框架注入的 option 为 server 正常工作所必需。同时追加消息接收上限(见
+// MaxRecvMsgSize),与宿主侧拨号默认值对称,使宿主→插件方向的大消息同样不撞 4MB 默认值。
 func GRPCServerFactory(opts []grpc.ServerOption) *grpc.Server {
-	return grpc.NewServer(append(opts, ServerOptions()...)...)
+	return grpc.NewServer(append(append(opts, ServerOptions()...), grpc.MaxRecvMsgSize(MaxRecvMsgSize))...)
 }
