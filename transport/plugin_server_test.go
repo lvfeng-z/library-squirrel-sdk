@@ -156,13 +156,13 @@ func TestCreateStreamItemsDualChunkEmission(t *testing.T) {
 }
 
 // TestCreateStreamItemsReasonAppendErrorChunk 条目形态 + SetReason 形态：
-// 块序为 mode → 数据块… → error，error 块必为最后一块——契约 21 部分完成语义的
-// SDK 侧形态：已发条目保留在流上，reason 经 error 块收流
+// 块序为 mode → 数据块… → error，error 块必为最后一块——契约 21 error 收流形态：
+// 已发条目保留在流上（宿主侧按未收批统一回滚处置），reason 经 error 块收流
 func TestCreateStreamItemsReasonAppendErrorChunk(t *testing.T) {
 	items := make(chan *dto.CreateStreamItem)
 	result := dto.StreamItemsResult(items)
 	go func() {
-		result.SetReason("批次中途失败, 已到子行保留")
+		result.SetReason("批次中途失败, 未收批统一回滚")
 		defer close(items)
 		items <- dto.TaskItem(&dto.TaskCreateResponse{PluginTaskId: "parent-1"})
 		items <- dto.ChildrenBatchItem("parent-1", []*dto.TaskCreateChildResponse{{TaskName: "子任务-1"}}, true)
@@ -174,8 +174,8 @@ func TestCreateStreamItemsReasonAppendErrorChunk(t *testing.T) {
 	if batch := chunks[2].GetChildrenBatch(); batch == nil || !batch.GetLast() {
 		t.Fatalf("第 3 块应为末批 children_batch 块, 实得 %+v", chunks[2].GetChildrenBatch())
 	}
-	if e := chunks[3].GetError(); e != "批次中途失败, 已到子行保留" {
-		t.Fatalf("末块 error 文本 = %q, 期望 %q", e, "批次中途失败, 已到子行保留")
+	if e := chunks[3].GetError(); e != "批次中途失败, 未收批统一回滚" {
+		t.Fatalf("末块 error 文本 = %q, 期望 %q", e, "批次中途失败, 未收批统一回滚")
 	}
 }
 

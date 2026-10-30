@@ -2269,12 +2269,16 @@ func (x *CreateIntent) GetMessage() string {
 //
 // ② 聚合按 plugin_task_id 指称归属父任务，不依赖块在流中的位置（不同任务的块可交错）；
 // ③ task 块的 children 内联在两种 mode 下继续有效，同一父的内联与批次混用=都计入该父；
-// ④ error 收流时已到子行与父行保留（部分完成语义）。
+// ④ 未收批统一回滚（契约 21 同代修订，原部分完成语义废止）：流结束时已开批父任务
+//
+//	未收到 last=true 末批声明——不论收尾形态（error 收流、插件进程死亡/通道断连等
+//	流异常中断、显式取消提前收流）——宿主一律删除该父任务与已落库子行；显式取消
+//	同走该回滚路径，取消意图终态仅用于文案区分，不构成独立处置分支。
 type TaskChildrenBatch struct {
 	state         protoimpl.MessageState     `protogen:"open.v1"`
 	PluginTaskId  string                     `protobuf:"bytes,1,opt,name=plugin_task_id,json=pluginTaskId,proto3" json:"plugin_task_id,omitempty"` // 父任务指称键（=TaskCreateResponse.plugin_task_id）；父块未到先出批次块=悬空引用，宿主按协议违规收流
 	Items         []*TaskCreateChildResponse `protobuf:"bytes,2,rep,name=items,proto3" json:"items,omitempty"`                                     // 本批子行（序保持：同父子行按块序+块内序计入）
-	Last          bool                       `protobuf:"varint,3,opt,name=last,proto3" json:"last,omitempty"`                                      // true=该父的末批；宿主到齐即对该父收批
+	Last          bool                       `protobuf:"varint,3,opt,name=last,proto3" json:"last,omitempty"`                                      // true=该父的末批；宿主到齐即对该父收批（收批=原子提交点：其后的取消/异常不再回滚该父）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

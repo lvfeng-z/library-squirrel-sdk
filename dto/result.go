@@ -26,7 +26,8 @@ const (
 // TaskChildrenBatch 子行批次块（别名 gen.TaskChildrenBatch，proto 单源；定义随流产物
 // 条目类型落位本文件）。契约 21：大批次创建时父块 children 置空、子行拆多块发射，
 // 四条不变量见 proto 消息注释（仅流式 mode 合法、按 plugin_task_id 指称聚合、
-// 内联继续有效且混用都计入、error 收流保留已到行）。
+// 内联继续有效且混用都计入、未收批统一回滚——流异常中断/取消提前收流/error
+// 收流一律由宿主删父任务与已落库子行）。
 type TaskChildrenBatch = gen.TaskChildrenBatch
 
 // CreateStreamItem Create 流式发射条目（契约 21）：task 块（TaskCreateResponse）或
