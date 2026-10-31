@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
@@ -159,13 +160,31 @@ func sendCreateResult(result *dto.TaskCreateResult, stream grpc.ServerStreamingS
 	return nil
 }
 
+// createDrainHeartbeatInterval 排水期空闲心跳间隔（包级变量=测试注入缝；生产取
+// liveness.HeartbeatInterval 与 handler 期上报器同源同拍）
+var createDrainHeartbeatInterval = liveness.HeartbeatInterval
+
 // sendCreateStreamItems 发送流式结果的数据块序列：条目形态（Items 非 nil）按条目形态发
 // task 块/children_batch 块（块序即条目序）；旧应答形态（Stream）逐条发 task 块。
 // 条目无有效形态（task/children_batch 皆空）属插件侧编程错误，中止流并返回错误
 //（不静默跳过——半途丢块会破坏按父 ID 聚合的收批语义）。
+// 排水期空闲心跳（延迟发射形态的批间隙喂窗，2026-10-31 真实库批间隙 >60s 误杀收流的
+// 根治点）：延迟发射插件（如 localImport 工作台创建链）的 handler 提前返回条目通道、
+// 核对与发射长活在其后台 goroutine——handler 期上报器已随 handler 返回关闭（Create
+// :101-104），排水环是流的唯一写者，条目间隙（插件侧域核对/批构造等待点）静默逾心跳
+// 间隔时由本环直发心跳块，宿主接收泵的空闲窗由此得喂（心跳块豁免窗口重置）。
 func sendCreateStreamItems(result *dto.TaskCreateResult, stream grpc.ServerStreamingServer[gen.CreateChunk]) error {
+	heartbeat := time.NewTicker(createDrainHeartbeatInterval)
+	defer heartbeat.Stop()
 	if items := result.Items(); items != nil {
-		for it := range items {
+		for {
+			it, ok, err := recvStreamItemWithHeartbeat(items, stream, heartbeat)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				return nil
+			}
 			var chunk *gen.CreateChunk
 			switch {
 			case it == nil:
@@ -181,9 +200,15 @@ func sendCreateStreamItems(result *dto.TaskCreateResult, stream grpc.ServerStrea
 				return err
 			}
 		}
-		return nil
 	}
-	for resp := range result.Stream() {
+	for {
+		resp, ok, err := recvStreamItemWithHeartbeat(result.Stream(), stream, heartbeat)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return nil
+		}
 		if err := stream.Send(&gen.CreateChunk{
 			Payload: &gen.CreateChunk_Task{
 				Task: resp,
@@ -192,7 +217,28 @@ func sendCreateStreamItems(result *dto.TaskCreateResult, stream grpc.ServerStrea
 			return err
 		}
 	}
-	return nil
+}
+
+// recvStreamItemWithHeartbeat 排水期带空闲心跳的条目接收：条目到达即返回（心跳窗口按次
+// 独立起算，条目/心跳任一到达即重置）；等待逾心跳间隔时向流发送一个心跳块并继续等待。
+// 单写者纪律：仅由 sendCreateStreamItems 排水环调用（handler 期上报器已随 handler 返回
+// 关闭，流上无并发写）；心跳块发送失败按流错误透出中止排水。
+func recvStreamItemWithHeartbeat[T any](ch <-chan T, stream grpc.ServerStreamingServer[gen.CreateChunk], heartbeat *time.Ticker) (T, bool, error) {
+	for {
+		select {
+		case v, ok := <-ch:
+			if !ok {
+				var zero T
+				return zero, false, nil
+			}
+			return v, true, nil
+		case <-heartbeat.C:
+			if err := stream.Send(&gen.CreateChunk{Payload: &gen.CreateChunk_Heartbeat{Heartbeat: &gen.Heartbeat{}}}); err != nil {
+				var zero T
+				return zero, false, err
+			}
+		}
+	}
 }
 
 // createIntentKindToProto 意图信号两态 DTO → proto（未声明意图的 None 不到达此处：

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/lvfeng-z/library-squirrel-sdk/dto"
 	"github.com/lvfeng-z/library-squirrel-sdk/gen"
@@ -671,5 +672,43 @@ func TestGRPCSettingChangedEndToEnd(t *testing.T) {
 	}
 	if gotReq == nil || gotReq.GetSource() != "save" || len(gotReq.GetKeys()) != 2 {
 		t.Fatalf("处置函数应收到透传的 source/keys, 实得 %v", gotReq)
+	}
+}
+
+// TestSendCreateStreamItems_HeartbeatFeedsIdleGaps 排水期空闲心跳（延迟发射形态的批间隙
+// 喂窗）：条目通道首条后静默 5×心跳间隔（注入缩时）再发次条并关闭——间隔期应有 ≥2 个
+// 心跳块上线，条目块按序在场、流正常收尾。锚定 2026-10-31 真实库批间隙 >60s 静默被宿主
+// 泵空闲窗误杀收流（handler 期上报器已随 handler 返回关闭，排水环是唯一喂窗者）。
+func TestSendCreateStreamItems_HeartbeatFeedsIdleGaps(t *testing.T) {
+	prev := createDrainHeartbeatInterval
+	createDrainHeartbeatInterval = 20 * time.Millisecond
+	defer func() { createDrainHeartbeatInterval = prev }()
+
+	items := make(chan *dto.CreateStreamItem)
+	result := dto.StreamItemsResult(items)
+	stream := &fakeCreateStream{}
+	go func() {
+		items <- dto.TaskItem(&dto.TaskCreateResponse{})
+		time.Sleep(100 * time.Millisecond) // 静默 5×间隔（模拟插件侧域核对等待点）
+		items <- dto.TaskItem(&dto.TaskCreateResponse{})
+		close(items)
+	}()
+	if err := sendCreateStreamItems(result, stream); err != nil {
+		t.Fatalf("sendCreateStreamItems 返回错误: %v", err)
+	}
+	heartbeats, tasks := 0, 0
+	for _, c := range stream.chunks {
+		switch {
+		case c.GetHeartbeat() != nil:
+			heartbeats++
+		case c.GetTask() != nil:
+			tasks++
+		}
+	}
+	if tasks != 2 {
+		t.Fatalf("期望 2 个条目块透出, 实得 %d", tasks)
+	}
+	if heartbeats < 2 {
+		t.Fatalf("静默 100ms（间隔 20ms）应至少 2 个心跳块喂窗, 实得 %d", heartbeats)
 	}
 }
