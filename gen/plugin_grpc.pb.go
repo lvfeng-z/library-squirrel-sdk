@@ -1420,6 +1420,7 @@ const (
 	LibraryQuery_ListChildWorkSets_FullMethodName      = "/plugins.LibraryQuery/ListChildWorkSets"
 	LibraryQuery_QueryLocalWorkSets_FullMethodName     = "/plugins.LibraryQuery/QueryLocalWorkSets"
 	LibraryQuery_ListSites_FullMethodName              = "/plugins.LibraryQuery/ListSites"
+	LibraryQuery_ListResourceTypes_FullMethodName      = "/plugins.LibraryQuery/ListResourceTypes"
 	LibraryQuery_GetWorkDir_FullMethodName             = "/plugins.LibraryQuery/GetWorkDir"
 )
 
@@ -1434,8 +1435,9 @@ const (
 //     不透明句柄（与前端 bindings 暴露尺度一致）。
 //   - 分页载体：proto3 无泛型，无法定义泛型 PageResult；采用「请求侧共享 PageRequest 子消息 + 响应侧
 //     typed items 字段 + 共享 PageInfo 回执」等价落地。无界集合查询（Query* 族）强制分页，不提供全量倾倒；
-//     按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与站点
-//     注册表投影（ListSites：站点键只增不改，个位数级）不分页。
+//     按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与
+//     注册表投影（ListSites 站点键只增不改；ListResourceTypes 资源类型=内置 6 类+插件运行时注册的
+//     自定义类型，随插件启停增减——两者均个位数级）不分页。
 //   - Get* 族未命中返回 gRPC NotFound；GetWorkDir 未配置返回 FailedPrecondition（显式拒绝语义，
 //     不返回空路径）。
 type LibraryQueryClient interface {
@@ -1467,6 +1469,8 @@ type LibraryQueryClient interface {
 	QueryLocalWorkSets(ctx context.Context, in *QueryLocalWorkSetsRequest, opts ...grpc.CallOption) (*QueryLocalWorkSetsResponse, error)
 	// 站点（注册表投影，只读）
 	ListSites(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListSitesResponse, error)
+	// 资源类型（注册表投影，只读：内置 6 类 + 插件运行时注册的自定义类型，类型规约一并下发）
+	ListResourceTypes(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListResourceTypesResponse, error)
 	// 工作目录
 	GetWorkDir(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetWorkDirResponse, error)
 }
@@ -1689,6 +1693,16 @@ func (c *libraryQueryClient) ListSites(ctx context.Context, in *Empty, opts ...g
 	return out, nil
 }
 
+func (c *libraryQueryClient) ListResourceTypes(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListResourceTypesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListResourceTypesResponse)
+	err := c.cc.Invoke(ctx, LibraryQuery_ListResourceTypes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *libraryQueryClient) GetWorkDir(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetWorkDirResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetWorkDirResponse)
@@ -1710,8 +1724,9 @@ func (c *libraryQueryClient) GetWorkDir(ctx context.Context, in *Empty, opts ...
 //     不透明句柄（与前端 bindings 暴露尺度一致）。
 //   - 分页载体：proto3 无泛型，无法定义泛型 PageResult；采用「请求侧共享 PageRequest 子消息 + 响应侧
 //     typed items 字段 + 共享 PageInfo 回执」等价落地。无界集合查询（Query* 族）强制分页，不提供全量倾倒；
-//     按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与站点
-//     注册表投影（ListSites：站点键只增不改，个位数级）不分页。
+//     按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与
+//     注册表投影（ListSites 站点键只增不改；ListResourceTypes 资源类型=内置 6 类+插件运行时注册的
+//     自定义类型，随插件启停增减——两者均个位数级）不分页。
 //   - Get* 族未命中返回 gRPC NotFound；GetWorkDir 未配置返回 FailedPrecondition（显式拒绝语义，
 //     不返回空路径）。
 type LibraryQueryServer interface {
@@ -1743,6 +1758,8 @@ type LibraryQueryServer interface {
 	QueryLocalWorkSets(context.Context, *QueryLocalWorkSetsRequest) (*QueryLocalWorkSetsResponse, error)
 	// 站点（注册表投影，只读）
 	ListSites(context.Context, *Empty) (*ListSitesResponse, error)
+	// 资源类型（注册表投影，只读：内置 6 类 + 插件运行时注册的自定义类型，类型规约一并下发）
+	ListResourceTypes(context.Context, *Empty) (*ListResourceTypesResponse, error)
 	// 工作目录
 	GetWorkDir(context.Context, *Empty) (*GetWorkDirResponse, error)
 	mustEmbedUnimplementedLibraryQueryServer()
@@ -1817,6 +1834,9 @@ func (UnimplementedLibraryQueryServer) QueryLocalWorkSets(context.Context, *Quer
 }
 func (UnimplementedLibraryQueryServer) ListSites(context.Context, *Empty) (*ListSitesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListSites not implemented")
+}
+func (UnimplementedLibraryQueryServer) ListResourceTypes(context.Context, *Empty) (*ListResourceTypesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListResourceTypes not implemented")
 }
 func (UnimplementedLibraryQueryServer) GetWorkDir(context.Context, *Empty) (*GetWorkDirResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetWorkDir not implemented")
@@ -2220,6 +2240,24 @@ func _LibraryQuery_ListSites_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LibraryQuery_ListResourceTypes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LibraryQueryServer).ListResourceTypes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LibraryQuery_ListResourceTypes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LibraryQueryServer).ListResourceTypes(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _LibraryQuery_GetWorkDir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
@@ -2328,6 +2366,10 @@ var LibraryQuery_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListSites",
 			Handler:    _LibraryQuery_ListSites_Handler,
+		},
+		{
+			MethodName: "ListResourceTypes",
+			Handler:    _LibraryQuery_ListResourceTypes_Handler,
 		},
 		{
 			MethodName: "GetWorkDir",

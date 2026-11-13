@@ -569,8 +569,9 @@ message UnsubscribeFrontendRequest {
 //   不透明句柄（与前端 bindings 暴露尺度一致）。
 // - 分页载体：proto3 无泛型，无法定义泛型 PageResult；采用「请求侧共享 PageRequest 子消息 + 响应侧
 //   typed items 字段 + 共享 PageInfo 回执」等价落地。无界集合查询（Query* 族）强制分页，不提供全量倾倒；
-//   按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与站点
-//   注册表投影（ListSites：站点键只增不改，个位数级）不分页。
+//   按归属锚定的完整关联（List*ByWorkId 族与作品集父子导航：语义即全集，体量由归属上界锚定）与
+//   注册表投影（ListSites 站点键只增不改；ListResourceTypes 资源类型=内置 6 类+插件运行时注册的
+//   自定义类型，随插件启停增减——两者均个位数级）不分页。
 // - Get* 族未命中返回 gRPC NotFound；GetWorkDir 未配置返回 FailedPrecondition（显式拒绝语义，
 //   不返回空路径）。
 service LibraryQuery {
@@ -607,6 +608,9 @@ service LibraryQuery {
 
   // 站点（注册表投影，只读）
   rpc ListSites(Empty) returns (ListSitesResponse);
+
+  // 资源类型（注册表投影，只读：内置 6 类 + 插件运行时注册的自定义类型，类型规约一并下发）
+  rpc ListResourceTypes(Empty) returns (ListResourceTypesResponse);
 
   // 工作目录
   rpc GetWorkDir(Empty) returns (GetWorkDirResponse);
@@ -865,6 +869,38 @@ message QueryLocalWorkSetsResponse {
 
 message ListSitesResponse {
   repeated SiteDTO items = 1; // 注册表投影全集
+}
+
+// ListResourceTypesResponse 资源类型注册表投影全集（内置 6 类 + 插件运行时注册的自定义类型，
+// resource_type 键字母序；插件一次拉取缓存消费）
+message ListResourceTypesResponse {
+  repeated ResourceTypeSpec items = 1; // 注册表投影全集
+}
+
+// ResourceTypeSpec 资源类型规约：结构角色组合（含基数）、展示主体优先级链、各角色文件标准。
+// 形态镜像主程序资源类型注册表实体的规约结构（注册表为单一事实源）；unknown 无结构约束
+// （roles/primary_roles/store_standards 皆空）
+message ResourceTypeSpec {
+  string resource_type = 1;                        // 资源类型值（内置 image/video/article/document/audio/unknown 或插件自定义类型）
+  repeated StoreRoleSpec roles = 2;                // 结构角色 + 基数（完整性校验用）
+  repeated string primary_roles = 3;               // 展示主体优先级链（高→低，取第一个实际存在的角色）
+  map<string, StoreStandard> store_standards = 4;  // key=store_type；角色的文件标准（描述性，不做内容校验）
+}
+
+// StoreRoleSpec 结构角色基数：min=最少数量（0=可选，1=必含）；max=最多数量（0=不限，1=单例）
+message StoreRoleSpec {
+  string store_type = 1;
+  int32 min = 2;
+  int32 max = 3;
+}
+
+// StoreStandard 角色的文件标准（描述性）：formats 为期望文件扩展名（非强制）；generation 为该角色
+// store 的典型生成方式（downloaded/derived）参考，store 实例的实际 generation 以产出方声明为准，
+// 可跨多种 generation 的角色留空
+message StoreStandard {
+  string description = 1;      // 角色用途说明
+  repeated string formats = 2; // 期望文件扩展名（描述性，非强制）
+  string generation = 3;       // 典型 generation 参考（downloaded/derived；跨多种时留空）
 }
 
 message GetWorkDirResponse {

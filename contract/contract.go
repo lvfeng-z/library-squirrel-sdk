@@ -5,7 +5,7 @@
 // 主程序 ResourceTypeRegistry 运行时注册自定义类型（不在此 const 集合，详见主程序 entity）。
 package contract
 
-// StoreType 标识 resource_store 的业务角色（内置 7 值，封闭枚举）。
+// StoreType 标识 resource_store 的业务角色（内置 8 值，封闭枚举）。
 // 资源类型规约体系据此组合表达结构；插件自定义 ResourceType 本次仅复用内置角色（自定义角色延后）。
 const (
 	StoreTypeImage      = "image"      // 图片(image 资源主体;article 内嵌图多例)
@@ -15,6 +15,7 @@ const (
 	StoreTypeAudioTrack = "audioTrack" // 音频轨(分离流音频原料)
 	StoreTypeVideoMain  = "videoMain"  // 视频可播放主体(封装原文件 downloaded 或合并产物 derived)
 	StoreTypeAudioMain  = "audioMain"  // 音频可播放主体(独立音频资源主体)
+	StoreTypeSubtitle   = "subtitle"   // 字幕轨(video 可选轨;多语言字幕多例——语言维度由文件名承载,规约无语言字段)
 )
 
 // Generation 标识 store 实例的生成方式（数据获取时序，决定执行与续传语义）。

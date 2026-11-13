@@ -122,6 +122,14 @@ func (c *PluginContextClient) ListSites() (*dto.ListSitesResponse, error) {
 	return c.queryClient.ListSites(context.Background(), &gen.Empty{}, callOpts...)
 }
 
+// ===== 资源类型（注册表投影，只读）=====
+
+// ListResourceTypes 资源类型注册表投影（内置 6 类 + 插件运行时注册的自定义类型，
+// 类型规约一并下发；消费方一次拉取缓存）
+func (c *PluginContextClient) ListResourceTypes() (*dto.ListResourceTypesResponse, error) {
+	return c.queryClient.ListResourceTypes(context.Background(), &gen.Empty{}, callOpts...)
+}
+
 // ===== 工作目录 =====
 
 func (c *PluginContextClient) GetWorkDir() (*dto.GetWorkDirResponse, error) {

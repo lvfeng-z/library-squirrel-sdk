@@ -105,6 +105,9 @@ type LibraryQuery interface {
 	QueryLocalWorkSets(req *QueryLocalWorkSetsRequest) (*QueryLocalWorkSetsResponse, error)
 	// 站点（注册表投影，只读）
 	ListSites() (*ListSitesResponse, error)
+	// 资源类型（注册表投影，只读：内置 6 类 + 插件运行时注册的自定义类型，类型规约
+	//〔结构角色与必含/数量界、展示主体优先级链、各角色文件标准〕一并下发，一次拉取缓存消费）
+	ListResourceTypes() (*ListResourceTypesResponse, error)
 	// 工作目录（绝对路径；未配置返回 FailedPrecondition）
 	GetWorkDir() (*GetWorkDirResponse, error)
 }

@@ -111,6 +111,12 @@ func (s *libraryQueryServer) ListSites(ctx context.Context, req *gen.Empty) (*ge
 	return s.provider.ListSites(ctx, req)
 }
 
+// ===== 资源类型（注册表投影，只读）=====
+
+func (s *libraryQueryServer) ListResourceTypes(ctx context.Context, req *gen.Empty) (*gen.ListResourceTypesResponse, error) {
+	return s.provider.ListResourceTypes(ctx, req)
+}
+
 // ===== 工作目录 =====
 
 func (s *libraryQueryServer) GetWorkDir(ctx context.Context, req *gen.Empty) (*gen.GetWorkDirResponse, error) {

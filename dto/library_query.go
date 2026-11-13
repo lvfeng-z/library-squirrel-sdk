@@ -86,6 +86,18 @@ type QueryLocalWorkSetsResponse = gen.QueryLocalWorkSetsResponse
 // ListSitesResponse 站点注册表投影全集（别名 gen.ListSitesResponse，proto 单源）
 type ListSitesResponse = gen.ListSitesResponse
 
+// ResourceTypeSpec 资源类型规约：结构角色组合（含基数）、展示主体优先级链、各角色文件标准（注册表投影条目；unknown 无结构约束，roles/primary_roles/store_standards 皆空）（别名 gen.ResourceTypeSpec，proto 单源）
+type ResourceTypeSpec = gen.ResourceTypeSpec
+
+// StoreRoleSpec 结构角色基数：Min=最少数量（0=可选，1=必含）；Max=最多数量（0=不限，1=单例）（别名 gen.StoreRoleSpec，proto 单源）
+type StoreRoleSpec = gen.StoreRoleSpec
+
+// StoreStandard 角色的文件标准（描述性，不做内容校验）：generation 为该角色 store 的典型生成方式参考（别名 gen.StoreStandard，proto 单源）
+type StoreStandard = gen.StoreStandard
+
+// ListResourceTypesResponse 资源类型注册表投影全集（内置 6 类 + 插件运行时注册的自定义类型，规约一并下发）（别名 gen.ListResourceTypesResponse，proto 单源）
+type ListResourceTypesResponse = gen.ListResourceTypesResponse
+
 // GetWorkDirResponse 资源库根目录绝对路径；未配置时 RPC 返回 FailedPrecondition（别名 gen.GetWorkDirResponse，proto 单源）
 type GetWorkDirResponse = gen.GetWorkDirResponse
 
@@ -144,6 +156,9 @@ type LibraryQueryProvider interface {
 
 	// 站点（注册表投影，只读）
 	ListSites(ctx context.Context, req *gen.Empty) (*gen.ListSitesResponse, error)
+
+	// 资源类型（注册表投影，只读：内置 6 类 + 插件运行时注册的自定义类型，规约一并下发）
+	ListResourceTypes(ctx context.Context, req *gen.Empty) (*gen.ListResourceTypesResponse, error)
 
 	// 工作目录
 	GetWorkDir(ctx context.Context, req *gen.Empty) (*gen.GetWorkDirResponse, error)
